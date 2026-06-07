@@ -34,7 +34,7 @@ Student Presentation Suite is a Codex plugin for university presentation work. I
 Copy or clone this repository into your local Codex plugin directory, then restart or refresh Codex plugin discovery.
 
 ```powershell
-git clone https://github.com/<owner>/student-presentation-suite.git `
+git clone https://github.com/YFan945/student-presentation-suite.git `
   "$env:USERPROFILE\.agents\plugins\plugins\student-presentation-suite"
 ```
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Student Presentation"
+  short_description: "规划大学生展示大纲、破题、Q&A、讲稿、转场和结构化交接。"
+  default_prompt: "帮我规划一个大学生展示：先确认缺失约束，再做破题、大纲、逐页内容、讲稿、转场、Q&A 攻防、扣分点预警和可选 Slide Spec YAML；不要生成 PPTX 文件。"

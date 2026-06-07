@@ -1,0 +1,41 @@
+{
+  "name": "student-presentation-suite",
+  "version": "0.1.0",
+  "description": "Student presentation planning, PPTX generation, and review suite with shared standards, image strategy, Slide Spec handoff, anti-AI wording checks, and static PPTX review.",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "dependencies": {
+    "skills": [
+      "Presentations"
+    ]
+  },
+  "interface": {
+    "displayName": "Student Presentation Suite",
+    "shortDescription": "规划、生成和审阅大学生演示，覆盖 Q&A、AI 写作风险和版本对比。",
+    "longDescription": "Student Presentation Suite provides three Codex skills: one for student-friendly topic narrowing, outline planning, speaker notes, Q&A defense prep, Slide Spec handoff, timing, and group handoffs; one for producing editable PPTX decks with visual style presets, structural shapes, topic-specific output files, meaningful visuals, shared image strategy, and classroom-focused QA; and one for reviewing existing student decks for logic, readability, AI-like wording, AI-writing pattern risk, rubric fit, positive feedback, Slide Spec alignment, before/after changes, PPTX XML static risks, speaker notes, and defense readiness. Shared references keep startup constraints, typography, image handling, and anti-AI rules consistent across skills.",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": [
+      "Presentation outline planning",
+      "Topic narrowing",
+      "Q&A defense preparation",
+      "Slide Spec YAML handoff",
+      "PowerPoint PPTX generation",
+      "Visual style presets",
+      "Shared image strategy",
+      "Confirmed constraint handoff",
+      "Existing deck review",
+      "AI-writing pattern risk review",
+      "Five-dimension scoring",
+      "Deck diff review",
+      "Automated PPTX static checks",
+      "Speaker notes",
+      "Group presentation handoffs",
+      "Classroom-readable slide design",
+      "English presentation support"
+    ],
+    "defaultPrompt": "帮我规划、生成或审阅一个大学生课堂汇报。"
+  }
+}

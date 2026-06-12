@@ -73,7 +73,21 @@ When `student-presentation-ppt` receives Slide Spec YAML:
 - treat `visual.purpose` as required design intent
 - use integer `timing_sec` values to balance speaker notes
 - keep `layout` unless a better layout is needed to prevent crowding
+- implement `layout` as a functional intent, not a fixed visual template
+- split slides or move details into speaker notes when content is dense; do not shrink normal body text below shared typography thresholds to make content fit
 - report any spec item that cannot be implemented
+
+## Layout Functional Mapping
+
+Use these mappings as intent rules. The final visual form may vary by creative direction.
+
+- `timeline`: must show sequence, phases, or change over time. May use a horizontal timeline, vertical timeline, stepped path, roadmap, process ribbon, or milestone cards.
+- `comparison`, `comparison-cards`, `before-after`: must make differences easy to scan. May use side-by-side panels, 2x2 matrix, before/after cards, annotated examples, or contrast bands.
+- `process`, `three-step-process`, `loop-diagram`: must show flow, order, or feedback. May use numbered nodes, cycle diagram, path diagram, swimlane, or staged panels.
+- `risk-callout`, `limitations`: must identify the risk or boundary and explain why it matters. May use warning callouts, evidence cards, redline annotations, or limitation panels.
+- `data`, `chart`, `survey`: must put the conclusion near the chart/table and avoid unexplained raw data. Use one main chart/table per slide.
+- `team-workflow`, `handoff`: must show member ownership and speaking flow. May use role lanes, member cards, sequence markers, or workflow arrows.
+- `summary-qa`, `closing`: must leave one memorable takeaway and a clear Q&A/closing cue. May use a summary card, final claim, key-number recap, or question prompt.
 
 ## Review Rules
 

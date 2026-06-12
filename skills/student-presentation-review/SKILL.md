@@ -43,7 +43,12 @@ If the user provides only a topic or asks for a new deck, use `student-presentat
      - use `--strict` only in automation when a failed scan should fail the step
      - treat `font-size-not-explicit` as a possible style-inheritance limitation, not proof that the text is unreadable
 
-3. Inspect the provided deck or preview:
+3. Inspect evidence in this order when available:
+   - for `.pptx`, run `scripts/pptx_static_check.py` first and treat the output as static XML risk evidence
+   - for preview images, contact sheets, screenshots, or exported PDF, use them to confirm visual readability, clipping, layout crowding, and image issues
+   - when both are available, prefer rendered/visual evidence for final readability judgments and use XML findings as supporting signals
+
+4. Inspect the provided deck or preview:
    - structure and story
    - slide titles and main claims
    - text density and readability
@@ -55,18 +60,18 @@ If the user provides only a topic or asks for a new deck, use `student-presentat
    - Slide Spec vs actual implementation if a spec is provided
    - before/after changes if two versions are provided
 
-4. Prioritize findings:
+5. Prioritize findings:
    - Critical: likely to hurt understanding, grading, or presentation delivery
    - Major: should be fixed before presenting
    - Minor: polish or optional improvement
 
-5. Give concrete fixes:
+6. Give concrete fixes:
    - what to change
    - why it matters
    - suggested replacement wording or layout direction
    - which slide/page is affected when known
 
-6. Include review support:
+7. Include review support:
    - positive feedback for strong parts to keep
    - five-dimension scoring when useful
    - rubric-aligned feedback when the user provides a rubric
@@ -110,5 +115,5 @@ Omit sections that do not apply. Keep the review direct and actionable.
 - For group decks, check that speaking time and difficulty are balanced.
 - For defense decks, check that objective, method/work, result, reflection, and Q&A are present.
 - Treat PPTX XML script output as static risk evidence; confirm with rendered preview when possible.
-- Do not present static XML findings as final rendering facts. The script may miss or over-report text in slide masters, theme-inherited styles, tables, charts, SmartArt, images, and actual rendered overflow.
+- Do not present static XML findings as final rendering facts. The script may miss or over-report text in slide masters, theme-inherited styles, tables, charts, SmartArt, image text, grouped shapes, and actual rendered overflow.
 - For before/after review, separate fixed issues, unresolved issues, new issues, and next priorities.

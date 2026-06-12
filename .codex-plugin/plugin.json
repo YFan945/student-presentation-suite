@@ -1,16 +1,20 @@
 {
   "name": "student-presentation-suite",
-  "version": "0.1.0",
+  "version": "0.1.0+codex.20260612164636",
   "description": "Student presentation planning, PPTX generation, and review suite with shared standards, image strategy, Slide Spec handoff, anti-AI wording checks, and static PPTX review.",
   "author": {
     "name": "Local developer"
   },
+  "repository": "https://github.com/YFan945/student-presentation-suite",
+  "license": "MIT",
+  "keywords": [
+    "presentation",
+    "pptx",
+    "student",
+    "review",
+    "speaker-notes"
+  ],
   "skills": "./skills/",
-  "dependencies": {
-    "skills": [
-      "Presentations"
-    ]
-  },
   "interface": {
     "displayName": "Student Presentation Suite",
     "shortDescription": "规划、生成和审阅大学生演示，覆盖 Q&A、AI 写作风险和版本对比。",

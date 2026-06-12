@@ -21,6 +21,21 @@ If duration is known but slide count is not, suggest choices rather than silentl
 - 10 minutes: 10-14 slides
 - 15 minutes: 14-18 slides
 
+## Creative Direction
+
+Before building, choose one direction from `visual-styles.md` or ask the user to choose when the difference materially affects the result. The choice must be based on presentation type, audience, evidence, and topic tone.
+
+Do:
+- state the chosen direction and why it fits
+- vary layouts by slide function instead of repeating the same card grid
+- use topic-specific visuals, examples, and section rhythm
+- keep creative freedom inside readability and source-safety guardrails
+
+Do not:
+- treat a preset as a fixed template
+- add decorative visuals that do not support the claim
+- make the deck look creative by shrinking text, lowering contrast, or using unsupported image sources
+
 ## Output Naming
 
 Use topic-specific filenames under `outputs/`:
@@ -105,6 +120,7 @@ Prefer:
 Before final response:
 - confirm `.pptx` exists
 - confirm filename is topic-specific
+- run `../scripts/pptx_delivery_check.py` when possible to verify PPTX existence, slide count, notes file, preview/contact sheet file, and static XML risk summary
 - render or preview slides when possible
 - check at least the contact sheet or preview images
 - verify Chinese normal body text is at least 22pt
@@ -118,4 +134,5 @@ Before final response:
 - verify background shapes, translucent panels, or glassmorphism effects improve hierarchy without reducing readability
 - verify text is not placed directly over busy images unless a sufficiently opaque panel or glass layer protects readability
 - create a separate script/notes file if speaker notes are not embedded
-- report any limitations honestly
+- report any missing expected file and validation limitations honestly
+- include the final response sections from `pptx-build-workflow.md`: `Generated Files`, `Deck Summary`, `Creative Direction`, and `QA`

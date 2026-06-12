@@ -40,6 +40,12 @@ git clone https://github.com/YFan945/student-presentation-suite.git `
 
 PPTX production depends on the installed `Presentations` skill/plugin. The static review checker requires Python 3.
 
+If cloned with the command above into `$env:USERPROFILE\.agents\plugins\plugins\student-presentation-suite`, the personal marketplace entry at `$env:USERPROFILE\.agents\plugins\marketplace.json` should point to that real directory:
+
+```json
+"./.agents/plugins/plugins/student-presentation-suite"
+```
+
 ## Typical Workflows
 
 ### Outline First, PPTX Later
@@ -57,6 +63,8 @@ Provide a topic, outline, source material, or Slide Spec YAML. The PPT skill sho
 - `outputs/<topic>-preview.png` or a contact sheet
 
 The final response should include absolute paths, slide count, timing, group order when relevant, and any validation limitations.
+
+PPTX generation now follows a creative-direction plus quality-guardrail model. The skill chooses a direction that fits the topic, then designs layouts by slide function. Layout names such as `timeline`, `comparison-cards`, `process`, `risk-callout`, and `summary-qa` describe what the slide must express, not a fixed visual template. Typography, density, contrast, source safety, and delivery checks remain hard requirements.
 
 ### Review An Existing Deck
 
@@ -95,6 +103,39 @@ python skills/student-presentation-review/scripts/pptx_static_check.py path/to/d
 ```
 
 Static checks are only risk signals. They cannot fully resolve font sizes inherited from slide masters or themes, and they may miss tables, charts, SmartArt, image text, and true rendered overflow. Confirm important issues with rendered previews or contact sheets when possible.
+
+## PPTX Delivery Check
+
+After generating a PPTX, verify the deliverable package exists, count slides, and summarize static XML risk signals:
+
+```powershell
+python skills/student-presentation-ppt/scripts/pptx_delivery_check.py `
+  --pptx outputs/ai-learning-report-presentation.pptx `
+  --notes outputs/ai-learning-report-speaker-notes.md `
+  --preview outputs/ai-learning-report-preview.png `
+  --json
+```
+
+This check does not render slides and does not replace preview/contact-sheet visual QA.
+
+## Local Maintenance
+
+Validate the plugin manifest after edits:
+
+```powershell
+python C:\Users\28603\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py `
+  C:\Users\28603\.agents\plugins\plugins\student-presentation-suite
+```
+
+When Codex needs to pick up local plugin updates, update the cachebuster version and reinstall from the personal marketplace:
+
+```powershell
+python C:\Users\28603\.codex\skills\.system\plugin-creator\scripts\update_plugin_cachebuster.py `
+  C:\Users\28603\.agents\plugins\plugins\student-presentation-suite
+codex plugin add student-presentation-suite@personal
+```
+
+Open a new thread after reinstalling to test `student-presentation`, `student-presentation-ppt`, and `student-presentation-review`.
 
 ## Example
 

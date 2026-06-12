@@ -2,7 +2,9 @@
 
 Load `../../../references/shared-standards.md` for typography, readability, and anti-AI consistency. Load `../../../references/image-strategy.md` before choosing photo, generated image, diagram, or fallback visual treatments.
 
-Use these presets when the user does not provide a school template or visual direction. Ask the user to choose when visual style materially matters.
+Use these presets as creative directions when the user does not provide a school template or visual direction. Ask the user to choose when visual style materially matters.
+
+Each direction defines intent and guardrails, not a fixed template. The deck may vary layout, cover treatment, section rhythm, chart style, and visual metaphors as long as readability, density, contrast, source safety, and delivery QA remain intact.
 
 ## Structural Visual Layer
 
@@ -42,41 +44,45 @@ Bad use of glassmorphism:
 
 Best for defenses, research reports, reading reports, and teacher-facing coursework.
 
-- Palette: dark navy or charcoal, white background, one restrained accent
-- Layout: clear title, structured blocks, diagrams, data tables, restrained section bands
-- Typography: large, conservative, high contrast
-- Visuals: process diagrams, charts, annotated screenshots, shape-framed evidence blocks
-- Avoid: playful colors, oversized decorative icons, flashy gradients
+- Visual character: calm, evidence-first, teacher-facing, precise.
+- Use when: defense, research report, reading report, course design, technical or rubric-heavy presentation.
+- Creative freedom: section bands, annotated screenshots, argument chains, process diagrams, method/result pairing, restrained data emphasis.
+- Guardrails: dark navy or charcoal with neutral background, one restrained accent, large conservative typography, high contrast.
+- Do not sacrifice: source clarity, method/result structure, readable tables/charts, limitation/reflection slides.
+- Avoid: playful colors, oversized decorative icons, flashy gradients, vague research slogans.
 
 ## Modern Minimal
 
 Best for general classroom reports and English presentations.
 
-- Palette: neutral background, black/gray text, one bright accent
-- Layout: large claim title, two-column explanation, sparse callouts, translucent content panels
-- Typography: simple sans-serif, generous spacing
-- Visuals: clean diagrams, one strong image per key section, glass-style text panels when needed
-- Avoid: dense tables and visual clutter
+- Visual character: clean, direct, spacious, easy to present.
+- Use when: general classroom report, English presentation, topic introduction, conceptual explanation.
+- Creative freedom: large claim titles, asymmetrical two-column pages, sparse callouts, simple icons, one strong image per section, restrained translucent panels.
+- Guardrails: neutral base, black/gray text, one bright accent, simple sans-serif typography, generous spacing.
+- Do not sacrifice: B1-B2 speakability, short slide text, projection contrast, natural speaker notes.
+- Avoid: dense tables, visual clutter, repeated cards on every slide, decorative minimalism that leaves slides empty.
 
 ## Data Driven
 
 Best for surveys, market analysis, experiments, and comparison-heavy decks.
 
-- Palette: neutral base, blue/green/orange chart accents
-- Layout: chart-first slide, conclusion sentence, supporting note, KPI strips and shape-based annotations
-- Typography: large labels and short annotations
-- Visuals: bar charts, line charts, comparison cards, KPI strips, highlighted evidence panels
-- Avoid: raw tables without interpretation
+- Visual character: evidence-led, comparative, quantitative, conclusion-forward.
+- Use when: survey, market analysis, experiment, evaluation, performance comparison, data-backed argument.
+- Creative freedom: chart-first pages, KPI strips, highlighted evidence panels, before/after comparisons, visual annotations, data-story section openers.
+- Guardrails: neutral base with blue/green/orange chart accents, large labels, one chart/table per slide, one conclusion sentence.
+- Do not sacrifice: data interpretation, source/date/scope notes, readable axes, clear relationship between evidence and claim.
+- Avoid: raw tables without interpretation, decorative chart junk, unqualified causal claims.
 
 ## Creative Student
 
 Best for innovation projects, design topics, campus-life topics, and light classroom showcases.
 
-- Palette: warm accent plus neutral base, not over-saturated
-- Layout: case/story slides, process snapshots, before/after sections, layered cards or soft panels
-- Typography: readable but more expressive titles
-- Visuals: user journey, scene images, concept diagrams, image-backed panels with readable overlays
-- Avoid: decorative stock images that do not explain the message
+- Visual character: vivid, personal, scenario-based, student-like but still classroom-readable.
+- Use when: innovation project, design topic, campus-life topic, product idea, light showcase, reflection report.
+- Creative freedom: story slides, user journeys, scene images, before/after sections, concept diagrams, playful section markers, expressive but readable titles.
+- Guardrails: warm accent plus neutral base, not over-saturated, strong text panels over images, meaningful visuals only.
+- Do not sacrifice: topic evidence, student-specific detail, speaking clarity, image/source appropriateness.
+- Avoid: decorative stock images, overdesigned covers, crowded stickers/icons, entertainment style that weakens the argument.
 
 ## Template Inheritance
 

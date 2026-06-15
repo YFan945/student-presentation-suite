@@ -2,3 +2,6 @@ interface:
   display_name: "Student Presentation Review"
   short_description: "审阅已有 PPT，覆盖 AI 写作模式风险、评分、版本对比和静态检查。"
   default_prompt: "帮我审阅已有大学生 PPT/PDF/截图/Slide Spec 或两个版本：给出正反馈、五维评分、AI 写作模式风险、逐页修改建议、PPTX 静态风险和版本对比优先级。"
+dependencies:
+  tools:
+    - "python"

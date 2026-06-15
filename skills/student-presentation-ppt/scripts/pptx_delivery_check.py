@@ -9,11 +9,11 @@ preview/contact-sheet review is still required for visual QA.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import re
 import sys
 import zipfile
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -52,31 +52,90 @@ def count_slides(path: Path) -> tuple[int | None, str | None]:
                 if n.startswith("ppt/slides/slide") and n.endswith(".xml")
             ]
             return len(sorted(slide_names, key=slide_number)), None
-    except (FileNotFoundError, zipfile.BadZipFile, KeyError) as exc:
+    except (FileNotFoundError, PermissionError, OSError, zipfile.BadZipFile, KeyError) as exc:
         return None, str(exc)
 
 
-def load_static_checker() -> Any | None:
-    script = Path(__file__).resolve().parents[2] / "student-presentation-review"
-    script = script / "scripts" / "pptx_static_check.py"
-    if not script.is_file():
-        return None
-    spec = importlib.util.spec_from_file_location("pptx_static_check", script)
-    if spec is None or spec.loader is None:
-        return None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+
+def _load_inspect_pptx():
+    from shared._import_helpers import load_inspect_pptx  # noqa: PLC0415
+    return load_inspect_pptx(__file__)
 
 
 def file_info(path: Path | None) -> dict[str, Any] | None:
     if path is None:
         return None
-    exists = path.is_file()
+    try:
+        exists = path.is_file()
+        size = path.stat().st_size if exists else None
+        error = None
+    except (PermissionError, OSError) as exc:
+        exists = False
+        size = None
+        error = str(exc)
     return {
         "path": str(path),
         "exists": exists,
-        "size_bytes": path.stat().st_size if exists else None,
+        "size_bytes": size,
+        "error": error,
+    }
+
+
+
+def summarize_static_risks(static_result: dict[str, Any]) -> dict[str, Any]:
+    findings = static_result.get("findings", []) if isinstance(static_result, dict) else []
+    risk_counter: Counter[str] = Counter()
+    acceptable_minor_counter: Counter[str] = Counter()
+    blocker_like: list[dict[str, Any]] = []
+    minor_markers = (
+        "footer",
+        "page",
+        "slide",
+        "source",
+        "caption",
+        "kicker",
+        "eyebrow",
+        "页码",
+        "来源",
+        "注释",
+    )
+    blocker_risks = {
+        "high-text-density-overflow-risk",
+        "paragraph-heavy-slide-text",
+        "heading-font-size-below-24pt",
+        "font-size-not-explicit",
+    }
+    for item in findings:
+        risks = item.get("risk", []) or []
+        text_preview = str(item.get("text_preview", ""))
+        lower_preview = text_preview.lower()
+        min_font = item.get("min_font_pt")
+        char_count = item.get("char_count") or 0
+        looks_minor = (
+            char_count <= 24
+            and min_font is not None
+            and min_font >= 10
+            and any(marker in lower_preview or marker in text_preview for marker in minor_markers)
+        )
+        for risk in risks:
+            risk_counter[risk] += 1
+            if looks_minor and risk in {"font-size-below-20pt", "chinese-font-size-below-22pt", "small-text-box-risk"}:
+                acceptable_minor_counter[risk] += 1
+        if any(risk in blocker_risks for risk in risks) and not looks_minor:
+            blocker_like.append(
+                {
+                    "slide": item.get("slide"),
+                    "shape": item.get("shape"),
+                    "text_preview": text_preview[:80],
+                    "risk": risks,
+                    "min_font_pt": min_font,
+                }
+            )
+    return {
+        "risk_breakdown": dict(sorted(risk_counter.items())),
+        "acceptable_minor_risk_breakdown": dict(sorted(acceptable_minor_counter.items())),
+        "blocker_like_count": len(blocker_like),
+        "blocker_like_examples": blocker_like[:10],
     }
 
 
@@ -97,14 +156,14 @@ def inspect_delivery(pptx: Path, notes: Path | None, previews: list[Path]) -> di
         "finding_count": None,
         "error": None,
     }
-    checker = load_static_checker()
-    if checker is not None and pptx.is_file():
-        static_result = checker.inspect_pptx(pptx)
+    if pptx_info and pptx_info["exists"]:
+        static_result = _load_inspect_pptx()(pptx)
         static_summary = {
             "available": True,
             "finding_count": len(static_result.get("findings", [])),
             "error": static_result.get("error"),
             "note": static_result.get("note"),
+            **summarize_static_risks(static_result),
         }
 
     return {
@@ -142,6 +201,15 @@ def print_text(result: dict[str, Any]) -> None:
         "Static XML risks: "
         f"available={static['available']} count={static['finding_count']} error={static['error']}"
     )
+    if static.get("risk_breakdown"):
+        print("Risk breakdown: " + json.dumps(static["risk_breakdown"], ensure_ascii=False, sort_keys=True))
+    if static.get("acceptable_minor_risk_breakdown"):
+        print(
+            "Acceptable minor risk breakdown: "
+            + json.dumps(static["acceptable_minor_risk_breakdown"], ensure_ascii=False, sort_keys=True)
+        )
+    if static.get("blocker_like_count") is not None:
+        print(f"Blocker-like static risks: {static['blocker_like_count']}")
     if result["missing_expected_files"]:
         print("Missing expected files: " + ", ".join(result["missing_expected_files"]))
 

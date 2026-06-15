@@ -1,6 +1,6 @@
 {
   "name": "student-presentation-suite",
-  "version": "0.1.0+codex.20260612164636",
+  "version": "0.1.0+codex.20260615161627",
   "description": "Student presentation planning, PPTX generation, and review suite with shared standards, image strategy, Slide Spec handoff, anti-AI wording checks, and static PPTX review.",
   "author": {
     "name": "Local developer"
@@ -27,6 +27,8 @@
       "Q&A defense preparation",
       "Slide Spec YAML handoff",
       "PowerPoint PPTX generation",
+      "Requires Presentations skill/plugin for PPTX production",
+      "Uses artifact-tool for editable PPTX export",
       "Visual style presets",
       "Shared image strategy",
       "Confirmed constraint handoff",

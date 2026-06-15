@@ -20,8 +20,11 @@ Student Presentation Suite is a Codex plugin for university presentation work. I
 ```text
 .
 ├── .codex-plugin/plugin.json
+├── .github/workflows/
 ├── examples/
 ├── references/
+├── scripts/
+├── shared/
 ├── skills/
 │   ├── student-presentation/
 │   ├── student-presentation-ppt/
@@ -38,7 +41,13 @@ git clone https://github.com/YFan945/student-presentation-suite.git `
   "$env:USERPROFILE\.agents\plugins\plugins\student-presentation-suite"
 ```
 
-PPTX production depends on the installed `Presentations` skill/plugin. The static review checker requires Python 3.
+PPTX production depends on the installed `Presentations` skill/plugin and the artifact-tool presentation export runtime. Static PPTX inspection uses Python 3 standard library only. Slide Spec validation uses the packages listed in `requirements.txt`:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+The per-skill `agents/openai.yaml` files use `dependencies.tools` as the dependency hint accepted by the current Codex plugin validator. These entries describe required runtime capabilities such as `Presentations`, `artifact-tool`, `imagegen`, or `python`; they are not Python package dependencies.
 
 If cloned with the command above into `$env:USERPROFILE\.agents\plugins\plugins\student-presentation-suite`, the personal marketplace entry at `$env:USERPROFILE\.agents\plugins\marketplace.json` should point to that real directory:
 
@@ -56,6 +65,8 @@ If cloned with the command above into `$env:USERPROFILE\.agents\plugins\plugins\
 
 ### Generate A PPTX
 
+If the request is vague, the PPT skill should ask for clarification before producing files. Core decisions include whether an outline is needed first, slide count, language, duration, course/rubric, audience, group setup, source material, visual style, template/logo requirements, and image/source preference.
+
 Provide a topic, outline, source material, or Slide Spec YAML. The PPT skill should produce:
 
 - `outputs/<topic>-presentation.pptx`
@@ -65,6 +76,8 @@ Provide a topic, outline, source material, or Slide Spec YAML. The PPT skill sho
 The final response should include absolute paths, slide count, timing, group order when relevant, and any validation limitations.
 
 PPTX generation now follows a creative-direction plus quality-guardrail model. The skill chooses a direction that fits the topic, then designs layouts by slide function. Layout names such as `timeline`, `comparison-cards`, `process`, `risk-callout`, and `summary-qa` describe what the slide must express, not a fixed visual template. Typography, density, contrast, source safety, and delivery checks remain hard requirements.
+
+The built-in style library includes `Academic Rigorous`（学术严谨）, `Modern Minimal`（现代简洁）, `Data Driven`（数据驱动）, `Creative Student`（学生创意）, `Midnight Business`（深蓝商务）, `Forest Moss`（森林苔藓）, `Coral Energy`（珊瑚活力）, `Warm Terracotta`（暖陶人文）, `Ocean Tech`（海洋科技）, `Charcoal Editorial`（炭黑杂志）, `Teal Trust`（青绿可信）, `Berry Cream`（莓果奶油）, `Sage Calm`（鼠尾草平静）, and `Cherry Bold`（樱桃醒目）. When the user is unsure about style, the PPT skill should offer 3-5 topic-fit choices instead of silently defaulting to one style.
 
 ### Review An Existing Deck
 
@@ -102,7 +115,17 @@ For automation, add `--strict` when a file-format or XML-scan failure should ret
 python skills/student-presentation-review/scripts/pptx_static_check.py path/to/deck.pptx --json --strict
 ```
 
-Static checks are only risk signals. They cannot fully resolve font sizes inherited from slide masters or themes, and they may miss tables, charts, SmartArt, image text, and true rendered overflow. Confirm important issues with rendered previews or contact sheets when possible.
+Static checks are implemented in the shared `shared/pptx_static_core.py` module and reused by both review and delivery scripts. They are only risk signals. They resolve common font sizes inherited from slide layouts and masters, but they may still miss complex theme behavior, charts, SmartArt, image text, and true rendered overflow. Confirm important issues with rendered previews or contact sheets when possible.
+
+## Slide Spec Validation
+
+Validate a Slide Spec YAML file against the shared schema:
+
+```powershell
+python scripts/validate_slide_spec.py path/to/slide-spec.yaml --json
+```
+
+Schema: `references/slide-spec.schema.json`.
 
 ## PPTX Delivery Check
 
@@ -116,7 +139,11 @@ python skills/student-presentation-ppt/scripts/pptx_delivery_check.py `
   --json
 ```
 
-This check does not render slides and does not replace preview/contact-sheet visual QA.
+This check does not render slides and does not replace preview/contact-sheet visual QA. It reports a risk breakdown and separates likely minor small-text signals, such as footer/page markers/captions/kickers, from blocker-like findings that deserve visual review.
+
+### PPTX Generation Troubleshooting
+
+When generating editable PPTX files through artifact-tool, run a one-slide smoke test before building the whole deck. Confirm that coordinates, fills, text, notes, PPTX export, and PNG preview all render correctly. The current artifact-tool shape position API expects `left`, `top`, `width`, and `height`; using `x`/`y` can create a valid but visually broken deck. On Windows, if helper scripts cannot find the bundled runtime, set `HOME` to `$env:USERPROFILE`, and set `PYTHON` to the bundled Python before contact-sheet generation.
 
 ## Local Maintenance
 
@@ -144,7 +171,7 @@ See [examples/ai-learning-report.md](examples/ai-learning-report.md) for an end-
 ## Maintenance
 
 - Keep `README-zh.md` as the primary user-facing documentation.
-- Update both README files after major workflow or behavior changes.
+- Keep `README.md` as an English mirror for repository visitors. When behavior changes, update `README-zh.md` first, then mirror the operational parts in `README.md`.
 - Keep generated PPTX, PNG, and other output files out of git unless they are intentional examples.
 
 ## License

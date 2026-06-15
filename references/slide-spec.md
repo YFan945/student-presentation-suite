@@ -33,6 +33,15 @@ Meta field rules:
 - `image_source`: `"user-assets" | "web-search" | "generated" | "diagram-only" | "text-only" | "ask-before-web-search"`
 - Use short ASCII-safe `output_prefix` when a later PPTX output filename needs a stable slug.
 
+Schema and validation:
+- JSON Schema: `references/slide-spec.schema.json`
+- Validator: `scripts/validate_slide_spec.py`
+- The validator requires `jsonschema` and `PyYAML` from `requirements.txt`.
+
+```powershell
+python scripts/validate_slide_spec.py path/to/slide-spec.yaml --json
+```
+
 ```yaml
 meta:
   presentation_type: "coursework report"

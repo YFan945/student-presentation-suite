@@ -1,0 +1,4 @@
+# Runtime PPTX inspection scripts use the Python standard library.
+# Slide Spec validation needs these optional packages:
+jsonschema>=4.0
+PyYAML>=6.0

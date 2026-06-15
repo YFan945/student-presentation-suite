@@ -1,0 +1,145 @@
+from __future__ import annotations
+
+import tempfile
+import unittest
+import zipfile
+from pathlib import Path
+from unittest import mock
+
+import shared.pptx_static_core as core
+
+
+def slide_xml(text: str, ph_type: str = "title", explicit_sz: str | None = None) -> str:
+    rpr = f'<a:rPr sz="{explicit_sz}"/>' if explicit_sz else ""
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+       xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <p:cSld><p:spTree>
+    <p:sp>
+      <p:nvSpPr><p:cNvPr id="2" name="{ph_type} 1"/><p:nvPr><p:ph type="{ph_type}"/></p:nvPr></p:nvSpPr>
+      <p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r>{rpr}<a:t>{text}</a:t></a:r></a:p></p:txBody>
+    </p:sp>
+  </p:spTree></p:cSld>
+</p:sld>"""
+
+
+def rels_to_layout() -> str:
+    return """<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/>
+</Relationships>"""
+
+
+def rels_to_master() -> str:
+    return """<?xml version="1.0" encoding="UTF-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/>
+</Relationships>"""
+
+
+def style_xml(part: str, title_sz: str = "2800", body_sz: str = "2400") -> str:
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<p:{part} xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+          xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <p:cSld><p:spTree/></p:cSld>
+  <p:txStyles>
+    <a:titleStyle><a:lvl1pPr><a:defRPr sz="{title_sz}"/></a:lvl1pPr></a:titleStyle>
+    <a:bodyStyle><a:lvl1pPr><a:defRPr sz="{body_sz}"/></a:lvl1pPr></a:bodyStyle>
+  </p:txStyles>
+</p:{part}>"""
+
+
+class PptxStaticCoreTests(unittest.TestCase):
+    def write_pptx(
+        self,
+        path: Path,
+        slides: list[str],
+        *,
+        layout_title_sz: str | None = None,
+        layout_body_sz: str | None = None,
+        master_title_sz: str = "2800",
+        master_body_sz: str = "2400",
+    ) -> None:
+        with zipfile.ZipFile(path, "w") as zf:
+            for idx, slide in enumerate(slides, start=1):
+                zf.writestr(f"ppt/slides/slide{idx}.xml", slide)
+                zf.writestr(f"ppt/slides/_rels/slide{idx}.xml.rels", rels_to_layout())
+            if layout_title_sz or layout_body_sz:
+                zf.writestr(
+                    "ppt/slideLayouts/slideLayout1.xml",
+                    style_xml("sldLayout", layout_title_sz or "2800", layout_body_sz or "2400"),
+                )
+            else:
+                zf.writestr(
+                    "ppt/slideLayouts/slideLayout1.xml",
+                    """<?xml version="1.0" encoding="UTF-8"?>
+<p:sldLayout xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+             xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <p:cSld><p:spTree/></p:cSld>
+</p:sldLayout>""",
+                )
+            zf.writestr("ppt/slideLayouts/_rels/slideLayout1.xml.rels", rels_to_master())
+            zf.writestr(
+                "ppt/slideMasters/slideMaster1.xml",
+                style_xml("sldMaster", master_title_sz, master_body_sz),
+            )
+
+    def test_resolves_master_title_font_size(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            pptx = Path(tmp) / "master-title-size.pptx"
+            self.write_pptx(pptx, [slide_xml("Inherited title")])
+
+            result = core.inspect_pptx(pptx)
+
+        self.assertNotIn("error", result)
+        self.assertEqual(result["findings"], [])
+
+    def test_caches_inherited_context_per_layout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            pptx = Path(tmp) / "two-slides-one-layout.pptx"
+            self.write_pptx(pptx, [slide_xml("First"), slide_xml("Second")])
+
+            with mock.patch.object(
+                core,
+                "inherited_font_context_for_layout",
+                wraps=core.inherited_font_context_for_layout,
+            ) as wrapped:
+                result = core.inspect_pptx(pptx)
+
+        self.assertEqual(result["findings"], [])
+        self.assertEqual(wrapped.call_count, 1)
+
+    def test_resolves_layout_body_style_and_reports_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            pptx = Path(tmp) / "layout-body-size.pptx"
+            self.write_pptx(
+                pptx,
+                [slide_xml("Body text from layout", ph_type="body")],
+                layout_body_sz="1800",
+                master_body_sz="2600",
+            )
+
+            result = core.inspect_pptx(pptx)
+
+        self.assertEqual(result["findings"][0]["min_font_pt"], 18)
+        self.assertEqual(result["findings"][0]["font_size_source"], "layout-style")
+        self.assertIn("font-size-below-20pt", result["findings"][0]["risk"])
+
+    def test_explicit_font_size_overrides_inherited_style(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            pptx = Path(tmp) / "explicit-size.pptx"
+            self.write_pptx(
+                pptx,
+                [slide_xml("Explicit small title", explicit_sz="1800")],
+                master_title_sz="3200",
+            )
+
+            result = core.inspect_pptx(pptx)
+
+        self.assertEqual(result["findings"][0]["min_font_pt"], 18)
+        self.assertEqual(result["findings"][0]["font_size_source"], "explicit")
+        self.assertIn("heading-font-size-below-24pt", result["findings"][0]["risk"])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -11,11 +11,19 @@ Plan what a student should present and say: topic narrowing, outline, slide-by-s
 
 Do not create actual `.pptx`, editable PowerPoint, rendered slides, or production-ready decks. If the user asks for those, use `student-presentation-ppt`.
 
+## Clarification Gate
+
+Before drafting an outline or script, decide whether the user's request is specific enough to plan responsibly. If the prompt is vague, incomplete, or only names a broad topic, stop and ask concise follow-up questions instead of immediately writing slides.
+
+Ask for missing items that affect the plan, including presentation type, language, duration, expected slide count, audience/course, rubric, individual/group format, members, whether a full script is needed, and whether later PPTX generation is expected. Prefer 3-6 grouped questions in one reply and wait for confirmation when the answer changes the structure.
+
 ## Workflow
 
-1. Check confirmed constraints from the conversation or Slide Spec meta, then ask only for missing items that affect the plan: type, language, duration, slide count, audience/course, rubric, individual/group format, members, and script needs.
+1. Enforce the Clarification Gate. Check confirmed constraints from the conversation or Slide Spec meta, then ask for missing items that affect the plan before drafting: type, language, duration, slide count, audience/course, rubric, individual/group format, members, script needs, and whether later PPTX generation is expected.
 2. Load `../../references/shared-standards.md` first. Load only the needed task references:
-   - `references/presentation-patterns.md` for structures, topic narrowing, subject presets, transitions, group division, and examples
+   - `references/slide-structures.md` for templates, topic narrowing, subject presets, density examples, and quality checklist
+   - `references/transition-phrases.md` for transition and defense phrase banks
+   - When the presentation is a group format, also load `references/group-handoff.md`
    - `references/qa-prediction.md` for defense/report Q&A preparation
    - `../../references/slide-spec.md` for optional structured handoff
    - `../../references/image-strategy.md` for visual source planning

@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/python-3.x-3776AB)](scripts/validate_slide_spec.py)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-[English](README.md)
+中文 | [English](README.md)
 
 `student-presentation-suite` 是一个面向大学生课堂汇报的插件。它帮助 agent 完成汇报规划、可编辑 PPTX 生成和已有成品审阅，并统一使用课堂可读性、讲稿、素材来源、反 AI 套话和小组汇报标准。
 

@@ -5,6 +5,8 @@
 [![Codex](https://img.shields.io/badge/Codex-plugin-111827)](marketplace.json)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-5B35D5)](.claude-plugin/marketplace.json)
 
+[中文](README-zh.md) | English
+
 Student Presentation Suite is a local plugin marketplace for building university presentation workflows in both Codex and Claude Code.
 
 It ships one plugin, `student-presentation-suite`, with three skills:

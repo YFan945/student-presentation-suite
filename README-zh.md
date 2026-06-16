@@ -5,6 +5,8 @@
 [![Codex](https://img.shields.io/badge/Codex-plugin-111827)](marketplace.json)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-5B35D5)](.claude-plugin/marketplace.json)
 
+中文 | [English](README.md)
+
 Student Presentation Suite 是一个同时适配 Codex 和 Claude Code 的本地插件 marketplace，用于大学生课堂汇报的规划、PPTX 生成和成品审阅。
 
 当前包含一个插件：`student-presentation-suite`，内部有三个 skill：

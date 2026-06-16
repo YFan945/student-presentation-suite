@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/python-3.x-3776AB)](scripts/validate_slide_spec.py)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-[中文版](README-zh.md)
+[中文](README-zh.md) | English
 
 `student-presentation-suite` is a plugin for university presentation work. It helps an agent plan a classroom presentation, generate an editable PPTX deck, and review an existing deck with student-focused standards.
 

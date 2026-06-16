@@ -33,7 +33,7 @@ Student Presentation Suite is a Codex plugin for university presentation work. I
 └── outputs/
 ```
 
-This directory is the plugin package. The GitHub repository root is two levels up at `C:\Users\28603\.agents\plugins`, where marketplace files live:
+This directory is the plugin package. In this repository, marketplace files live at the repository root:
 
 - Root `marketplace.json`: Codex marketplace manifest.
 - Root `.claude-plugin/marketplace.json`: Claude Code marketplace manifest.
@@ -48,11 +48,11 @@ This repository is structured for both Codex and Claude Code:
 
 ### Codex
 
-Clone the repository into your local Codex plugin directory, then restart or refresh Codex plugin discovery.
+Clone the marketplace repository into your local Codex plugin marketplace directory, then restart or refresh Codex plugin discovery.
 
 ```powershell
 git clone https://github.com/YFan945/student-presentation-suite.git `
-  "$env:USERPROFILE\.agents\plugins\plugins\student-presentation-suite"
+  "$env:USERPROFILE\.agents\plugins"
 ```
 
 Codex PPTX production uses the default `Presentations` skill/plugin and `artifact-tool` presentation workflow. The PPT skill keeps these Codex dependencies in `skills/student-presentation-ppt/agents/openai.yaml`:
@@ -97,13 +97,13 @@ python -m pip install -r requirements.txt
 
 The per-skill `agents/openai.yaml` files use `dependencies.tools` as the dependency hint accepted by the current Codex plugin validator. These entries describe required runtime capabilities such as `Presentations`, `artifact-tool`, `imagegen`, or `python`; they are not Python package dependencies.
 
-If cloned with the command above into `$env:USERPROFILE\.agents\plugins\plugins\student-presentation-suite`, the personal marketplace entry at `$env:USERPROFILE\.agents\plugins\marketplace.json` should point to that real directory:
+If cloned with the command above into `$env:USERPROFILE\.agents\plugins`, the personal marketplace entry at `$env:USERPROFILE\.agents\plugins\marketplace.json` should point to the plugin directory:
 
 ```json
-"./.agents/plugins/plugins/student-presentation-suite"
+"./plugins/student-presentation-suite"
 ```
 
-If the repository root is `$env:USERPROFILE\.agents\plugins`, this marketplace file belongs at the repository root, not inside this plugin directory.
+The marketplace file belongs at the repository root, not inside this plugin directory.
 
 ## Typical Workflows
 
@@ -221,15 +221,15 @@ python scripts/check_claude_pptx_env.py --json
 Validate the plugin manifest after edits:
 
 ```powershell
-python C:\Users\28603\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py `
-  C:\Users\28603\.agents\plugins\plugins\student-presentation-suite
+python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" `
+  .\plugins\student-presentation-suite
 ```
 
 When Codex needs to pick up local plugin updates, update the cachebuster version and reinstall from the personal marketplace:
 
 ```powershell
-python C:\Users\28603\.codex\skills\.system\plugin-creator\scripts\update_plugin_cachebuster.py `
-  C:\Users\28603\.agents\plugins\plugins\student-presentation-suite
+python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\update_plugin_cachebuster.py" `
+  .\plugins\student-presentation-suite
 codex plugin add student-presentation-suite@personal
 ```
 

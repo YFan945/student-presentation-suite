@@ -1,215 +1,168 @@
-# Student Presentation Suite
+# Student Presentation Suite Plugin
 
-[![Plugin](https://img.shields.io/badge/Codex-plugin-111827)](#)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](.codex-plugin/plugin.json)
-[![Python](https://img.shields.io/badge/python-3.x-3776AB)](skills/student-presentation-review/scripts/pptx_static_check.py)
+[![Plugin](https://img.shields.io/badge/plugin-student--presentation--suite-111827)](.codex-plugin/plugin.json)
+[![Python](https://img.shields.io/badge/python-3.x-3776AB)](scripts/validate_slide_spec.py)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 [中文版](README-zh.md)
 
-Student Presentation Suite is a Codex plugin for university presentation work. It separates the workflow into planning, editable PowerPoint generation, and review so Codex can use the right skill for each task.
+`student-presentation-suite` is a plugin for university presentation work. It helps an agent plan a classroom presentation, generate an editable PPTX deck, and review an existing deck with student-focused standards.
 
-## What It Provides
+This file describes the plugin package itself. Repository-level installation and marketplace setup are documented in the root [README](../../README.md).
 
-- `student-presentation`: topic narrowing, outline planning, slide-by-slide content, scripts, transitions, group handoffs, Q&A preparation, and optional Slide Spec YAML.
-- `student-presentation-ppt`: editable `.pptx` generation with speaker notes, visual style presets, meaningful visuals, topic-specific output names, and preview/contact-sheet QA.
-- `student-presentation-review`: review of existing PPTX/PDF/screenshots/specs, including logic, readability, AI-writing pattern risk, rubric fit, speaker notes, version comparison, and static PPTX XML checks.
+## Skills
 
-## Repository Structure
+### `student-presentation`
 
-```text
-.
-├── .codex-plugin/plugin.json
-├── .claude-plugin/plugin.json
-├── .github/workflows/
-├── examples/
-├── references/
-├── scripts/
-├── shared/
-├── skills/
-│   ├── student-presentation/
-│   ├── student-presentation-ppt/
-│   └── student-presentation-review/
-└── outputs/
-```
+Use this when the user needs planning rather than a PPTX file.
 
-This directory is the plugin package. In this repository, marketplace files live at the repository root:
+It handles:
 
-- Root `marketplace.json`: Codex marketplace manifest.
-- Root `.claude-plugin/marketplace.json`: Claude Code marketplace manifest.
-- This directory keeps only plugin manifests: `.codex-plugin/plugin.json` and `.claude-plugin/plugin.json`.
+- topic narrowing
+- outline and slide order
+- speaker script and transitions
+- group handoffs
+- Q&A preparation
+- optional Slide Spec YAML for later PPTX generation
 
-## Install
+### `student-presentation-ppt`
 
-This repository is structured for both Codex and Claude Code:
+Use this when the user asks for editable slides, PowerPoint, PPT, PPTX, rendered slides, or a ready presentation file.
 
-- Codex reads `.codex-plugin/plugin.json` and the `skills/*/agents/openai.yaml` dependency hints.
-- Claude Code reads `.claude-plugin/plugin.json` and the `skills/*/SKILL.md` folders.
+It handles:
 
-### Codex
+- editable `.pptx` generation
+- speaker notes
+- visual style selection
+- image/source strategy
+- Slide Spec to PPTX handoff
+- preview/contact-sheet QA
+- delivery checks for PPTX, notes, slide count, and static XML risks
 
-Clone the marketplace repository into your local Codex plugin marketplace directory, then restart or refresh Codex plugin discovery.
+Codex keeps using the default `Presentations` skill/plugin with `artifact-tool` and `imagegen`. Claude Code uses `document-skills` and its `pptx` skill, with bridge scripts in `scripts/`.
 
-```powershell
-git clone https://github.com/YFan945/student-presentation-suite.git `
-  "$env:USERPROFILE\.agents\plugins"
-```
+### `student-presentation-review`
 
-Codex PPTX production uses the default `Presentations` skill/plugin and `artifact-tool` presentation workflow. The PPT skill keeps these Codex dependencies in `skills/student-presentation-ppt/agents/openai.yaml`:
+Use this when the user provides an existing deck, PDF export, screenshot, notes, Slide Spec, or two versions for comparison.
 
-```yaml
-dependencies:
-  tools:
-    - "Presentations"
-    - "artifact-tool"
-    - "imagegen"
-```
+It checks:
 
-### Claude Code
-
-Clone or install this repository as a Claude Code plugin. The Claude manifest is `.claude-plugin/plugin.json` and declares a dependency on `document-skills`.
-
-Install the Anthropic document skills marketplace/plugin before using PPTX generation:
-
-```text
-/plugin marketplace add anthropics/skills
-/plugin install document-skills@anthropic-agent-skills
-```
-
-Claude Code PPTX generation uses the `pptx` skill from `document-skills`. For Slide Spec input, generate a handoff brief first:
-
-```powershell
-python scripts/check_claude_pptx_env.py --json
-python scripts/slide_spec_to_pptx_brief.py path/to/slide-spec.yaml `
-  --output outputs/<topic>-claude-pptx-brief.md
-```
-
-PPTX production dependencies:
-
-- Claude Code: `.claude-plugin/plugin.json` declares a dependency on the `document-skills` plugin. PPTX generation should use that plugin's `pptx` skill from the `anthropic-agent-skills` marketplace (`document-skills@anthropic-agent-skills`).
-- Codex: production depends on the installed `Presentations` skill/plugin and the artifact-tool presentation export runtime.
-
-Static PPTX inspection uses Python 3 standard library only. Slide Spec validation uses the packages listed in `requirements.txt`:
-
-```powershell
-python -m pip install -r requirements.txt
-```
-
-The per-skill `agents/openai.yaml` files use `dependencies.tools` as the dependency hint accepted by the current Codex plugin validator. These entries describe required runtime capabilities such as `Presentations`, `artifact-tool`, `imagegen`, or `python`; they are not Python package dependencies.
-
-If cloned with the command above into `$env:USERPROFILE\.agents\plugins`, the personal marketplace entry at `$env:USERPROFILE\.agents\plugins\marketplace.json` should point to the plugin directory:
-
-```json
-"./plugins/student-presentation-suite"
-```
-
-The marketplace file belongs at the repository root, not inside this plugin directory.
-
-## Typical Workflows
-
-### Outline First, PPTX Later
-
-1. Ask `student-presentation` to narrow the topic and create an outline.
-2. Request Slide Spec YAML if the deck will be generated later.
-3. Ask `student-presentation-ppt` to generate the editable PPTX from the outline or Slide Spec.
-
-### Generate A PPTX
-
-If the request is vague, the PPT skill should ask for clarification before producing files. Core decisions include whether an outline is needed first, slide count, language, duration, course/rubric, audience, group setup, source material, visual style, template/logo requirements, and image/source preference.
-
-Provide a topic, outline, source material, or Slide Spec YAML. The PPT skill should produce:
-
-- `outputs/<topic>-presentation.pptx`
-- `outputs/<topic>-speaker-notes.md`
-- `outputs/<topic>-preview.png` or a contact sheet
-
-The final response should include absolute paths, slide count, timing, group order when relevant, and any validation limitations.
-
-PPTX generation now follows a creative-direction plus quality-guardrail model. The skill chooses a direction that fits the topic, then designs layouts by slide function. Layout names such as `timeline`, `comparison-cards`, `process`, `risk-callout`, and `summary-qa` describe what the slide must express, not a fixed visual template. Typography, density, contrast, source safety, and delivery checks remain hard requirements.
-
-The built-in style library includes `Academic Rigorous`（学术严谨）, `Modern Minimal`（现代简洁）, `Data Driven`（数据驱动）, `Creative Student`（学生创意）, `Midnight Business`（深蓝商务）, `Forest Moss`（森林苔藓）, `Coral Energy`（珊瑚活力）, `Warm Terracotta`（暖陶人文）, `Ocean Tech`（海洋科技）, `Charcoal Editorial`（炭黑杂志）, `Teal Trust`（青绿可信）, `Berry Cream`（莓果奶油）, `Sage Calm`（鼠尾草平静）, and `Cherry Bold`（樱桃醒目）. When the user is unsure about style, the PPT skill should offer 3-5 topic-fit choices instead of silently defaulting to one style.
-
-### Review An Existing Deck
-
-Provide a PPTX, exported PDF, screenshot, contact sheet, speaker notes, Slide Spec YAML, or two versions for comparison. The review skill prioritizes issues that affect comprehension, grading, and delivery.
+- slide logic and narrative flow
+- classroom readability
+- AI-like wording risk
+- rubric fit
+- speaker notes
+- before/after changes
+- PPTX static XML risk signals
 
 ## Shared Standards
 
-The three skills share standards for:
+All three skills share standards for:
 
 - confirmed constraint handling
 - classroom readability
-- anti-AI wording and AI-writing pattern risk
-- B1-B2 English presentation style
-- Chinese presentation norms
+- Chinese and English presentation style
+- B1-B2 English when requested
+- anti-AI wording cleanup
 - group presentation handoffs
-- image/source strategy
+- image/source safety
 
 Typography defaults:
 
 - Chinese normal body text: 22pt or larger
 - English normal body text: 20pt or larger
-- titles, subtitles, section headers, card headers, chart titles, panel labels, and other subheadings: 24pt or larger
+- titles, subtitles, section headers, card headers, chart titles, and panel labels: 24pt or larger
 
-## Static PPTX Check
+## Inputs
 
-Run the XML risk checker with:
+The plugin can work from:
 
-```powershell
-python skills/student-presentation-review/scripts/pptx_static_check.py path/to/deck.pptx --json
+- a broad topic
+- a course/rubric brief
+- an outline
+- source notes or research material
+- Slide Spec YAML
+- an existing PPTX/PDF/screenshot
+- speaker notes
+- before/after deck versions
+
+For vague PPTX requests, the PPT skill should ask for missing production-critical constraints before generating files.
+
+## Outputs
+
+Typical PPTX generation outputs:
+
+```text
+outputs/<topic>-presentation.pptx
+outputs/<topic>-speaker-notes.md
+outputs/<topic>-preview.png
 ```
 
-For automation, add `--strict` when a file-format or XML-scan failure should return a non-zero exit code:
+When using Claude Code with Slide Spec input, the bridge script can also create:
 
-```powershell
-python skills/student-presentation-review/scripts/pptx_static_check.py path/to/deck.pptx --json --strict
+```text
+outputs/<topic>-claude-pptx-brief.md
 ```
 
-Static checks are implemented in the shared `shared/pptx_static_core.py` module and reused by both review and delivery scripts. They are only risk signals. They resolve common font sizes inherited from slide layouts and masters, but they may still miss complex theme behavior, charts, SmartArt, image text, and true rendered overflow. Confirm important issues with rendered previews or contact sheets when possible.
+## Runtime Routes
 
-## Slide Spec Validation
+| Runtime | Manifest | PPTX production |
+| --- | --- | --- |
+| Codex | `.codex-plugin/plugin.json` | Default `Presentations` skill/plugin + `artifact-tool` + `imagegen` |
+| Claude Code | `.claude-plugin/plugin.json` | `document-skills` plugin and its `pptx` skill |
 
-Validate a Slide Spec YAML file against the shared schema:
+Codex dependency hints are in:
+
+```text
+skills/student-presentation-ppt/agents/openai.yaml
+```
+
+Claude Code dependency is declared in:
+
+```text
+.claude-plugin/plugin.json
+```
+
+## Helper Scripts
+
+Validate Slide Spec:
 
 ```powershell
 python scripts/validate_slide_spec.py path/to/slide-spec.yaml --json
 ```
 
-Schema: `references/slide-spec.schema.json`.
-
-## PPTX Delivery Check
-
-After generating a PPTX, verify the deliverable package exists, count slides, and summarize static XML risk signals:
+Create a Claude Code `pptx` production brief from Slide Spec:
 
 ```powershell
-python skills/student-presentation-ppt/scripts/pptx_delivery_check.py `
-  --pptx outputs/ai-learning-report-presentation.pptx `
-  --notes outputs/ai-learning-report-speaker-notes.md `
-  --preview outputs/ai-learning-report-preview.png `
-  --json
-```
-
-This check does not render slides and does not replace preview/contact-sheet visual QA. It reports a risk breakdown and separates likely minor small-text signals, such as footer/page markers/captions/kickers, from blocker-like findings that deserve visual review.
-
-### PPTX Generation Troubleshooting
-
-When generating editable PPTX files through artifact-tool in Codex, run a one-slide smoke test before building the whole deck. Confirm that coordinates, fills, text, notes, PPTX export, and PNG preview all render correctly. The current artifact-tool shape position API expects `left`, `top`, `width`, and `height`; using `x`/`y` can create a valid but visually broken deck. On Windows, if helper scripts cannot find the bundled runtime, set `HOME` to `$env:USERPROFILE`, and set `PYTHON` to the bundled Python before contact-sheet generation.
-
-When generating in Claude Code, use the `pptx` skill provided by `document-skills`. Follow its `pptxgenjs.md` for new decks, `editing.md` for template edits, and its MarkItDown plus LibreOffice/Poppler render QA before delivery.
-
-For Claude Code compatibility, two helper scripts make the handoff explicit:
-
-```powershell
-python scripts/check_claude_pptx_env.py --json
 python scripts/slide_spec_to_pptx_brief.py path/to/slide-spec.yaml `
   --output outputs/<topic>-claude-pptx-brief.md
 ```
 
-The first script reports missing `document-skills/pptx` environment tools. The second validates the Student Presentation Slide Spec schema and converts it into a Markdown brief that the `pptx` skill can follow.
+Check Claude Code PPTX environment:
 
-## Local Maintenance
+```powershell
+python scripts/check_claude_pptx_env.py --json
+```
 
-Before publishing or opening a pull request, run the full local checks:
+Check a generated PPTX delivery package:
+
+```powershell
+python skills/student-presentation-ppt/scripts/pptx_delivery_check.py `
+  --pptx outputs/<topic>-presentation.pptx `
+  --notes outputs/<topic>-speaker-notes.md `
+  --preview outputs/<topic>-preview.png `
+  --json
+```
+
+Run a static PPTX review:
+
+```powershell
+python skills/student-presentation-review/scripts/pptx_static_check.py path/to/deck.pptx --json
+```
+
+## Validation
+
+From this plugin directory:
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -218,32 +171,17 @@ python scripts/check_plugin_release.py
 python scripts/check_claude_pptx_env.py --json
 ```
 
-Validate the plugin manifest after edits:
+From the repository root:
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" `
   .\plugins\student-presentation-suite
+claude plugin validate .\plugins\student-presentation-suite
 ```
-
-When Codex needs to pick up local plugin updates, update the cachebuster version and reinstall from the personal marketplace:
-
-```powershell
-python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\update_plugin_cachebuster.py" `
-  .\plugins\student-presentation-suite
-codex plugin add student-presentation-suite@personal
-```
-
-Open a new thread after reinstalling to test `student-presentation`, `student-presentation-ppt`, and `student-presentation-review`.
 
 ## Example
 
-See [examples/ai-learning-report.md](examples/ai-learning-report.md) for an end-to-end example with topic, outline, Slide Spec YAML, speaker notes sample, and expected PPTX output naming.
-
-## Maintenance
-
-- Keep `README-zh.md` as the primary user-facing documentation.
-- Keep `README.md` as an English mirror for repository visitors. When behavior changes, update `README-zh.md` first, then mirror the operational parts in `README.md`.
-- Keep generated PPTX, PNG, and other output files out of git unless they are intentional examples.
+See [examples/ai-learning-report.md](examples/ai-learning-report.md) for a complete topic, outline, Slide Spec YAML, notes sample, and expected output naming.
 
 ## License
 

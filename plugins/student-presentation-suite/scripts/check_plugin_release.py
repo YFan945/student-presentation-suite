@@ -102,7 +102,7 @@ def check_docs(errors: list[str]) -> None:
             ".codex-plugin/plugin.json",
             ".claude-plugin/plugin.json",
             "document-skills",
-            "marketplace.json",
+            "student-presentation-ppt",
         ):
             if expected not in text:
                 errors.append(f"{label} missing install/compatibility detail: {expected}")

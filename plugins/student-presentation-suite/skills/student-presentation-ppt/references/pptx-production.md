@@ -95,6 +95,33 @@ When building through artifact-tool presentation primitives:
 - if the contact-sheet helper needs Python, set `PYTHON` to the bundled runtime Python when available
 - treat a nonblank PPTX file as insufficient evidence; the rendered PNG/contact sheet must show the intended layout
 
+## Anthropic PPTX Skill Notes (Claude Code)
+
+Claude Code PPTX production depends on the `document-skills` plugin from the `anthropic-agent-skills` marketplace. That plugin provides the `pptx` skill.
+
+Reference path on this machine:
+`C:\Users\28603\.claude\plugins\marketplaces\anthropic-agent-skills\skills\pptx`
+
+When building in Claude Code:
+- Run `python scripts/check_claude_pptx_env.py --json` before production. If required tools are missing, report the exact missing generation or QA capability before continuing.
+- If the input includes a Slide Spec YAML/JSON file, run `python scripts/slide_spec_to_pptx_brief.py <spec> --output outputs/<topic>-claude-pptx-brief.md` first. Use the generated brief as the execution handoff into the `pptx` skill.
+- First follow the `pptx` skill's `SKILL.md`.
+- For a new deck from scratch, read and follow `pptxgenjs.md`.
+- For editing an existing PPTX or template, read and follow `editing.md`.
+- Keep this student-presentation skill as the upper-level brief: confirmed classroom constraints, Slide Spec, creative direction, readability, notes, anti-AI wording review, and final QA contract still apply.
+
+Required QA inherited from the `pptx` skill:
+- Run `python -m markitdown output.pptx` for content extraction and sanity checking.
+- Render the deck with the `pptx` skill's LibreOffice helper, then convert PDF pages to images with Poppler, for example `scripts/office/soffice.py` plus `pdftoppm`.
+- Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop before calling the deck ready-to-present.
+- Also run this suite's `scripts/pptx_delivery_check.py` when possible to report PPTX existence, notes existence, slide count, preview/contact sheet existence, and static XML risk signals.
+
+Dependencies and limitations:
+- The Claude plugin dependency is `document-skills`, not the standalone `pptx` skill path.
+- The expected install target is `document-skills@anthropic-agent-skills`; if the local plugin is named differently, use the actual name from the marketplace manifest.
+- The `pptx` skill expects environment tools such as `pptxgenjs`, `markitdown[pptx]`, Pillow, LibreOffice, and Poppler. If any are unavailable, report the missing QA or generation step explicitly.
+- The `pptx` skill does not natively enforce this suite's Slide Spec schema. Use `slide_spec_to_pptx_brief.py` as the programmatic bridge: it validates the schema and converts the Slide Spec into a Claude `pptx` production brief, but the final generation still depends on the `pptx` skill following that brief.
+
 ## Final Deliverable QA
 
 Before final response:

@@ -45,7 +45,7 @@ def main() -> None:
         jsonschema.Draft202012Validator.check_schema(schema)
         validator = jsonschema.Draft202012Validator(schema)
         errors = sorted(validator.iter_errors(data), key=lambda err: list(err.path))
-    except OSError as exc:
+    except (OSError, json.JSONDecodeError, yaml.YAMLError, jsonschema.SchemaError) as exc:
         result = {"valid": False, "error": str(exc), "errors": []}
         if args.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))

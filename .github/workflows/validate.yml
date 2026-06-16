@@ -7,6 +7,9 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plugins/student-presentation-suite
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,3 +26,9 @@ jobs:
           python skills/student-presentation-review/scripts/pptx_static_check.py --help
           python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --help
           python scripts/validate_slide_spec.py --help
+          python scripts/check_claude_pptx_env.py --help
+          python scripts/slide_spec_to_pptx_brief.py --help
+          python scripts/check_plugin_release.py --help
+      - name: Check plugin release structure
+        run: python scripts/check_plugin_release.py
+

@@ -1,0 +1,16 @@
+{
+  "name": "personal-plugins",
+  "owner": { "name": "yfan945" },
+  "metadata": { "description": "Personal Claude Code plugins — presentations and student tools" },
+  "plugins": [
+    {
+      "name": "student-presentation-suite",
+      "description": "规划、生成和审阅大学生课堂演示文稿",
+      "source": "./plugins/student-presentation-suite",
+      "version": "0.1.0",
+      "author": { "name": "yfan945" },
+      "keywords": ["presentation", "pptx", "student", "review", "speaker-notes"],
+      "category":  "Productivity"
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+from __future__ import annotations
+
+import importlib.util
+import tempfile
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / "scripts" / "slide_spec_to_pptx_brief.py"
+
+
+def load_bridge_module():
+    spec = importlib.util.spec_from_file_location("slide_spec_to_pptx_brief", SCRIPT)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+class SlideSpecBridgeTests(unittest.TestCase):
+    def test_builds_claude_pptx_brief_from_valid_spec(self) -> None:
+        bridge = load_bridge_module()
+        data = {
+            "meta": {
+                "presentation_type": "coursework report",
+                "language": "Chinese",
+                "duration_min": 3,
+                "slide_count": 1,
+                "format": "individual",
+                "image_source": "diagram-only",
+                "output_prefix": "ai-class-demo",
+            },
+            "slides": [
+                {
+                    "id": 1,
+                    "title": "AI 帮助我们更快形成初稿",
+                    "layout": "process",
+                    "content": {"bullets": ["提出想法", "整理结构", "人工修改"]},
+                    "visual": {
+                        "type": "three-step-process",
+                        "purpose": "Show a responsible AI writing workflow",
+                    },
+                    "note_goal": "Explain AI as support, not replacement",
+                    "transition": "接下来说明边界。",
+                    "timing_sec": 45,
+                    "owner": "A",
+                }
+            ],
+        }
+
+        brief = bridge.build_brief(data, Path("input.yaml"))
+
+        self.assertIn("document-skills", brief)
+        self.assertIn("Target skill: `pptx`", brief)
+        self.assertIn("pptxgenjs.md", brief)
+        self.assertIn("outputs/ai-class-demo-presentation.pptx", brief)
+        self.assertIn("AI 帮助我们更快形成初稿", brief)
+        self.assertIn("python -m markitdown output.pptx", brief)
+
+    def test_script_writes_output_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            spec_path = Path(tmp) / "spec.yaml"
+            output_path = Path(tmp) / "brief.md"
+            spec_path.write_text(
+                """
+meta:
+  presentation_type: coursework report
+  language: Chinese
+  duration_min: 3
+  slide_count: 1
+  format: individual
+  image_source: diagram-only
+  output_prefix: demo
+slides:
+  - id: 1
+    title: Demo
+    layout: title
+    content:
+      bullets:
+        - Point
+    visual:
+      type: title-card
+      purpose: Introduce the topic
+    note_goal: Open naturally
+    transition: Continue.
+    timing_sec: 30
+    owner: A
+""",
+                encoding="utf-8",
+            )
+
+            bridge = load_bridge_module()
+            exit_code = None
+            try:
+                with unittest.mock.patch(
+                    "sys.argv",
+                    ["slide_spec_to_pptx_brief.py", str(spec_path), "--output", str(output_path)],
+                ):
+                    bridge.main()
+            except SystemExit as exc:
+                exit_code = exc.code
+
+            self.assertIn(exit_code, (None, 0))
+            self.assertTrue(output_path.is_file())
+            self.assertIn("outputs/demo-presentation.pptx", output_path.read_text(encoding="utf-8"))
+
+
+if __name__ == "__main__":
+    unittest.main()

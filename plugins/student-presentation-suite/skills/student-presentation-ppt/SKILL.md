@@ -11,7 +11,7 @@ Produce actual editable PowerPoint decks for university presentations. This skil
 
 Platform-specific PPTX generation:
 - **Codex 环境**：使用内置的 `Presentations` skill 和 artifact-tool presentation JSX workflow
-- **Claude Code 环境**：依赖 `document-skills` 插件，并使用其中的 `pptx` skill（本机参考路径：`C:\Users\28603\.claude\plugins\marketplaces\anthropic-agent-skills\skills\pptx`）
+- **Claude Code 环境**：依赖 `document-skills@anthropic-agent-skills`，并使用其中的 `pptx` skill
 
 Do not stop at a text outline when the user asks for PPT, PPTX, PowerPoint, editable slides, rendered slides, or a ready presentation file.
 

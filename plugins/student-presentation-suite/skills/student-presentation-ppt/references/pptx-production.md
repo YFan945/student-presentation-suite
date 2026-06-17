@@ -99,9 +99,6 @@ When building through artifact-tool presentation primitives:
 
 Claude Code PPTX production depends on the `document-skills` plugin from the `anthropic-agent-skills` marketplace. That plugin provides the `pptx` skill.
 
-Reference path on this machine:
-`C:\Users\28603\.claude\plugins\marketplaces\anthropic-agent-skills\skills\pptx`
-
 When building in Claude Code:
 - Run `python scripts/check_claude_pptx_env.py --json` before production. If required tools are missing, report the exact missing generation or QA capability before continuing.
 - If the input includes a Slide Spec YAML/JSON file, run `python scripts/slide_spec_to_pptx_brief.py <spec> --output outputs/<topic>-claude-pptx-brief.md` first. Use the generated brief as the execution handoff into the `pptx` skill.

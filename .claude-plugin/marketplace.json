@@ -1,7 +1,7 @@
 {
-  "name": "personal-plugins",
+  "name": "student-presentation-suite",
   "owner": { "name": "yfan945" },
-  "metadata": { "description": "Personal Claude Code plugins — presentations and student tools" },
+  "metadata": { "description": "Claude Code marketplace for student presentation planning, PPTX generation, and deck review" },
   "plugins": [
     {
       "name": "student-presentation-suite",

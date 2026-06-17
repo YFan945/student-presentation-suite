@@ -1,7 +1,7 @@
 {
-    "name":  "personal",
+    "name":  "student-presentation-marketplace",
     "interface":  {
-                      "displayName":  "Personal"
+                      "displayName":  "Student Presentation Suite"
                   },
     "plugins":  [
                     {

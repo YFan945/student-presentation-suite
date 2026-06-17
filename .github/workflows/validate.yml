@@ -7,28 +7,27 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: plugins/student-presentation-suite
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install validation dependencies
-        run: python -m pip install -r requirements.txt
+        run: python -m pip install -r plugins/student-presentation-suite/requirements.txt
       - name: Validate Slide Spec schema
-        run: python -m json.tool references/slide-spec.schema.json > /dev/null
+        run: python -m json.tool plugins/student-presentation-suite/references/slide-spec.schema.json > /dev/null
       - name: Run unit tests
-        run: python -m unittest discover -s tests
+        run: python -m unittest discover -s plugins/student-presentation-suite/tests
       - name: Check script entrypoints
         run: |
-          python skills/student-presentation-review/scripts/pptx_static_check.py --help
-          python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --help
-          python scripts/validate_slide_spec.py --help
-          python scripts/check_claude_pptx_env.py --help
-          python scripts/slide_spec_to_pptx_brief.py --help
-          python scripts/check_plugin_release.py --help
+          python plugins/student-presentation-suite/skills/student-presentation-review/scripts/pptx_static_check.py --help
+          python plugins/student-presentation-suite/skills/student-presentation-ppt/scripts/pptx_delivery_check.py --help
+          python plugins/student-presentation-suite/scripts/validate_slide_spec.py --help
+          python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --help
+          python plugins/student-presentation-suite/scripts/slide_spec_to_pptx_brief.py --help
+          python plugins/student-presentation-suite/scripts/check_plugin_release.py --help
+          python scripts/check_marketplace_release.py --help
       - name: Check plugin release structure
-        run: python scripts/check_plugin_release.py
-
+        run: python plugins/student-presentation-suite/scripts/check_plugin_release.py
+      - name: Check marketplace release structure
+        run: python scripts/check_marketplace_release.py

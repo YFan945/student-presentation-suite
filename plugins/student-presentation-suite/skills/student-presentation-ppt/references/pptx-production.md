@@ -23,6 +23,15 @@ If duration is known but slide count is not, suggest choices rather than silentl
 
 If the user explicitly asks Codex to decide, or if the missing items are low-risk preferences for a general classroom deck, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer, avoid unsupported factual claims, avoid web images unless allowed, and state that the deck is not rubric-specific.
 
+Fast default deck assumptions for vague PPTX requests:
+- language follows the user's request language
+- duration: 5 minutes
+- slide count: 7-9 slides
+- format: individual unless group members are mentioned
+- evidence: only user-provided facts plus general conceptual explanation
+- image policy: diagram-only or generated abstract visuals; no web images
+- style: one conservative classroom-safe direction from `visual-style-menu.md`
+
 ## Build Sequence
 
 1. Confirm production-critical constraints from the conversation or Slide Spec meta: presentation type, language, duration, slide count, format, course/rubric, source material, image-source limits, template/logo, and output prefix.
@@ -111,7 +120,7 @@ Required QA inherited from the `pptx` skill:
 - Run `python -m markitdown output.pptx` for content extraction and sanity checking.
 - Render the deck with the `pptx` skill's LibreOffice helper, then convert PDF pages to images with Poppler, for example `scripts/office/soffice.py` plus `pdftoppm`.
 - Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop before calling the deck ready-to-present.
-- Also run this suite's `scripts/pptx_delivery_check.py` when possible to report PPTX existence, notes existence, slide count, preview/contact sheet existence, and static XML risk signals.
+- Also run this suite's `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` from the plugin package root when possible to report PPTX existence, notes existence, slide count, preview/contact sheet existence, and static XML risk signals.
 
 Dependencies and limitations:
 - The Claude plugin dependency is `document-skills`, not the standalone `pptx` skill path.
@@ -123,7 +132,7 @@ Dependencies and limitations:
 
 Before final response:
 - confirm `.pptx` exists and filename is topic-specific
-- run `../scripts/pptx_delivery_check.py` when possible to verify PPTX existence, slide count, notes file, preview/contact sheet file, static XML risk summary, and risk breakdown
+- from the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` when possible to verify PPTX existence, slide count, notes file, preview/contact sheet file, static XML risk summary, and risk breakdown
 - render or preview slides when possible; check at least the contact sheet or preview images
 - verify Chinese normal body text >= 22pt, English >= 20pt, titles/subtitles/section headers/card headers/chart titles/panel labels >= 24pt
 - verify important keywords are visually emphasized

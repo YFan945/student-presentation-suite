@@ -86,7 +86,7 @@ The plugin can work from:
 - speaker notes
 - before/after deck versions
 
-For vague PPTX requests, the PPT skill should ask for missing production-critical constraints before generating files.
+For vague PPTX requests, the PPT skill should either ask for production-critical constraints or offer a fast default / confirm-first path. It should not silently invent web sources, current facts, or grading-specific requirements.
 
 ## Outputs
 

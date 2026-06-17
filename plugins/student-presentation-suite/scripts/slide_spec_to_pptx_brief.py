@@ -160,7 +160,7 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
             "- Run `python -m markitdown output.pptx` and inspect extracted text.",
             "- Render with LibreOffice, then convert PDF pages to images with Poppler.",
             "- Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop.",
-            "- Run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --json` when possible.",
+            "- From the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --json` when possible.",
             "- Final response must report file existence, slide count, static XML risks, visual QA status, and limitations.",
             "",
         ]

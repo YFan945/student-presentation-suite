@@ -17,6 +17,24 @@ Before asking startup questions, check whether the user or Slide Spec meta alrea
 
 Ask only for missing constraints that materially affect the next step. If the user says Codex may decide, state the assumption briefly and continue.
 
+## Intent Routing
+
+Choose the skill by the user's requested outcome, not only by the input type:
+- Use `student-presentation` when the requested output is an outline, script, Q&A prep, timing plan, group handoff, or Slide Spec handoff.
+- Use `student-presentation-ppt` when the user asks for PPT, PPTX, PowerPoint, slides, editable deck, rendered preview, or a ready presentation file.
+- Use `student-presentation-review` when the user provides an existing artifact and asks for review, scoring, risk checks, before/after comparison, or improvement advice.
+
+Ambiguous requests:
+- "做一个 PPT", "生成 slides", "make a slide deck", "make PowerPoint", or "make PPTX" means PPTX production unless the user explicitly says outline only.
+- "prepare a presentation" or "help me present" without deck/slides/PPTX wording means planning first.
+- "PPT 大纲", "slide outline", "presentation plan", "讲稿", or "答辩稿" means planning, not file generation, unless the user also asks for `.pptx`.
+- "帮我看看/审一下/打分/有什么问题" with an existing artifact means review.
+- "帮我优化这个 PPT" with an existing artifact means first review and identify fixes; only edit or regenerate the deck if the user explicitly asks for file changes.
+- A broad topic with no output target means planning first, with optional Slide Spec if later PPTX generation is likely.
+- If a request mixes planning and PPTX generation, produce or confirm a slide plan/Slide Spec first, then build the PPTX from that plan.
+
+When the target is still unclear after reading the request, ask one routing question before doing detailed work: whether the user wants an outline/script, an editable PPTX, or a review of an existing file.
+
 ## Classroom Readability
 
 - Chinese normal body text should be 22pt or larger.

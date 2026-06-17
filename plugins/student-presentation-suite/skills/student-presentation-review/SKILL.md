@@ -11,15 +11,24 @@ Act as a university presentation reviewer, classroom readability checker, and sp
 
 Review existing presentation artifacts and provide practical changes a student can apply before presenting. By default, give review and revision advice only. Do not directly modify the PPTX unless the user explicitly asks to edit the file.
 
+For "帮我优化这个 PPT", "improve this deck", or similar requests with an existing artifact, first decide whether the user wants advice only or an edited file. If they explicitly ask to modify/regenerate the file, use review findings as the diagnosis and then route the edit/build work through `student-presentation-ppt` while preserving the original deck's useful content and constraints. Do not overwrite the original deck; write an improved copy with a new topic/version-specific filename.
+
 ## Input Handling
 
 Accept `.pptx` files, exported PDF versions of slides, slide screenshots, rendered previews or contact sheets, speaker notes or scripts paired with a deck, Slide Spec YAML paired with a deck, or two deck versions for before/after diff review.
 
 If the user provides only a topic or asks for a new deck, use `student-presentation` for an outline or `student-presentation-ppt` for PPTX generation instead.
 
+If the user provides an artifact plus says only "看看有什么问题", default to review. If they provide an artifact plus says "直接帮我改好", treat review as the first phase and then perform the requested edit/generation workflow, producing a separate improved file.
+
+Default review depth:
+- If the user provides a deck/artifact and does not specify depth, do a practical page-by-page review for small or medium decks.
+- For large decks, start with overall verdict, critical/major issues, and the highest-priority slide examples, then offer deeper page-by-page follow-up.
+- Do not block the review just to ask whether feedback should be quick or detailed.
+
 ## Workflow
 
-1. Check confirmed constraints from the conversation or Slide Spec meta, then ask only for missing items that materially affect review: presentation type, language, duration, individual or group, teacher/rubric requirements, and whether the user wants quick feedback or detailed page-by-page review.
+1. Check confirmed constraints from the conversation or Slide Spec meta, then ask only for missing items that materially affect review: presentation type, language, duration, individual or group, and teacher/rubric requirements. If these are missing but the artifact is reviewable, proceed with stated assumptions instead of blocking.
 2. Load references and tools as needed:
    - `../../references/shared-standards.md` for readability, anti-AI wording, AI-writing pattern risk, English, Chinese, and group standards
    - `references/review-checklist.md` for review standards, scoring, positive feedback, AI-writing pattern risk, and diff review
@@ -35,6 +44,7 @@ If the user provides only a topic or asks for a new deck, use `student-presentat
 5. Prioritize findings as Critical (hurts understanding/grading/delivery), Major (should fix before presenting), or Minor (polish or optional).
 6. Give concrete fixes: what to change, why it matters, suggested replacement wording or layout direction, and which slide/page is affected.
 7. Include review support: positive feedback for strong parts, five-dimension scoring when useful, rubric-aligned feedback when a rubric is provided, and static PPTX check findings as risk signals (not absolute rendering proof).
+8. For optimization requests, separate "diagnosis" from "edit plan": list what should change, what should stay, and whether file editing is requested/authorized. Do not silently rewrite the deck when the user only asked for review.
 
 ## Review Rules
 

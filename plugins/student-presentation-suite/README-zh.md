@@ -86,7 +86,7 @@ Codex 路线仍使用默认 `Presentations` skill/plugin、`artifact-tool` 和 `
 - 讲稿
 - 前后两个版本的 deck
 
-如果 PPTX 生成请求过于模糊，PPT skill 应先追问关键生产约束，而不是直接生成文件。
+如果 PPTX 生成请求过于模糊，PPT skill 应追问关键生产约束，或提供“快速默认生成 / 先确认大纲 / 用户补充约束”的选择；不能静默编造网页来源、时事事实或评分要求。
 
 ## 输出
 

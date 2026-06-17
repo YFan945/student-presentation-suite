@@ -11,6 +11,8 @@ Plan what a student should present and say: topic narrowing, outline, slide-by-s
 
 Do not create actual `.pptx`, editable PowerPoint, rendered slides, or production-ready decks. If the user asks for those, use `student-presentation-ppt`.
 
+If the user says only "做 PPT", "生成 slides", or asks for a ready presentation file, do not handle it as outline-only planning. Route to `student-presentation-ppt`. Use this skill first only when the user asks for an outline/script/plan, asks for "PPT 大纲" without a file, or when the topic is broad and the user has not asked for a file yet.
+
 ## Clarification Gate
 
 Before drafting an outline or script, decide whether the user's request is specific enough to plan responsibly. If the prompt is vague, incomplete, or only names a broad topic, ask concise follow-up questions for missing constraints that would materially change the plan. Avoid blocking on minor preferences that can be handled with explicit assumptions.
@@ -27,10 +29,11 @@ Ask for missing items that affect the plan, including presentation type, languag
    - `references/qa-prediction.md` for defense/report Q&A preparation
    - `../../references/slide-spec.md` for optional structured handoff
    - `../../references/image-strategy.md` for visual source planning
-3. If the topic is broad, offer 2-3 concrete angles that fit the duration, evidence, and likely conclusion.
+3. If the topic is broad, offer 2-3 concrete angles that fit the duration, evidence, and likely conclusion. If the user asked the agent to decide, choose one angle and state why.
 4. Build the presentation spine: main claim, story arc, timing, and member ownership.
 5. Draft each slide with a claim-style title, concise on-slide content, visual idea, speaker note goal, and transition/handoff sentence.
 6. Add Q&A, scoring-risk warnings, pronunciation/glossary support, or Slide Spec YAML when useful.
+7. If later PPTX generation is likely, include a handoff note that the outline is ready for `student-presentation-ppt` and list any unresolved constraints that would affect visual production.
 
 ## Output
 

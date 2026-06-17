@@ -31,6 +31,7 @@ REQUIRED_FILES = [
     "scripts/validate_slide_spec.py",
     "tests/test_pptx_static_core.py",
     "tests/test_slide_spec_bridge.py",
+    "tests/test_skill_behavior_contracts.py",
 ]
 
 

@@ -37,9 +37,10 @@ Fast default deck assumptions for vague PPTX requests:
 1. Confirm production-critical constraints from the conversation or Slide Spec meta: presentation type, language, duration, slide count, format, course/rubric, source material, image-source limits, template/logo, and output prefix.
 2. Choose a creative direction from `visual-style-menu.md`. If the user has not specified one, pick the direction that best serves the topic and evidence type. If multiple directions are genuinely strong and the user has time to choose, offer 2-3 options.
 3. Generate or absorb Slide Spec structure. Preserve slide order, ownership, timing, visual purpose, and handoff intent unless changing them prevents crowding or improves clarity.
-4. Design the PPTX with variation inside guardrails. Layouts should express a function, not force a repeated template. Use topic-specific examples, visuals, chart forms, section rhythm, and opening/closing treatment. Keep a mismatch ledger while building: record any difference between requested constraints and the working assumptions, any missing source material, and any tool/API behavior discovered during production.
-5. Run delivery checks. Confirm PPTX, notes, preview/contact sheet, slide count, static XML risk summary, and risk breakdown where possible. Static XML risk counts are not enough on their own: distinguish true production blockers from expected small footer, page marker, caption, source, or kicker text.
-6. Confirm visual QA. Preview/contact sheet review is required before calling a deck ready-to-present; otherwise say the file is generated but visual QA is incomplete. If the first render shows geometry mismatch, blank slides, text collapsed into the corner, overlap, or clipped callouts, fix the slide code and rerender before delivery.
+4. For existing deck improvement, convert review findings into a brief edit plan first. Preserve useful content and required template elements, decide which slides are rewritten vs redesigned, and write the improved deck to a new filename instead of overwriting the source.
+5. Design the PPTX with variation inside guardrails. Layouts should express a function, not force a repeated template. Use topic-specific examples, visuals, chart forms, section rhythm, and opening/closing treatment. Keep a mismatch ledger while building: record any difference between requested constraints and the working assumptions, any missing source material, and any tool/API behavior discovered during production.
+6. Run delivery checks. Confirm PPTX, notes, preview/contact sheet, slide count, static XML risk summary, and risk breakdown where possible. Static XML risk counts are not enough on their own: distinguish true production blockers from expected small footer, page marker, caption, source, or kicker text.
+7. Confirm visual QA. Preview/contact sheet review is required before calling a deck ready-to-present; otherwise say the file is generated but visual QA is incomplete. If the first render shows geometry mismatch, blank slides, text collapsed into the corner, overlap, or clipped callouts, fix the slide code and rerender before delivery.
 
 ## Creativity Rules
 
@@ -55,6 +56,7 @@ Use topic-specific filenames under `outputs/`:
 - `outputs/<topic>-presentation.pptx`
 - `outputs/<topic>-speaker-notes.md`
 - `outputs/<topic>-preview.png` or a generated contact sheet
+- `outputs/<topic>-change-summary.md` when improving an existing deck
 
 If Slide Spec meta includes `output_prefix`, use it as the `<topic>` slug; otherwise derive a short ASCII-safe slug from the topic. Keep the final response paths absolute.
 
@@ -143,6 +145,7 @@ Before final response:
 - verify background shapes or translucent panels improve hierarchy without reducing readability
 - verify text is not placed directly over busy images unless a sufficiently opaque panel protects readability
 - create a separate script/notes file if speaker notes are not embedded
+- for improved existing decks, create a change summary that lists kept content, changed slides, unresolved issues, and QA results
 - report any missing expected file and validation limitations honestly
 - list `Known Issues to Fix` and `Before Presenting` when any validation, source, timing, or visual issue remains
 

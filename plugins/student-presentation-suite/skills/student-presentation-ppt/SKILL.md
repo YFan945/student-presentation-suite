@@ -1,13 +1,13 @@
 ---
 name: student-presentation-ppt
-description: Generate editable university PPTX decks, speaker notes, previews, and production QA from topics, outlines, or Slide Spec YAML.
+description: Generate or improve editable university PPTX decks, speaker notes, previews, and production QA from topics, outlines, Slide Spec YAML, or existing deck review findings.
 ---
 
 # Student Presentation PPT
 
 ## Role
 
-Produce actual editable PowerPoint decks for university presentations. This skill handles PPTX generation, visual system, assets, export, preview, and QA.
+Produce actual editable PowerPoint decks for university presentations. This skill handles PPTX generation, existing deck improvement, visual system, assets, export, preview, and QA.
 
 Platform-specific PPTX generation:
 - **Codex 环境**：使用内置的 `Presentations` skill 和 artifact-tool presentation JSX workflow
@@ -16,6 +16,8 @@ Platform-specific PPTX generation:
 Do not stop at a text outline when the user asks for PPT, PPTX, PowerPoint, editable slides, rendered slides, or a ready presentation file.
 
 If the user provides only a broad topic but explicitly asks for PPT/PPTX/slides, this skill owns the request. Do not route back to outline-only planning. First create or confirm a concise slide plan/Slide Spec inside the PPTX workflow, then build the deck once production-critical constraints are handled. If the user asks only for "PPT 大纲" or "slide outline" without a file, use `student-presentation` instead.
+
+If the request comes from `student-presentation-review` or includes an existing deck plus review findings, treat it as an improvement/editing workflow. Preserve the original deck as input evidence, write a separate improved PPTX file, and create `outputs/<topic>-change-summary.md` describing kept content, changed slides, unresolved risks, and QA results.
 
 ## Clarification Gate
 
@@ -54,16 +56,17 @@ Fast default assumptions:
    - Run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` from the plugin package root after generation to verify the deliverable package when a PPTX path is available
 3. Choose one creative direction before building. If the style is missing and materially affects the result, ask the user to choose from 3-5 viable directions adapted to the topic. Only select the best fit without another question when the prompt is already specific enough or the user explicitly asks Codex to decide; state the reason briefly.
 4. Build or adapt the slide plan using student-presentation principles: one message per slide, claim-style titles, concise text, natural notes, B1-B2 English when relevant, and balanced group ownership. When no approved outline exists, create a compact internal slide plan first and use it as the source of truth for PPTX generation.
-5. Design and build the deck:
+5. For existing deck improvement, convert review findings into an edit plan before building: keep useful content, identify slides to rewrite, identify slides to redesign, preserve required template/logo/footer elements, and choose whether to edit the original structure or rebuild a cleaner copy. Do not overwrite the source PPTX.
+6. Design and build the deck:
    - use 16:9 unless a template requires otherwise
    - use shapes, panels, dividers, timeline blocks, process nodes, comparison cards, callouts, and background layers as functional structures, not repeated decoration
    - use simulated glassmorphism/translucent panels only when readability remains strong
    - follow shared typography: Chinese body >= 22pt, English body >= 20pt, titles/subtitles/section headers/card headers/chart titles/panel labels >= 24pt
-6. Build the deck using the platform-appropriate tool:
+7. Build the deck using the platform-appropriate tool:
    - **Codex 环境**：使用 artifact-tool presentation JSX workflow。先运行单页 toolchain smoke test，确认坐标、填充、文字、讲稿、PPTX 导出和 PNG 预览都正确。shape position 使用 `left`/`top`/`width`/`height`，勿用 `x`/`y`。
    - **Claude Code 环境**：使用 `document-skills` 插件里的 `pptx` skill 生产 PPTX。从插件包根目录运行 `python scripts/check_claude_pptx_env.py --json` 检查 `pptx` skill 需要的工具；如果输入包含 Slide Spec，从插件包根目录运行 `python scripts/slide_spec_to_pptx_brief.py <spec.yaml> --output outputs/<topic>-claude-pptx-brief.md`，用生成的 brief 作为 `pptx` skill 的生产输入。然后读取该 skill 的 `SKILL.md`；从零生成时参考 `pptxgenjs.md`，编辑已有模板时参考 `editing.md`。保留本 skill 的课堂汇报约束、Slide Spec、风格选择、讲稿和 QA contract 作为上层要求。
-7. Export and validate through the presentation workflow. Do not claim ready-to-present unless the `.pptx` exists and has been verified. In Codex 环境下同时检查预览图；在 Claude Code 环境下按 `pptx` skill 要求使用 `python -m markitdown`、LibreOffice/Poppler 渲染图片，并运行 `pptx_delivery_check.py` 验证文件完整性。
-8. Before the final response, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` from the plugin package root when possible. Report whether the PPTX, notes, and preview/contact sheet files actually exist, the detected slide count, static XML risk count, risk breakdown when available, and any validation limitations. If static risks are mostly expected small footer/kicker/caption text, say that explicitly and still confirm rendered visual QA. If the script cannot run, state that limitation instead of implying the package was checked.
+8. Export and validate through the presentation workflow. Do not claim ready-to-present unless the `.pptx` exists and has been verified. In Codex 环境下同时检查预览图；在 Claude Code 环境下按 `pptx` skill 要求使用 `python -m markitdown`、LibreOffice/Poppler 渲染图片，并从插件包根目录运行 `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` 验证文件完整性。
+9. Before the final response, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` from the plugin package root when possible. Report whether the PPTX, notes, and preview/contact sheet files actually exist, the detected slide count, static XML risk count, risk breakdown when available, and any validation limitations. If static risks are mostly expected small footer/kicker/caption text, say that explicitly and still confirm rendered visual QA. If the script cannot run, state that limitation instead of implying the package was checked.
 
 ## Output Contract
 
@@ -71,6 +74,7 @@ Use topic-specific filenames under `outputs/`:
 - `outputs/<topic>-presentation.pptx`
 - `outputs/<topic>-speaker-notes.md`
 - `outputs/<topic>-preview.png` or contact sheet
+- `outputs/<topic>-change-summary.md` for improved existing decks
 
 If Slide Spec meta includes `output_prefix`, use it as `<topic>`; otherwise derive a short ASCII-safe slug from the topic.
 

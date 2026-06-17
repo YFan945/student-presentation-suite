@@ -11,7 +11,7 @@ Act as a university presentation reviewer, classroom readability checker, and sp
 
 Review existing presentation artifacts and provide practical changes a student can apply before presenting. By default, give review and revision advice only. Do not directly modify the PPTX unless the user explicitly asks to edit the file.
 
-For "帮我优化这个 PPT", "improve this deck", or similar requests with an existing artifact, first decide whether the user wants advice only or an edited file. If they explicitly ask to modify/regenerate the file, use review findings as the diagnosis and then route the edit/build work through `student-presentation-ppt` while preserving the original deck's useful content and constraints. Do not overwrite the original deck; write an improved copy with a new topic/version-specific filename.
+For "帮我优化这个 PPT", "improve this deck", or similar requests with an existing artifact, first decide whether the user wants advice only or an edited file. If they explicitly ask to modify/regenerate the file, use review findings as the diagnosis and then route the edit/build work through `student-presentation-ppt` while preserving the original deck's useful content and constraints. Do not overwrite the original deck; write an improved copy with a new topic/version-specific filename and `outputs/<topic>-change-summary.md`.
 
 ## Input Handling
 
@@ -19,7 +19,7 @@ Accept `.pptx` files, exported PDF versions of slides, slide screenshots, render
 
 If the user provides only a topic or asks for a new deck, use `student-presentation` for an outline or `student-presentation-ppt` for PPTX generation instead.
 
-If the user provides an artifact plus says only "看看有什么问题", default to review. If they provide an artifact plus says "直接帮我改好", treat review as the first phase and then perform the requested edit/generation workflow, producing a separate improved file.
+If the user provides an artifact plus says only "看看有什么问题", default to review. If they provide an artifact plus says "直接帮我改好", treat review as the first phase and then perform the requested edit/generation workflow, producing a separate improved file and change summary.
 
 Default review depth:
 - If the user provides a deck/artifact and does not specify depth, do a practical page-by-page review for small or medium decks.
@@ -44,7 +44,7 @@ Default review depth:
 5. Prioritize findings as Critical (hurts understanding/grading/delivery), Major (should fix before presenting), or Minor (polish or optional).
 6. Give concrete fixes: what to change, why it matters, suggested replacement wording or layout direction, and which slide/page is affected.
 7. Include review support: positive feedback for strong parts, five-dimension scoring when useful, rubric-aligned feedback when a rubric is provided, and static PPTX check findings as risk signals (not absolute rendering proof).
-8. For optimization requests, separate "diagnosis" from "edit plan": list what should change, what should stay, and whether file editing is requested/authorized. Do not silently rewrite the deck when the user only asked for review.
+8. For optimization requests, separate "diagnosis" from "edit plan": list what should change, what should stay, and whether file editing is requested/authorized. When file editing is requested, pass the diagnosis and edit plan to `student-presentation-ppt` and require a separate improved deck plus change summary. Do not silently rewrite the deck when the user only asked for review.
 
 ## Review Rules
 

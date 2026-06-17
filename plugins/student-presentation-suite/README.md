@@ -6,7 +6,7 @@
 
 [中文](README-zh.md) | English
 
-`student-presentation-suite` is a plugin for university presentation work. It helps an agent plan a classroom presentation, generate an editable PPTX deck, and review an existing deck with student-focused standards.
+`student-presentation-suite` is a plugin for university presentation work. It helps an agent plan a classroom presentation, generate or improve an editable PPTX deck, and review an existing deck with student-focused standards.
 
 This file describes the plugin package itself. Repository-level installation and marketplace setup are documented in the root [README](../../README.md).
 
@@ -27,11 +27,12 @@ It handles:
 
 ### `student-presentation-ppt`
 
-Use this when the user asks for editable slides, PowerPoint, PPT, PPTX, rendered slides, or a ready presentation file.
+Use this when the user asks for editable slides, PowerPoint, PPT, PPTX, rendered slides, a ready presentation file, or an improved copy of an existing deck.
 
 It handles:
 
 - editable `.pptx` generation
+- improved copies of existing decks based on review findings
 - speaker notes
 - visual style selection
 - image/source strategy
@@ -96,7 +97,10 @@ Typical PPTX generation outputs:
 outputs/<topic>-presentation.pptx
 outputs/<topic>-speaker-notes.md
 outputs/<topic>-preview.png
+outputs/<topic>-change-summary.md
 ```
+
+`change-summary.md` is used when improving an existing deck.
 
 When using Claude Code with Slide Spec input, the bridge script can also create:
 

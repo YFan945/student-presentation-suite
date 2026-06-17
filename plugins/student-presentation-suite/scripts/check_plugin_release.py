@@ -81,6 +81,8 @@ def check_manifests(errors: list[str]) -> None:
         errors.append("Codex manifest must explicitly preserve the default Presentations/artifact-tool workflow")
     if "Uses document-skills pptx skill for Claude Code PPTX production" not in capabilities:
         errors.append("Codex manifest should document the Claude Code document-skills route")
+    if "Existing deck improvement with change summaries" not in capabilities:
+        errors.append("Codex manifest should document existing deck improvement with change summaries")
 
     dependencies = claude.get("dependencies", [])
     if "document-skills" not in dependencies:

@@ -12,7 +12,7 @@ Student Presentation Suite 是一个同时适配 Codex 和 Claude Code 的本地
 当前包含一个插件：`student-presentation-suite`，内部有三个 skill：
 
 - `student-presentation`：选题、提纲、讲稿、转场、小组衔接和 Q&A 准备。
-- `student-presentation-ppt`：根据主题、大纲或 Slide Spec 生成可编辑 PPTX、讲稿和预览/交付 QA。
+- `student-presentation-ppt`：根据主题、大纲、Slide Spec 或已有 deck 审查结果生成/改进可编辑 PPTX、讲稿、变更摘要和预览/交付 QA。
 - `student-presentation-review`：审阅 PPTX/PDF/截图/Slide Spec，检查逻辑、可读性、评分适配、AI 写作风险和 PPTX 静态问题。
 
 ## 项目定位

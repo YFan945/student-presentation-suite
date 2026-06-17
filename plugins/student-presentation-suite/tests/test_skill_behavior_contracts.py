@@ -26,6 +26,8 @@ class SkillBehaviorContractTests(unittest.TestCase):
         self.assertIn("7-9 slides", text)
         self.assertIn("no web images", text)
         self.assertIn("If the user asks only for \"PPT 大纲\"", text)
+        self.assertIn("existing deck improvement", text)
+        self.assertIn("change-summary.md", text)
 
     def test_planning_skill_allows_low_risk_assumptions(self) -> None:
         text = self.read("skills/student-presentation/SKILL.md")
@@ -38,11 +40,16 @@ class SkillBehaviorContractTests(unittest.TestCase):
         self.assertIn("Default review depth", text)
         self.assertIn("Do not block the review", text)
         self.assertIn("skills/student-presentation-review/scripts/pptx_static_check.py", text)
+        self.assertIn("change-summary.md", text)
 
     def test_claude_brief_uses_plugin_root_for_delivery_check(self) -> None:
         text = self.read("scripts/slide_spec_to_pptx_brief.py")
         self.assertIn("From the plugin package root", text)
         self.assertIn("skills/student-presentation-ppt/scripts/pptx_delivery_check.py", text)
+
+    def test_codex_manifest_mentions_deck_improvement(self) -> None:
+        text = self.read(".codex-plugin/plugin.json")
+        self.assertIn("Existing deck improvement with change summaries", text)
 
 
 if __name__ == "__main__":

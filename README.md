@@ -12,7 +12,7 @@ Student Presentation Suite is a local plugin marketplace for building university
 It ships one plugin, `student-presentation-suite`, with three skills:
 
 - `student-presentation`: plan topics, outlines, scripts, transitions, handoffs, and Q&A.
-- `student-presentation-ppt`: generate editable PPTX decks with speaker notes, visual styles, Slide Spec handoff, and delivery QA.
+- `student-presentation-ppt`: generate or improve editable PPTX decks with speaker notes, visual styles, Slide Spec handoff, change summaries, and delivery QA.
 - `student-presentation-review`: review PPTX/PDF/screenshots/specs for logic, readability, rubric fit, AI-writing risk, and static PPTX issues.
 
 ## Why This Exists

@@ -6,7 +6,7 @@
 
 中文 | [English](README.md)
 
-`student-presentation-suite` 是一个面向大学生课堂汇报的插件。它帮助 agent 完成汇报规划、可编辑 PPTX 生成和已有成品审阅，并统一使用课堂可读性、讲稿、素材来源、反 AI 套话和小组汇报标准。
+`student-presentation-suite` 是一个面向大学生课堂汇报的插件。它帮助 agent 完成汇报规划、可编辑 PPTX 生成/改进和已有成品审阅，并统一使用课堂可读性、讲稿、素材来源、反 AI 套话和小组汇报标准。
 
 本文只说明插件本体。仓库安装、marketplace 和 GitHub 项目说明见根目录 [README-zh.md](../../README-zh.md)。
 
@@ -27,11 +27,12 @@
 
 ### `student-presentation-ppt`
 
-当用户要求 editable slides、PowerPoint、PPT、PPTX、渲染预览或可直接汇报的文件时使用。
+当用户要求 editable slides、PowerPoint、PPT、PPTX、渲染预览、可直接汇报的文件，或基于已有 deck 输出改进版时使用。
 
 它负责：
 
 - 生成可编辑 `.pptx`
+- 基于审查结果输出已有 deck 的改进副本
 - 生成 speaker notes
 - 选择视觉风格
 - 处理图片和素材来源策略
@@ -96,7 +97,10 @@ PPTX 生成的典型输出：
 outputs/<topic>-presentation.pptx
 outputs/<topic>-speaker-notes.md
 outputs/<topic>-preview.png
+outputs/<topic>-change-summary.md
 ```
+
+`change-summary.md` 用于已有 deck 改进场景。
 
 Claude Code 使用 Slide Spec 输入时，桥接脚本还可以生成：
 

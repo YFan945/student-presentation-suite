@@ -76,20 +76,24 @@ def check_pptxgenjs() -> dict[str, Any]:
     ok, output = run_probe([node, "-e", "require.resolve('pptxgenjs')"])
     if ok:
         return {"ok": True, "method": "node require.resolve", "detail": output}
-    if npm:
-        ok_global, global_output = run_probe([npm, "list", "-g", "pptxgenjs", "--depth=0"])
-        if ok_global:
-            return {"ok": True, "method": "npm list -g", "detail": global_output}
-        return {
-            "ok": False,
-            "method": "node require.resolve / npm list -g",
-            "detail": f"{output}\n{global_output}".strip(),
-        }
-    return {
+    result: dict[str, Any] = {
         "ok": False,
         "method": "node require.resolve",
-        "detail": output or "npm is not available for a global package check",
+        "detail": output,
+        "warning": (
+            "pptxgenjs must be resolvable by the Node process that builds the deck. "
+            "A global npm install alone is not treated as sufficient."
+        ),
     }
+    if npm:
+        ok_global, global_output = run_probe([npm, "list", "-g", "pptxgenjs", "--depth=0"])
+        result["global_installed"] = ok_global
+        result["global_detail"] = global_output
+        if not output:
+            result["detail"] = global_output
+        return result
+    result["detail"] = output or "npm is not available for a global package check"
+    return result
 
 
 def inspect_environment() -> dict[str, Any]:

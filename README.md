@@ -53,11 +53,11 @@ Claude Code PPTX generation expects `document-skills@anthropic-agent-skills` to 
 
 ### Codex
 
-Clone this repository into your local plugin marketplace location:
+Clone this repository into a dedicated local directory. Avoid cloning directly over an existing `%USERPROFILE%\.agents\plugins` directory unless you intentionally want this repository to be your whole local marketplace root.
 
 ```powershell
 git clone https://github.com/YFan945/student-presentation-suite.git `
-  "$env:USERPROFILE\.agents\plugins"
+  "$env:USERPROFILE\student-presentation-suite-marketplace"
 ```
 
 The Codex marketplace manifest is at:
@@ -71,6 +71,8 @@ The plugin source path is:
 ```json
 "./plugins/student-presentation-suite"
 ```
+
+If you use Codex's default personal marketplace location, copy or merge this repository's `marketplace.json` entry into your existing marketplace instead of overwriting local plugins.
 
 ### Claude Code
 

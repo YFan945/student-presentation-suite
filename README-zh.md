@@ -53,11 +53,11 @@ Claude Code 生成 PPTX 前，需要先安装 `document-skills@anthropic-agent-s
 
 ### Codex
 
-把仓库克隆到本地插件 marketplace 目录：
+把仓库克隆到一个独立本地目录。不要直接 clone 覆盖已有的 `%USERPROFILE%\.agents\plugins`，除非你明确希望本仓库成为整个本地 marketplace 根目录。
 
 ```powershell
 git clone https://github.com/YFan945/student-presentation-suite.git `
-  "$env:USERPROFILE\.agents\plugins"
+  "$env:USERPROFILE\student-presentation-suite-marketplace"
 ```
 
 Codex marketplace manifest 位于：
@@ -71,6 +71,8 @@ marketplace.json
 ```json
 "./plugins/student-presentation-suite"
 ```
+
+如果你使用 Codex 默认个人 marketplace 目录，请把本仓库 `marketplace.json` 中的插件条目合并到已有 marketplace，不要覆盖本机已有插件配置。
 
 ### Claude Code
 

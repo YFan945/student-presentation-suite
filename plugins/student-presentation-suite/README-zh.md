@@ -42,6 +42,10 @@
 
 Codex 路线仍使用默认 `Presentations` skill/plugin、`artifact-tool` 和 `imagegen`。Claude Code 路线使用 `document-skills` 中的 `pptx` skill，并通过 `scripts/` 下的桥接脚本适配 Slide Spec。
 
+正式生成 PPTX 前：
+- 在 Codex 中，确认 runtime 提供 `Presentations`、`artifact-tool` 和 `imagegen`。
+- 在 Claude Code 中，先安装 `document-skills@anthropic-agent-skills`，再安装可选 Python/Node QA 依赖，并在插件目录运行 `python scripts/check_claude_pptx_env.py --json`。
+
 ### `student-presentation-review`
 
 当用户提供已有 PPTX、PDF 导出、截图、讲稿、Slide Spec，或需要对比两个版本时使用。
@@ -129,6 +133,23 @@ Claude Code 插件依赖声明位于：
 .claude-plugin/plugin.json
 ```
 
+Claude Code 用户可以在仓库根目录按以下流程安装依赖插件和本地 marketplace：
+
+```powershell
+/plugin marketplace add anthropics/skills
+/plugin install document-skills@anthropic-agent-skills
+/plugin marketplace add <path-to-this-repository>
+/plugin install student-presentation-suite@student-presentation-suite
+```
+
+然后在本插件目录安装 PPTX QA 依赖：
+
+```powershell
+python -m pip install -r requirements-claude-pptx.txt
+npm install
+python scripts/check_claude_pptx_env.py --json
+```
+
 ## 辅助脚本
 
 校验 Slide Spec：
@@ -184,7 +205,7 @@ python -m pip install -r requirements-claude-pptx.txt
 npm install
 ```
 
-LibreOffice 和 Poppler 是系统工具，仍需要单独安装。
+LibreOffice 和 Poppler 是系统工具，仍需要单独安装。安装后运行 `python scripts/check_claude_pptx_env.py --json` 检查环境。
 
 在仓库根目录运行：
 

@@ -1,10 +1,12 @@
 {
   "name": "student-presentation-suite",
-  "version": "0.1.0+codex.20260615161627",
+  "version": "0.1.0+codex.20260617123353",
   "description": "Student presentation planning, PPTX generation/improvement, and review suite with shared standards, image strategy, Slide Spec handoff, anti-AI wording checks, and static PPTX review.",
   "author": {
-    "name": "Local developer"
+    "name": "YFan945",
+    "url": "https://github.com/YFan945"
   },
+  "homepage": "https://github.com/YFan945/student-presentation-suite",
   "repository": "https://github.com/YFan945/student-presentation-suite",
   "license": "MIT",
   "keywords": [
@@ -19,7 +21,7 @@
     "displayName": "Student Presentation Suite",
     "shortDescription": "规划、生成和审阅大学生演示，覆盖 Q&A、AI 写作风险和版本对比。",
     "longDescription": "Student Presentation Suite provides three Codex skills: one for student-friendly topic narrowing, outline planning, speaker notes, Q&A defense prep, Slide Spec handoff, timing, and group handoffs; one for producing or improving editable PPTX decks with visual style presets, structural shapes, topic-specific output files, meaningful visuals, change summaries, shared image strategy, and classroom-focused QA; and one for reviewing existing student decks for logic, readability, AI-like wording, AI-writing pattern risk, rubric fit, positive feedback, Slide Spec alignment, before/after changes, PPTX XML static risks, speaker notes, and defense readiness. Shared references keep startup constraints, typography, image handling, and anti-AI rules consistent across skills.",
-    "developerName": "Local developer",
+    "developerName": "YFan945",
     "category": "Productivity",
     "capabilities": [
       "Presentation outline planning",

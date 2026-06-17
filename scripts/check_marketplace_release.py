@@ -125,6 +125,28 @@ def check_readmes(errors: list[str]) -> None:
         errors.append("Plugin README.md missing zh/en switch")
     if "中文 | [English](README.md)" not in plugin_zh:
         errors.append("Plugin README-zh.md missing zh/en switch")
+    for label, text in (("README.md", root_en), ("README-zh.md", root_zh)):
+        for expected in (
+            "codex plugin marketplace add",
+            "codex plugin add student-presentation-suite@student-presentation-marketplace",
+            "claude plugin marketplace add",
+            "claude plugin install student-presentation-suite@student-presentation-suite",
+            "document-skills@anthropic-agent-skills",
+            "check_claude_pptx_env.py",
+        ):
+            if expected not in text:
+                errors.append(f"{label} missing user installation detail: {expected}")
+    for label, text in (
+        ("plugins/student-presentation-suite/README.md", plugin_en),
+        ("plugins/student-presentation-suite/README-zh.md", plugin_zh),
+    ):
+        for expected in (
+            "document-skills@anthropic-agent-skills",
+            "student-presentation-suite@student-presentation-suite",
+            "check_claude_pptx_env.py --json",
+        ):
+            if expected not in text:
+                errors.append(f"{label} missing plugin runtime detail: {expected}")
 
 
 def main() -> None:

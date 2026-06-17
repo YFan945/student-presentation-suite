@@ -42,6 +42,10 @@ It handles:
 
 Codex keeps using the default `Presentations` skill/plugin with `artifact-tool` and `imagegen`. Claude Code uses `document-skills` and its `pptx` skill, with bridge scripts in `scripts/`.
 
+Before using this skill for real PPTX generation:
+- In Codex, confirm the runtime provides `Presentations`, `artifact-tool`, and `imagegen`.
+- In Claude Code, install `document-skills@anthropic-agent-skills`, then install the optional Python/Node QA dependencies and run `python scripts/check_claude_pptx_env.py --json` from this plugin directory.
+
 ### `student-presentation-review`
 
 Use this when the user provides an existing deck, PDF export, screenshot, notes, Slide Spec, or two versions for comparison.
@@ -129,6 +133,23 @@ Claude Code dependency is declared in:
 .claude-plugin/plugin.json
 ```
 
+Claude Code users should install the dependency plugin and this local marketplace from the repository root:
+
+```powershell
+/plugin marketplace add anthropics/skills
+/plugin install document-skills@anthropic-agent-skills
+/plugin marketplace add <path-to-this-repository>
+/plugin install student-presentation-suite@student-presentation-suite
+```
+
+Then install local PPTX QA dependencies from this plugin directory:
+
+```powershell
+python -m pip install -r requirements-claude-pptx.txt
+npm install
+python scripts/check_claude_pptx_env.py --json
+```
+
 ## Helper Scripts
 
 Validate Slide Spec:
@@ -184,7 +205,7 @@ python -m pip install -r requirements-claude-pptx.txt
 npm install
 ```
 
-LibreOffice and Poppler are system tools and must be installed separately.
+LibreOffice and Poppler are system tools and must be installed separately. Run `python scripts/check_claude_pptx_env.py --json` after installing them.
 
 From the repository root:
 

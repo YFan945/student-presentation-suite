@@ -60,34 +60,46 @@ git clone https://github.com/YFan945/student-presentation-suite.git `
   "$env:USERPROFILE\student-presentation-suite-marketplace"
 ```
 
-The Codex marketplace manifest is at:
+Register this repository as a non-default local Codex marketplace, then install the plugin from the marketplace name declared in `marketplace.json`:
 
-```text
-marketplace.json
+```powershell
+codex plugin marketplace add "$env:USERPROFILE\student-presentation-suite-marketplace"
+codex plugin add student-presentation-suite@student-presentation-marketplace
 ```
 
-The plugin source path is:
+If you instead merge this into Codex's default personal marketplace at `%USERPROFILE%\.agents\plugins\marketplace.json`, do not run `codex plugin marketplace add`. Copy the plugin package into `%USERPROFILE%\.agents\plugins\plugins\student-presentation-suite`, merge the `plugins[]` entry from this repository's `marketplace.json`, then run `codex plugin add student-presentation-suite@<your-personal-marketplace-name>`.
 
-```json
-"./plugins/student-presentation-suite"
-```
-
-If you use Codex's default personal marketplace location, copy or merge this repository's `marketplace.json` entry into your existing marketplace instead of overwriting local plugins.
+Codex PPTX generation also expects the built-in `Presentations` skill/plugin, `artifact-tool`, and `imagegen` to be available in the Codex runtime.
 
 ### Claude Code
 
-Clone the same repository, then add/install the marketplace from Claude Code according to your local plugin workflow. The Claude Code marketplace manifest is:
+Clone the same repository, install the Anthropic document skills dependency, then add this repository as a Claude Code marketplace and install the plugin:
 
-```text
-.claude-plugin/marketplace.json
-```
-
-Install Anthropic document skills before using PPTX generation:
-
-```text
+```powershell
 /plugin marketplace add anthropics/skills
 /plugin install document-skills@anthropic-agent-skills
+/plugin marketplace add <path-to-cloned-repository>
+/plugin install student-presentation-suite@student-presentation-suite
 ```
+
+The equivalent Claude CLI commands are:
+
+```powershell
+claude plugin marketplace add anthropics/skills
+claude plugin marketplace add "$env:USERPROFILE\student-presentation-suite-marketplace"
+claude plugin install document-skills@anthropic-agent-skills
+claude plugin install student-presentation-suite@student-presentation-suite
+```
+
+For Claude Code PPTX generation and rendered QA, install the optional runtime dependencies after cloning:
+
+```powershell
+python -m pip install -r "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite\requirements-claude-pptx.txt"
+npm install --prefix "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite"
+python "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite\scripts\check_claude_pptx_env.py" --json
+```
+
+LibreOffice and Poppler are system tools and must still be installed separately.
 
 ## Usage
 
@@ -118,7 +130,7 @@ python -m pip install -r plugins/student-presentation-suite/requirements-claude-
 npm install --prefix plugins/student-presentation-suite
 ```
 
-LibreOffice and Poppler are system tools and must still be installed separately.
+LibreOffice and Poppler are system tools and must still be installed separately. Run `python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json` after installing them.
 
 Run tests and release checks from the repository root:
 

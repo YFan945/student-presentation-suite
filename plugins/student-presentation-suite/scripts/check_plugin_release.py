@@ -35,7 +35,7 @@ REQUIRED_FILES = [
 ]
 
 
-FORBIDDEN_DIR_NAMES = {".pytest_cache", "__pycache__"}
+FORBIDDEN_DIR_NAMES = {".pytest_cache", "__pycache__", "node_modules"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -75,6 +75,12 @@ def check_manifests(errors: list[str]) -> None:
         errors.append(".codex-plugin/plugin.json name must be student-presentation-suite")
     if claude.get("name") != "student-presentation-suite":
         errors.append(".claude-plugin/plugin.json name must be student-presentation-suite")
+    if codex.get("author", {}).get("name") in {None, "", "Local developer"}:
+        errors.append("Codex manifest author.name must be a publishable author name")
+    if codex.get("interface", {}).get("developerName") in {None, "", "Local developer"}:
+        errors.append("Codex manifest interface.developerName must be a publishable developer name")
+    if claude.get("author", {}).get("name") in {None, "", "Local developer"}:
+        errors.append("Claude manifest author.name must be a publishable author name")
 
     capabilities = codex.get("interface", {}).get("capabilities", [])
     if "Codex PPTX production uses the default Presentations skill/artifact-tool workflow" not in capabilities:
@@ -110,6 +116,8 @@ def check_docs(errors: list[str]) -> None:
             "document-skills",
             "requirements-claude-pptx.txt",
             "npm install",
+            "document-skills@anthropic-agent-skills",
+            "check_claude_pptx_env.py --json",
             "student-presentation-ppt",
         ):
             if expected not in text:

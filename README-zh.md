@@ -60,34 +60,46 @@ git clone https://github.com/YFan945/student-presentation-suite.git `
   "$env:USERPROFILE\student-presentation-suite-marketplace"
 ```
 
-Codex marketplace manifest 位于：
+把该仓库注册为非默认本地 Codex marketplace，然后用 `marketplace.json` 中声明的 marketplace 名称安装插件：
 
-```text
-marketplace.json
+```powershell
+codex plugin marketplace add "$env:USERPROFILE\student-presentation-suite-marketplace"
+codex plugin add student-presentation-suite@student-presentation-marketplace
 ```
 
-插件路径是：
+如果你选择合并到 Codex 默认个人 marketplace：不要运行 `codex plugin marketplace add`。把插件包复制到 `%USERPROFILE%\.agents\plugins\plugins\student-presentation-suite`，把本仓库 `marketplace.json` 里的 `plugins[]` 条目合并进 `%USERPROFILE%\.agents\plugins\marketplace.json`，然后运行 `codex plugin add student-presentation-suite@<your-personal-marketplace-name>`。
 
-```json
-"./plugins/student-presentation-suite"
-```
-
-如果你使用 Codex 默认个人 marketplace 目录，请把本仓库 `marketplace.json` 中的插件条目合并到已有 marketplace，不要覆盖本机已有插件配置。
+Codex 生成 PPTX 还要求 Codex runtime 中已有默认 `Presentations` skill/plugin、`artifact-tool` 和 `imagegen`。
 
 ### Claude Code
 
-克隆同一个仓库后，按你的 Claude Code 本地插件流程添加/安装 marketplace。Claude Code marketplace manifest 位于：
+克隆同一个仓库后，先安装 Anthropic document skills 依赖，再添加本仓库 marketplace 并安装插件：
 
-```text
-.claude-plugin/marketplace.json
-```
-
-使用 PPTX 生成功能前，先安装 Anthropic document skills：
-
-```text
+```powershell
 /plugin marketplace add anthropics/skills
 /plugin install document-skills@anthropic-agent-skills
+/plugin marketplace add <path-to-cloned-repository>
+/plugin install student-presentation-suite@student-presentation-suite
 ```
+
+等价的 Claude CLI 命令是：
+
+```powershell
+claude plugin marketplace add anthropics/skills
+claude plugin marketplace add "$env:USERPROFILE\student-presentation-suite-marketplace"
+claude plugin install document-skills@anthropic-agent-skills
+claude plugin install student-presentation-suite@student-presentation-suite
+```
+
+Claude Code 生成 PPTX 和渲染 QA 还需要安装可选运行依赖：
+
+```powershell
+python -m pip install -r "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite\requirements-claude-pptx.txt"
+npm install --prefix "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite"
+python "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite\scripts\check_claude_pptx_env.py" --json
+```
+
+LibreOffice 和 Poppler 是系统工具，仍需单独安装。
 
 ## 使用方式
 
@@ -118,7 +130,7 @@ python -m pip install -r plugins/student-presentation-suite/requirements-claude-
 npm install --prefix plugins/student-presentation-suite
 ```
 
-LibreOffice 和 Poppler 是系统工具，仍需要单独安装。
+LibreOffice 和 Poppler 是系统工具，仍需要单独安装。安装后运行 `python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json` 检查环境。
 
 从仓库根目录运行测试和发布检查：
 

@@ -27,11 +27,17 @@ class SkillBehaviorContractTests(unittest.TestCase):
         self.assertIn("no web images", text)
         self.assertIn("If the user asks only for \"PPT 大纲\"", text)
 
+    def test_planning_skill_allows_low_risk_assumptions(self) -> None:
+        text = self.read("skills/student-presentation/SKILL.md")
+        self.assertIn("state low-risk assumptions and continue", text)
+        self.assertIn("Route to `student-presentation-ppt`", text)
+
     def test_review_skill_does_not_overwrite_original_deck(self) -> None:
         text = self.read("skills/student-presentation-review/SKILL.md")
         self.assertIn("Do not overwrite the original deck", text)
         self.assertIn("Default review depth", text)
         self.assertIn("Do not block the review", text)
+        self.assertIn("skills/student-presentation-review/scripts/pptx_static_check.py", text)
 
     def test_claude_brief_uses_plugin_root_for_delivery_check(self) -> None:
         text = self.read("scripts/slide_spec_to_pptx_brief.py")

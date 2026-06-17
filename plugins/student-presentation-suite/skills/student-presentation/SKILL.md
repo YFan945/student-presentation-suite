@@ -21,7 +21,7 @@ Ask for missing items that affect the plan, including presentation type, languag
 
 ## Workflow
 
-1. Enforce the Clarification Gate. Check confirmed constraints from the conversation or Slide Spec meta, then ask for missing items that affect the plan before drafting: type, language, duration, slide count, audience/course, rubric, individual/group format, members, script needs, and whether later PPTX generation is expected.
+1. Enforce the Clarification Gate. Check confirmed constraints from the conversation or Slide Spec meta. Ask for missing items only when they would materially change the plan: type, language, duration, slide count, audience/course, rubric, individual/group format, members, script needs, and whether later PPTX generation is expected. For a general classroom outline, state low-risk assumptions and continue.
 2. Load `../../references/shared-standards.md` first. Load only the needed task references:
    - `references/slide-structures.md` for templates, topic narrowing, subject presets, density examples, and quality checklist
    - `references/transition-phrases.md` for transition and defense phrase banks

@@ -171,7 +171,7 @@ When two versions are provided:
 
 ## PPTX XML Static Check
 
-For `.pptx` files, use `../scripts/pptx_static_check.py` when available to scan static XML risks:
+For `.pptx` files, run `python skills/student-presentation-review/scripts/pptx_static_check.py` from the plugin package root when available to scan static XML risks:
 - font size below threshold
 - high text density
 - small text boxes

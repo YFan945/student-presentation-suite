@@ -41,7 +41,7 @@ Fast default assumptions:
 
 ## Workflow
 
-1. Enforce the Clarification Gate. Check confirmed constraints from the conversation or Slide Spec meta, then ask for missing production-critical items before any production work: type, language, duration, slide count, course/rubric, group setup, source material, whether an outline is needed first, template/logo, visual style, and image-source preference.
+1. Enforce the Clarification Gate. Check confirmed constraints from the conversation or Slide Spec meta. If missing items would materially change the deck, ask for them or offer the fast default / confirm-first / provide-constraints choice before file generation. Do not block on low-risk preferences that can be covered by the assumption block.
 2. Load `../../references/shared-standards.md` first. Load only the needed task references:
    - `references/pptx-production.md` for the full build sequence, creativity rules, content quality, anti-AI review, deliverable QA, and final response contract
    - `references/visual-style-menu.md` for the style selection menu, choice guide, general visual principles, structural visual layer, and template inheritance

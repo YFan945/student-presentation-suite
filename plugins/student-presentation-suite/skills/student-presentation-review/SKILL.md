@@ -35,9 +35,9 @@ Default review depth:
    - `references/review-output-format.md` for the default output structure
    - `../../references/slide-spec.md` when comparing planned spec vs actual deck
    - `../../references/image-strategy.md` when judging whether visuals and sources are appropriate
-   - `scripts/pptx_static_check.py` for static PPTX XML risk checks when the input is a `.pptx` (use `--strict` only in automation; treat `font-size-not-explicit` as a style-inheritance limitation, not proof of unreadability)
+   - `python skills/student-presentation-review/scripts/pptx_static_check.py` from the plugin package root for static PPTX XML risk checks when the input is a `.pptx` (use `--strict` only in automation; treat `font-size-not-explicit` as a style-inheritance limitation, not proof of unreadability)
 3. Inspect evidence in this order when available:
-   - for `.pptx`, run `scripts/pptx_static_check.py` first and treat the output as static XML risk evidence
+   - for `.pptx`, run `python skills/student-presentation-review/scripts/pptx_static_check.py` from the plugin package root first and treat the output as static XML risk evidence
    - for preview images, contact sheets, screenshots, or exported PDF, use them to confirm visual readability, clipping, layout crowding, and image issues
    - when both are available, prefer rendered/visual evidence for final readability judgments and use XML findings as supporting signals
 4. Inspect the provided deck or preview: structure and story, slide titles and claims, text density and readability, AI-like wording and AI-writing pattern risk, visuals and data, speaker notes, group timing and handoffs, Slide Spec vs actual implementation, and before/after changes.

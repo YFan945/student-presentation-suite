@@ -17,7 +17,7 @@ jobs:
       - name: Validate Slide Spec schema
         run: python -m json.tool plugins/student-presentation-suite/references/slide-spec.schema.json > /dev/null
       - name: Run unit tests
-        run: python -m unittest discover -s plugins/student-presentation-suite/tests
+        run: PYTHONPATH=plugins/student-presentation-suite python -m unittest discover -s plugins/student-presentation-suite/tests
       - name: Check script entrypoints
         run: |
           python plugins/student-presentation-suite/skills/student-presentation-review/scripts/pptx_static_check.py --help

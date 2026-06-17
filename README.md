@@ -94,7 +94,7 @@ Install Anthropic document skills before using PPTX generation:
 Use the plugin by asking for one of the three workflows:
 
 - Plan a class presentation from a topic.
-- Generate an editable PPTX from an outline or Slide Spec.
+- Generate or improve an editable PPTX from an outline, Slide Spec, or review findings.
 - Review an existing deck, PDF export, screenshot, or Slide Spec.
 
 For full plugin-level details, see:

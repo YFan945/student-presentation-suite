@@ -36,8 +36,8 @@ Fast default deck assumptions for vague PPTX requests:
 
 1. Confirm production-critical constraints from the conversation or Slide Spec meta: presentation type, language, duration, slide count, format, course/rubric, source material, image-source limits, template/logo, and output prefix.
 2. Choose a creative direction from `visual-style-menu.md`. If the user has not specified one, pick the direction that best serves the topic and evidence type. If multiple directions are genuinely strong and the user has time to choose, offer 2-3 options.
-3. Generate or absorb Slide Spec structure. Preserve slide order, ownership, timing, visual purpose, and handoff intent unless changing them prevents crowding or improves clarity.
-4. For existing deck improvement, convert review findings into a brief edit plan first. Preserve useful content and required template elements, decide which slides are rewritten vs redesigned, and write the improved deck to a new filename instead of overwriting the source.
+3. Generate or absorb Slide Spec structure. Preserve slide order, ownership, timing, visual purpose, and handoff intent unless changing them prevents crowding or improves clarity. If the Slide Spec includes `source_deck`, `edit_intent`, `review_findings`, `preserve`, or `change_summary_required`, treat those fields as the programmatic handoff from review to PPTX production.
+4. For existing deck improvement, convert review findings into a brief edit plan first. Preserve useful content and required template elements, decide which slides are rewritten vs redesigned, and write the improved deck to a new filename instead of overwriting the source. When `change_summary_required` is true, do not finish without `outputs/<topic>-change-summary.md` or an explicit limitation.
 5. Design the PPTX with variation inside guardrails. Layouts should express a function, not force a repeated template. Use topic-specific examples, visuals, chart forms, section rhythm, and opening/closing treatment. Keep a mismatch ledger while building: record any difference between requested constraints and the working assumptions, any missing source material, and any tool/API behavior discovered during production.
 6. Run delivery checks. Confirm PPTX, notes, preview/contact sheet, slide count, static XML risk summary, and risk breakdown where possible. Static XML risk counts are not enough on their own: distinguish true production blockers from expected small footer, page marker, caption, source, or kicker text.
 7. Confirm visual QA. Preview/contact sheet review is required before calling a deck ready-to-present; otherwise say the file is generated but visual QA is incomplete. If the first render shows geometry mismatch, blank slides, text collapsed into the corner, overlap, or clipped callouts, fix the slide code and rerender before delivery.
@@ -112,7 +112,7 @@ Claude Code PPTX production depends on the `document-skills` plugin from the `an
 
 When building in Claude Code:
 - From the plugin package root, run `python scripts/check_claude_pptx_env.py --json` before production. If required tools are missing, report the exact missing generation or QA capability before continuing.
-- If the input includes a Slide Spec YAML/JSON file, run `python scripts/slide_spec_to_pptx_brief.py <spec> --output outputs/<topic>-claude-pptx-brief.md` from the plugin package root first. Use the generated brief as the execution handoff into the `pptx` skill.
+- If the input includes a Slide Spec YAML/JSON file, run `python scripts/slide_spec_to_pptx_brief.py <spec> --output outputs/<topic>-claude-pptx-brief.md` from the plugin package root first. Use the generated brief as the execution handoff into the `pptx` skill. When the spec includes `source_deck` or `review_findings`, the generated brief must route to the `pptx` skill's editing workflow and require a separate change summary.
 - First follow the `pptx` skill's `SKILL.md`.
 - For a new deck from scratch, read and follow `pptxgenjs.md`.
 - For editing an existing PPTX or template, read and follow `editing.md`.
@@ -128,7 +128,7 @@ Dependencies and limitations:
 - The Claude plugin dependency is `document-skills`, not the standalone `pptx` skill path.
 - The expected install target is `document-skills@anthropic-agent-skills`; if the local plugin is named differently, use the actual name from the marketplace manifest.
 - The `pptx` skill expects environment tools such as `pptxgenjs`, `markitdown[pptx]`, Pillow, LibreOffice, and Poppler. If any are unavailable, report the missing QA or generation step explicitly.
-- The `pptx` skill does not natively enforce this suite's Slide Spec schema. Use `slide_spec_to_pptx_brief.py` as the programmatic bridge: it validates the schema and converts the Slide Spec into a Claude `pptx` production brief, but the final generation still depends on the `pptx` skill following that brief.
+- The `pptx` skill does not natively enforce this suite's Slide Spec schema. Use `slide_spec_to_pptx_brief.py` as the programmatic bridge: it validates the schema and converts the Slide Spec into a Claude `pptx` production brief, including existing-deck improvement fields such as `source_deck`, `edit_intent`, `review_findings`, `preserve`, and `change_summary_required`. The final generation still depends on the `pptx` skill following that brief.
 
 ## Final Deliverable QA
 

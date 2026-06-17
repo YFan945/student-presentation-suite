@@ -17,7 +17,7 @@ Do not stop at a text outline when the user asks for PPT, PPTX, PowerPoint, edit
 
 If the user provides only a broad topic but explicitly asks for PPT/PPTX/slides, this skill owns the request. Do not route back to outline-only planning. First create or confirm a concise slide plan/Slide Spec inside the PPTX workflow, then build the deck once production-critical constraints are handled. If the user asks only for "PPT 大纲" or "slide outline" without a file, use `student-presentation` instead.
 
-If the request comes from `student-presentation-review` or includes an existing deck plus review findings, treat it as an improvement/editing workflow. Preserve the original deck as input evidence, write a separate improved PPTX file, and create `outputs/<topic>-change-summary.md` describing kept content, changed slides, unresolved risks, and QA results.
+If the request comes from `student-presentation-review` or includes an existing deck plus review findings, treat it as an improvement/editing workflow. Preserve the original deck as input evidence, write a separate improved PPTX file, and create `outputs/<topic>-change-summary.md` describing kept content, changed slides, unresolved risks, and QA results. If Slide Spec includes `source_deck`, `edit_intent`, `review_findings`, `preserve`, or `change_summary_required`, use those fields as the authoritative edit handoff.
 
 ## Clarification Gate
 

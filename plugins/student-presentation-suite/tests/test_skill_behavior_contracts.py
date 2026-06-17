@@ -42,10 +42,30 @@ class SkillBehaviorContractTests(unittest.TestCase):
         self.assertIn("skills/student-presentation-review/scripts/pptx_static_check.py", text)
         self.assertIn("change-summary.md", text)
 
+    def test_review_output_format_supports_edit_handoff(self) -> None:
+        text = self.read("skills/student-presentation-review/references/review-output-format.md")
+        self.assertIn("## Edit Plan", text)
+        self.assertIn("## Change Summary Handoff", text)
+        self.assertIn("student-presentation-ppt", text)
+
+    def test_slide_spec_schema_supports_existing_deck_improvement(self) -> None:
+        schema = self.read("references/slide-spec.schema.json")
+        guide = self.read("references/slide-spec.md")
+        for expected in (
+            "source_deck",
+            "edit_intent",
+            "review_findings",
+            "preserve",
+            "change_summary_required",
+        ):
+            self.assertIn(expected, schema)
+            self.assertIn(expected, guide)
+
     def test_claude_brief_uses_plugin_root_for_delivery_check(self) -> None:
         text = self.read("scripts/slide_spec_to_pptx_brief.py")
         self.assertIn("From the plugin package root", text)
         self.assertIn("skills/student-presentation-ppt/scripts/pptx_delivery_check.py", text)
+        self.assertIn("Existing Deck Improvement Contract", text)
 
     def test_codex_manifest_mentions_deck_improvement(self) -> None:
         text = self.read(".codex-plugin/plugin.json")

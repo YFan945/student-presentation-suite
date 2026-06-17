@@ -59,6 +59,60 @@ class SlideSpecBridgeTests(unittest.TestCase):
         self.assertIn("AI 帮助我们更快形成初稿", brief)
         self.assertIn("python -m markitdown output.pptx", brief)
 
+    def test_builds_existing_deck_improvement_brief(self) -> None:
+        bridge = load_bridge_module()
+        data = {
+            "meta": {
+                "presentation_type": "coursework report",
+                "language": "Chinese",
+                "duration_min": 5,
+                "format": "individual",
+                "output_prefix": "improved-demo",
+            },
+            "source_deck": "original-demo.pptx",
+            "edit_intent": "review-fix",
+            "preserve": ["course logo", "approved section order"],
+            "change_summary_required": True,
+            "review_findings": [
+                {
+                    "severity": "Major",
+                    "target": "Slide 2",
+                    "problem": "The title is generic.",
+                    "fix": "Rewrite it as a claim-style title.",
+                }
+            ],
+            "slides": [
+                {
+                    "id": 1,
+                    "title": "AI 工具只负责加速初稿",
+                    "layout": "process",
+                    "content": {"bullets": ["输入目标", "生成初稿", "人工修订"]},
+                    "visual": {
+                        "type": "three-step-process",
+                        "purpose": "Show the corrected workflow",
+                    },
+                    "note_goal": "Explain the improved message",
+                    "transition": "接下来说明边界。",
+                    "timing_sec": 40,
+                    "owner": "A",
+                }
+            ],
+        }
+
+        errors = bridge.validate_spec(
+            data,
+            ROOT / "references" / "slide-spec.schema.json",
+            __import__("jsonschema"),
+        )
+        brief = bridge.build_brief(data, Path("input.yaml"))
+
+        self.assertEqual([], errors)
+        self.assertIn("Existing Deck Improvement Contract", brief)
+        self.assertIn("original-demo.pptx", brief)
+        self.assertIn("Use `editing.md`", brief)
+        self.assertIn("outputs/improved-demo-change-summary.md", brief)
+        self.assertIn("Rewrite it as a claim-style title", brief)
+
     def test_script_writes_output_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             spec_path = Path(tmp) / "spec.yaml"

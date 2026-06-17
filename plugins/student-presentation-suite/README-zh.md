@@ -89,6 +89,8 @@ Codex 路线仍使用默认 `Presentations` skill/plugin、`artifact-tool` 和 `
 
 如果 PPTX 生成请求过于模糊，PPT skill 应追问关键生产约束，或提供“快速默认生成 / 先确认大纲 / 用户补充约束”的选择；不能静默编造网页来源、时事事实或评分要求。
 
+Slide Spec YAML 也可以承载已有 deck 改进交接字段：`source_deck`、`edit_intent`、`review_findings`、`preserve`、`change_summary_required`。
+
 ## 输出
 
 PPTX 生成的典型输出：
@@ -135,7 +137,7 @@ Claude Code 插件依赖声明位于：
 python scripts/validate_slide_spec.py path/to/slide-spec.yaml --json
 ```
 
-从 Slide Spec 生成 Claude Code `pptx` 生产 brief：
+从 Slide Spec 生成 Claude Code `pptx` 生产 brief。如果 spec 包含审查问题或原始 deck，生成的 brief 会转入 `pptx` editing workflow，并要求变更摘要：
 
 ```powershell
 python scripts/slide_spec_to_pptx_brief.py path/to/slide-spec.yaml `

@@ -92,6 +92,14 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
     total_timing = sum(int(slide.get("timing_sec", 0)) for slide in slides)
     members = meta.get("members") or []
     member_text = ", ".join(members) if members else "not specified"
+    review_findings = data.get("review_findings") or []
+    preserve = data.get("preserve") or []
+    is_improvement = bool(
+        data.get("source_deck")
+        or data.get("edit_intent")
+        or review_findings
+        or data.get("change_summary_required")
+    )
 
     lines = [
         "# Claude PPTX Production Brief",
@@ -110,31 +118,65 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
         f"- PPTX: `outputs/{output_prefix}-presentation.pptx`",
         f"- Notes: `outputs/{output_prefix}-speaker-notes.md`",
         f"- Preview/contact sheet: `outputs/{output_prefix}-preview.png` or a contact sheet",
-        "",
-        "## Deck Constraints",
-        f"- Presentation type: {meta_value(meta, 'presentation_type')}",
-        f"- Language: {meta_value(meta, 'language')}",
-        f"- Duration minutes: {meta_value(meta, 'duration_min')}",
-        f"- Slide count: {meta.get('slide_count') or len(slides)}",
-        f"- Total scripted timing seconds: {total_timing}",
-        f"- Format: {meta_value(meta, 'format')}",
-        f"- Members: {member_text}",
-        f"- Course: {meta_value(meta, 'course')}",
-        f"- Rubric: {meta_value(meta, 'rubric')}",
-        f"- Template: {meta_value(meta, 'template')}",
-        f"- Logo: {meta_value(meta, 'logo')}",
-        f"- Image source policy: {meta_value(meta, 'image_source')}",
-        "",
-        "## Student Presentation Requirements",
-        "- One clear message per slide; use claim-style titles where possible.",
-        "- Chinese normal body text must be >= 22pt; English normal body text must be >= 20pt.",
-        "- Titles, subtitles, section headers, card headers, chart titles, and panel labels must be >= 24pt.",
-        "- Use functional visual structures: timelines, process nodes, comparison cards, callouts, charts, panels, or diagrams.",
-        "- Avoid generic AI-sounding filler; prefer course/project-specific examples and modest claims.",
-        "- Include speaker notes or a separate notes file with note goals and transitions.",
-        "",
-        "## Slide Plan",
     ]
+    if is_improvement or data.get("change_summary_required"):
+        lines.append(f"- Change summary: `outputs/{output_prefix}-change-summary.md`")
+    lines.extend(
+        [
+            "",
+            "## Deck Constraints",
+            f"- Presentation type: {meta_value(meta, 'presentation_type')}",
+            f"- Language: {meta_value(meta, 'language')}",
+            f"- Duration minutes: {meta_value(meta, 'duration_min')}",
+            f"- Slide count: {meta.get('slide_count') or len(slides)}",
+            f"- Total scripted timing seconds: {total_timing}",
+            f"- Format: {meta_value(meta, 'format')}",
+            f"- Members: {member_text}",
+            f"- Course: {meta_value(meta, 'course')}",
+            f"- Rubric: {meta_value(meta, 'rubric')}",
+            f"- Template: {meta_value(meta, 'template')}",
+            f"- Logo: {meta_value(meta, 'logo')}",
+            f"- Image source policy: {meta_value(meta, 'image_source')}",
+        ]
+    )
+    if is_improvement:
+        lines.extend(
+            [
+                "",
+                "## Existing Deck Improvement Contract",
+                f"- Source deck/artifact: {data.get('source_deck') or 'not specified'}",
+                f"- Edit intent: {data.get('edit_intent') or 'review-fix'}",
+                "- Use `editing.md` from the `pptx` skill unless rebuilding from scratch is explicitly safer.",
+                "- Do not overwrite the source deck; write a separate improved PPTX.",
+                "- Preserve:",
+                text_block(preserve or ["template/logo/footer/source citations unless the spec says otherwise"], "  "),
+                "- Review findings to apply:",
+            ]
+        )
+        for finding in review_findings:
+            lines.append(
+                f"  - {finding.get('severity', 'Major')}, {finding.get('target', 'deck')}: "
+                f"{finding.get('problem', 'problem not specified')} "
+                f"Fix: {finding.get('fix', 'fix not specified')}"
+            )
+        if not review_findings:
+            lines.append(
+                "  - No structured findings supplied; infer fixes from the conversation and source deck evidence."
+            )
+    lines.extend(
+        [
+            "",
+            "## Student Presentation Requirements",
+            "- One clear message per slide; use claim-style titles where possible.",
+            "- Chinese normal body text must be >= 22pt; English normal body text must be >= 20pt.",
+            "- Titles, subtitles, section headers, card headers, chart titles, and panel labels must be >= 24pt.",
+            "- Use functional visual structures: timelines, process nodes, comparison cards, callouts, charts, panels, or diagrams.",
+            "- Avoid generic AI-sounding filler; prefer course/project-specific examples and modest claims.",
+            "- Include speaker notes or a separate notes file with note goals and transitions.",
+            "",
+            "## Slide Plan",
+        ]
+    )
     for slide in slides:
         visual = slide.get("visual") or {}
         lines.extend(
@@ -161,6 +203,7 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
             "- Render with LibreOffice, then convert PDF pages to images with Poppler.",
             "- Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop.",
             "- From the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --json` when possible.",
+            "- For existing deck improvements, verify `outputs/<topic>-change-summary.md` lists kept content, changed slides, unresolved risks, and QA results.",
             "- Final response must report file existence, slide count, static XML risks, visual QA status, and limitations.",
             "",
         ]

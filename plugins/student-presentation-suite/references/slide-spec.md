@@ -33,6 +33,13 @@ Meta field rules:
 - `image_source`: `"user-assets" | "web-search" | "generated" | "diagram-only" | "text-only" | "ask-before-web-search"`
 - Use short ASCII-safe `output_prefix` when a later PPTX output filename needs a stable slug.
 
+Optional top-level fields for existing deck improvement:
+- `source_deck`: path or label of the original PPTX/PDF/preview being improved
+- `edit_intent`: `"review-fix" | "content-rewrite" | "visual-redesign" | "template-adapt" | "rebuild-clean-copy"`
+- `review_findings`: structured issues from `student-presentation-review`; each item should include `severity`, `target`, `problem`, and `fix`
+- `preserve`: required elements to keep, such as template, logo, footer, citations, approved slide order, or strong existing content
+- `change_summary_required`: set to `true` when the PPTX workflow must write `outputs/<topic>-change-summary.md`
+
 Schema and validation:
 - JSON Schema: `references/slide-spec.schema.json`
 - Validator: `scripts/validate_slide_spec.py`
@@ -53,6 +60,18 @@ meta:
   members: ["A", "B", "C", "D"]
   course: "Introduction to AI"
   image_source: "ask-before-web-search"
+  output_prefix: "ai-class-demo"
+source_deck: "original-report.pptx"
+edit_intent: "review-fix"
+preserve:
+  - "course logo and footer"
+  - "approved section order"
+change_summary_required: true
+review_findings:
+  - severity: "Major"
+    target: "Slide 4"
+    problem: "The title is generic and does not state the conclusion."
+    fix: "Rename the slide with a claim-style title and reduce body text."
 ```
 
 ## Example
@@ -86,6 +105,7 @@ When `student-presentation-ppt` receives Slide Spec YAML:
 - implement `layout` as a functional intent, not a fixed visual template
 - split slides or move details into speaker notes when content is dense; do not shrink normal body text below shared typography thresholds to make content fit
 - report any spec item that cannot be implemented
+- when `source_deck` or `review_findings` is present, treat the spec as an existing-deck improvement plan: preserve listed elements, apply the findings, write a separate improved PPTX, and create `outputs/<topic>-change-summary.md` when required
 
 ## Layout Functional Mapping
 

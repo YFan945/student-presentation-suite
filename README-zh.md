@@ -94,7 +94,7 @@ marketplace.json
 可以直接围绕三个工作流使用：
 
 - 从主题规划课堂汇报。
-- 根据大纲或 Slide Spec 生成可编辑 PPTX。
+- 根据大纲、Slide Spec 或审查结果生成/改进可编辑 PPTX。
 - 审阅已有 PPTX、PDF 导出、截图或 Slide Spec。
 
 更多插件本体说明见：

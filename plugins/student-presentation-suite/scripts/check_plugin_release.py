@@ -120,6 +120,32 @@ def check_docs(errors: list[str]) -> None:
         errors.append("README-zh.md must mention Codex Presentations/artifact-tool compatibility")
 
 
+def check_behavior_contracts(errors: list[str]) -> None:
+    schema = (ROOT / "references" / "slide-spec.schema.json").read_text(encoding="utf-8")
+    slide_spec = (ROOT / "references" / "slide-spec.md").read_text(encoding="utf-8")
+    bridge = (ROOT / "scripts" / "slide_spec_to_pptx_brief.py").read_text(encoding="utf-8")
+    review_format = (
+        ROOT / "skills" / "student-presentation-review" / "references" / "review-output-format.md"
+    ).read_text(encoding="utf-8")
+    for expected in (
+        "source_deck",
+        "edit_intent",
+        "review_findings",
+        "preserve",
+        "change_summary_required",
+    ):
+        if expected not in schema:
+            errors.append(f"Slide Spec schema missing existing-deck improvement field: {expected}")
+        if expected not in slide_spec:
+            errors.append(f"Slide Spec docs missing existing-deck improvement field: {expected}")
+    for expected in ("Existing Deck Improvement Contract", "outputs/{output_prefix}-change-summary.md"):
+        if expected not in bridge:
+            errors.append(f"Slide Spec bridge missing improvement handoff detail: {expected}")
+    for expected in ("## Edit Plan", "## Change Summary Handoff", "student-presentation-ppt"):
+        if expected not in review_format:
+            errors.append(f"Review output format missing edit handoff detail: {expected}")
+
+
 def check_forbidden_tracked_files(errors: list[str]) -> None:
     try:
         proc = subprocess.run(
@@ -147,6 +173,7 @@ def main() -> None:
     check_manifests(errors)
     check_codex_agent_dependencies(errors)
     check_docs(errors)
+    check_behavior_contracts(errors)
     check_forbidden_tracked_files(errors)
 
     result = {"ok": not errors, "error_count": len(errors), "errors": errors}

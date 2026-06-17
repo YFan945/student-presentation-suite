@@ -89,6 +89,8 @@ The plugin can work from:
 
 For vague PPTX requests, the PPT skill should either ask for production-critical constraints or offer a fast default / confirm-first path. It should not silently invent web sources, current facts, or grading-specific requirements.
 
+Slide Spec YAML can also carry an existing-deck improvement handoff with `source_deck`, `edit_intent`, `review_findings`, `preserve`, and `change_summary_required`.
+
 ## Outputs
 
 Typical PPTX generation outputs:
@@ -135,7 +137,7 @@ Validate Slide Spec:
 python scripts/validate_slide_spec.py path/to/slide-spec.yaml --json
 ```
 
-Create a Claude Code `pptx` production brief from Slide Spec:
+Create a Claude Code `pptx` production brief from Slide Spec. If the spec includes review findings or a source deck, the generated brief routes to the `pptx` editing workflow and requires a change summary:
 
 ```powershell
 python scripts/slide_spec_to_pptx_brief.py path/to/slide-spec.yaml `

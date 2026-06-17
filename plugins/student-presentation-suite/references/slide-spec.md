@@ -39,6 +39,7 @@ Schema and validation:
 - The validator requires `jsonschema` and `PyYAML` from `requirements.txt`.
 
 ```powershell
+# Run from the plugin package root.
 python scripts/validate_slide_spec.py path/to/slide-spec.yaml --json
 ```
 

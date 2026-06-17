@@ -4,7 +4,7 @@ Load `../../../references/shared-standards.md` for shared readability, anti-AI w
 
 ## Before Building
 
-Check confirmed constraints first, then ask the user to choose or confirm only missing production items:
+Check confirmed constraints first, then ask the user to choose or confirm only missing production items that would materially change the deck:
 - topic and course
 - presentation type
 - audience and language
@@ -21,7 +21,7 @@ If duration is known but slide count is not, suggest choices rather than silentl
 - 10 minutes: 10-14 slides
 - 15 minutes: 14-18 slides
 
-If the user explicitly asks Codex to decide, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer, avoid unsupported factual claims, avoid web images unless allowed, and state that the deck is not rubric-specific.
+If the user explicitly asks Codex to decide, or if the missing items are low-risk preferences for a general classroom deck, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer, avoid unsupported factual claims, avoid web images unless allowed, and state that the deck is not rubric-specific.
 
 ## Build Sequence
 
@@ -100,8 +100,8 @@ When building through artifact-tool presentation primitives:
 Claude Code PPTX production depends on the `document-skills` plugin from the `anthropic-agent-skills` marketplace. That plugin provides the `pptx` skill.
 
 When building in Claude Code:
-- Run `python scripts/check_claude_pptx_env.py --json` before production. If required tools are missing, report the exact missing generation or QA capability before continuing.
-- If the input includes a Slide Spec YAML/JSON file, run `python scripts/slide_spec_to_pptx_brief.py <spec> --output outputs/<topic>-claude-pptx-brief.md` first. Use the generated brief as the execution handoff into the `pptx` skill.
+- From the plugin package root, run `python scripts/check_claude_pptx_env.py --json` before production. If required tools are missing, report the exact missing generation or QA capability before continuing.
+- If the input includes a Slide Spec YAML/JSON file, run `python scripts/slide_spec_to_pptx_brief.py <spec> --output outputs/<topic>-claude-pptx-brief.md` from the plugin package root first. Use the generated brief as the execution handoff into the `pptx` skill.
 - First follow the `pptx` skill's `SKILL.md`.
 - For a new deck from scratch, read and follow `pptxgenjs.md`.
 - For editing an existing PPTX or template, read and follow `editing.md`.

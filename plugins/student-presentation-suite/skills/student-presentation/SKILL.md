@@ -13,9 +13,9 @@ Do not create actual `.pptx`, editable PowerPoint, rendered slides, or productio
 
 ## Clarification Gate
 
-Before drafting an outline or script, decide whether the user's request is specific enough to plan responsibly. If the prompt is vague, incomplete, or only names a broad topic, stop and ask concise follow-up questions instead of immediately writing slides.
+Before drafting an outline or script, decide whether the user's request is specific enough to plan responsibly. If the prompt is vague, incomplete, or only names a broad topic, ask concise follow-up questions for missing constraints that would materially change the plan. Avoid blocking on minor preferences that can be handled with explicit assumptions.
 
-Ask for missing items that affect the plan, including presentation type, language, duration, expected slide count, audience/course, rubric, individual/group format, members, whether a full script is needed, and whether later PPTX generation is expected. Prefer 3-6 grouped questions in one reply and wait for confirmation when the answer changes the structure.
+Ask for missing items that affect the plan, including presentation type, language, duration, expected slide count, audience/course, rubric, individual/group format, members, whether a full script is needed, and whether later PPTX generation is expected. Prefer 3-6 grouped questions in one reply and wait for confirmation when the answer changes the structure. If the user asks the agent to decide, or if the missing items are low-risk defaults for a general classroom outline, state assumptions and continue.
 
 ## Workflow
 

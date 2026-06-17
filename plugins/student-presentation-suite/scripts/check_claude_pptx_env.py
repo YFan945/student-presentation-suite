@@ -17,6 +17,7 @@ COMMON_SOFFICE_PATHS = [
     Path(r"C:\Program Files\LibreOffice\program\soffice.exe"),
     Path(r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"),
 ]
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
@@ -73,16 +74,25 @@ def check_pptxgenjs() -> dict[str, Any]:
             "method": "node",
             "detail": "node is not available; cannot load pptxgenjs",
         }
-    ok, output = run_probe([node, "-e", "require.resolve('pptxgenjs')"])
+    resolve_script = (
+        "console.log(require.resolve('pptxgenjs', "
+        f"{{ paths: [{json.dumps(str(ROOT))}] }}))"
+    )
+    ok, output = run_probe([node, "-e", resolve_script])
     if ok:
-        return {"ok": True, "method": "node require.resolve", "detail": output}
+        return {
+            "ok": True,
+            "method": "node require.resolve with plugin root",
+            "detail": output,
+        }
     result: dict[str, Any] = {
         "ok": False,
-        "method": "node require.resolve",
+        "method": "node require.resolve with plugin root",
         "detail": output,
         "warning": (
-            "pptxgenjs must be resolvable by the Node process that builds the deck. "
-            "A global npm install alone is not treated as sufficient."
+            "pptxgenjs must be resolvable from the plugin root by the Node process "
+            "that builds the deck. Run `npm install --prefix plugins/student-presentation-suite` "
+            "from the repository root. A global npm install alone is not treated as sufficient."
         ),
     }
     if npm:

@@ -171,6 +171,15 @@ python scripts/check_plugin_release.py
 python scripts/check_claude_pptx_env.py --json
 ```
 
+For Claude Code PPTX generation and rendered QA:
+
+```powershell
+python -m pip install -r requirements-claude-pptx.txt
+npm install
+```
+
+LibreOffice and Poppler are system tools and must be installed separately.
+
 From the repository root:
 
 ```powershell

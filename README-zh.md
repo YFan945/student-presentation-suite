@@ -111,6 +111,15 @@ marketplace.json
 python -m pip install -r plugins/student-presentation-suite/requirements.txt
 ```
 
+如果要在 Claude Code 中生成 PPTX 并做渲染 QA，安装可选运行时依赖：
+
+```powershell
+python -m pip install -r plugins/student-presentation-suite/requirements-claude-pptx.txt
+npm install --prefix plugins/student-presentation-suite
+```
+
+LibreOffice 和 Poppler 是系统工具，仍需要单独安装。
+
 从仓库根目录运行测试和发布检查：
 
 ```powershell

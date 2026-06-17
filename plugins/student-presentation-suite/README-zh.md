@@ -171,6 +171,15 @@ python scripts/check_plugin_release.py
 python scripts/check_claude_pptx_env.py --json
 ```
 
+如果要在 Claude Code 中生成 PPTX 并做渲染 QA：
+
+```powershell
+python -m pip install -r requirements-claude-pptx.txt
+npm install
+```
+
+LibreOffice 和 Poppler 是系统工具，仍需要单独安装。
+
 在仓库根目录运行：
 
 ```powershell

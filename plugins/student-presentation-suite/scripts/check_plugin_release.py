@@ -19,6 +19,9 @@ REQUIRED_FILES = [
     "README.md",
     "README-zh.md",
     "requirements.txt",
+    "requirements-claude-pptx.txt",
+    "package.json",
+    "package-lock.json",
     "skills/student-presentation/SKILL.md",
     "skills/student-presentation-ppt/SKILL.md",
     "skills/student-presentation-review/SKILL.md",
@@ -102,6 +105,8 @@ def check_docs(errors: list[str]) -> None:
             ".codex-plugin/plugin.json",
             ".claude-plugin/plugin.json",
             "document-skills",
+            "requirements-claude-pptx.txt",
+            "npm install",
             "student-presentation-ppt",
         ):
             if expected not in text:

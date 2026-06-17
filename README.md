@@ -111,6 +111,15 @@ Install validation dependencies:
 python -m pip install -r plugins/student-presentation-suite/requirements.txt
 ```
 
+For Claude Code PPTX generation and rendered QA, install the optional runtime dependencies:
+
+```powershell
+python -m pip install -r plugins/student-presentation-suite/requirements-claude-pptx.txt
+npm install --prefix plugins/student-presentation-suite
+```
+
+LibreOffice and Poppler are system tools and must still be installed separately.
+
 Run tests and release checks from the repository root:
 
 ```powershell

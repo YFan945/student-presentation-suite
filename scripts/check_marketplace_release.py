@@ -39,6 +39,9 @@ def check_required_paths(errors: list[str]) -> None:
         "plugins/student-presentation-suite/.claude-plugin/plugin.json",
         "plugins/student-presentation-suite/README.md",
         "plugins/student-presentation-suite/README-zh.md",
+        "plugins/student-presentation-suite/requirements-claude-pptx.txt",
+        "plugins/student-presentation-suite/package.json",
+        "plugins/student-presentation-suite/package-lock.json",
     ]
     for rel in required:
         if not (ROOT / rel).is_file():

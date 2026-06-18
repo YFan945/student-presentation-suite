@@ -1,6 +1,6 @@
 ---
 name: student-presentation-ppt
-description: Generate or improve editable university PPTX decks, speaker notes, previews, and production QA from topics, outlines, Slide Spec YAML, or existing deck review findings.
+description: Use only when the request explicitly identifies a student, university, course, classroom, defense, or other student context and explicitly asks to create or improve a PPT, PPTX, PowerPoint, or slide deck. Do not trigger for generic or non-student presentation work.
 ---
 
 # Student Presentation PPT
@@ -9,13 +9,22 @@ description: Generate or improve editable university PPTX decks, speaker notes, 
 
 Produce actual editable PowerPoint decks for university presentations. This skill handles PPTX generation, existing deck improvement, visual system, assets, export, preview, and QA.
 
+## Trigger Gate
+
+Use this skill only when both conditions are explicit in the user's request or established conversation context:
+
+1. The deck is for a student, university course, classroom report, thesis defense, competition, or another clearly student-owned scenario.
+2. The user explicitly asks to create, generate, edit, improve, or rebuild a PPT, PPTX, PowerPoint, slide deck, or editable slides.
+
+Do not trigger for generic presentation requests, non-student business decks, topic research, standalone outlines, scripts, or Q&A. If either condition is missing, use a general-purpose presentation skill or ask one routing question instead.
+
 Platform-specific PPTX generation:
 - **Codex 环境**：使用内置的 `Presentations` skill 和 artifact-tool presentation JSX workflow
 - **Claude Code 环境**：依赖 `document-skills@anthropic-agent-skills`，并使用其中的 `pptx` skill
 
 Do not stop at a text outline when the user asks for PPT, PPTX, PowerPoint, editable slides, rendered slides, or a ready presentation file.
 
-If the user provides only a broad topic but explicitly asks for PPT/PPTX/slides, this skill owns the request. Do not route back to outline-only planning. First create or confirm a concise slide plan/Slide Spec inside the PPTX workflow, then build the deck once production-critical constraints are handled. If the user asks only for "PPT 大纲" or "slide outline" without a file, use `student-presentation` instead.
+If an eligible student-context request provides only a broad topic but explicitly asks for PPT/PPTX/slides, this skill owns the request. Do not route back to outline-only planning. First create or confirm a concise slide plan/Slide Spec inside the PPTX workflow, then build the deck once production-critical constraints are handled. If an eligible request asks only for "PPT 大纲" or "slide outline" without a file, use `student-presentation` instead.
 
 If the request comes from `student-presentation-review` or includes an existing deck plus review findings, treat it as an improvement/editing workflow. Preserve the original deck as input evidence, write a separate improved PPTX file, and create `outputs/<topic>-change-summary.md` describing kept content, changed slides, unresolved risks, and QA results. If Slide Spec includes `source_deck`, `edit_intent`, `review_findings`, `preserve`, or `change_summary_required`, use those fields as the authoritative edit handoff.
 

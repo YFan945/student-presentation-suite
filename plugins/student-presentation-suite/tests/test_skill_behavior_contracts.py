@@ -14,18 +14,42 @@ class SkillBehaviorContractTests(unittest.TestCase):
     def test_shared_standards_define_intent_routing(self) -> None:
         text = self.read("references/shared-standards.md")
         self.assertIn("## Intent Routing", text)
+        self.assertIn("require both a clear student-owned context and an explicit PPT intent", text)
         self.assertIn("Use `student-presentation`", text)
         self.assertIn("Use `student-presentation-ppt`", text)
         self.assertIn("Use `student-presentation-review`", text)
         self.assertIn('"PPT 大纲"', text)
         self.assertIn('"帮我优化这个 PPT"', text)
 
+    def test_skill_descriptions_require_student_context_and_ppt_intent(self) -> None:
+        expectations = {
+            "skills/student-presentation/SKILL.md": (
+                "Use only when",
+                "student context",
+                "PPT/slide outline",
+            ),
+            "skills/student-presentation-ppt/SKILL.md": (
+                "Use only when",
+                "student context",
+                "PPT, PPTX, PowerPoint, or slide deck",
+            ),
+            "skills/student-presentation-review/SKILL.md": (
+                "Use only when",
+                "student context",
+                "review, audit, score, or critique",
+            ),
+        }
+        for rel, required_phrases in expectations.items():
+            frontmatter = self.read(rel).split("---", 2)[1]
+            for phrase in required_phrases:
+                self.assertIn(phrase, frontmatter, rel)
+
     def test_ppt_skill_defines_vague_request_defaults(self) -> None:
         text = self.read("skills/student-presentation-ppt/SKILL.md")
         self.assertIn("Fast default assumptions", text)
         self.assertIn("7-9 slides", text)
         self.assertIn("no web images", text)
-        self.assertIn("If the user asks only for \"PPT 大纲\"", text)
+        self.assertIn("If an eligible request asks only for \"PPT 大纲\"", text)
         self.assertIn("existing deck improvement", text)
         self.assertIn("change-summary.md", text)
 

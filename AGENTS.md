@@ -2,10 +2,10 @@
 
 ## Project Structure & Module Organization
 
-This repository is a plugin marketplace root for Codex and Claude Code.
+This repository is a local shared plugin marketplace root for Codex and Claude Code, plus a source
+tree for agent skills that can also be reused by tools such as OpenCode.
 
-- `marketplace.json`: Codex marketplace manifest.
-- `.claude-plugin/marketplace.json`: Claude Code marketplace manifest.
+- `.claude-plugin/marketplace.json`: shared marketplace manifest for Codex and Claude Code.
 - `plugins/student-presentation-suite/`: plugin package.
 - `plugins/student-presentation-suite/skills/`: agent skills.
 - `plugins/student-presentation-suite/scripts/`: validation and bridge scripts.
@@ -28,14 +28,12 @@ python scripts/check_marketplace_release.py
 
 - `pytest` runs plugin unit tests.
 - `check_plugin_release.py` validates plugin package structure.
-- `check_marketplace_release.py` validates root marketplace manifests and paths.
+- `check_marketplace_release.py` validates the shared marketplace manifest and paths.
 
 Validate runtime manifests:
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" .\plugins\student-presentation-suite
-claude plugin validate .\plugins\student-presentation-suite
-claude plugin validate .
 ```
 
 ## Coding Style & Naming Conventions
@@ -55,15 +53,17 @@ Recent commits use concise Chinese imperative messages, for example `修复 CI �
 Pull requests should include:
 
 - summary of changed plugin behavior
-- affected runtime: Codex, Claude Code, or both
+- affected runtime or skill consumer: Codex, Claude Code, OpenCode, or shared files
 - validation commands run
 - screenshots or generated file notes when PPTX output changes
 
 ## Agent-Specific Instructions
 
-Preserve both runtime routes:
+Preserve the shared marketplace route:
 
 - Codex uses default `Presentations` + `artifact-tool` + `imagegen`.
-- Claude Code uses `document-skills` and its `pptx` skill.
+- Codex and Claude Code both install from `.claude-plugin/marketplace.json`.
+- Claude Code also uses the plugin-local `.claude-plugin/plugin.json`.
+- Do not reintroduce a separate root `marketplace.json` unless the shared marketplace design changes.
 
-Do not move marketplace files into the plugin package. Root README covers repository installation; plugin README covers plugin behavior.
+Root README covers repository installation; plugin README covers plugin behavior.

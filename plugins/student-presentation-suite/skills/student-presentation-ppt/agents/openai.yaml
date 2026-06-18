@@ -1,6 +1,6 @@
 interface:
   display_name: "Student Presentation PPT"
-  short_description: "按大纲、Slide Spec 或审查结果生成/改进可编辑 PPTX、讲稿和预览。"
+  short_description: "仅在明确学生场景并要求制作或改进 PPT/PPTX 时触发。"
   default_prompt: "帮我根据主题、大纲、Slide Spec YAML 或已有 deck 审查结果生成/改进可编辑大学生 PPTX：确认缺失约束，使用视觉风格预设、结构形状、必要图片/图表、讲稿文件、规范命名、变更摘要和预览 QA。"
 dependencies:
   tools:

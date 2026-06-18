@@ -1,16 +1,27 @@
 {
-  "name": "student-presentation-suite",
-  "owner": { "name": "yfan945" },
-  "metadata": { "description": "Claude Code marketplace for student presentation planning, PPTX generation, and deck review" },
+  "name": "personal",
+  "owner": {
+    "name": "YFan945"
+  },
+  "description": "A collection of plugins for personal use, including a student presentation suite for university presentation planning, PPTX generation, and review skills.",
   "plugins": [
     {
       "name": "student-presentation-suite",
-      "description": "规划、生成和审阅大学生课堂演示文稿",
+      "displayName": "Student Presentation Suite",
       "source": "./plugins/student-presentation-suite",
-      "version": "0.1.0",
-      "author": { "name": "yfan945" },
-      "keywords": ["presentation", "pptx", "student", "review", "speaker-notes"],
-      "category":  "Productivity"
+      "description": "University presentation planning, PPTX generation, and review skills.",
+      "version": "0.1.1",
+      "author": {
+        "name": "YFan945"
+      },
+      "keywords": [
+        "presentation",
+        "pptx",
+        "student",
+        "review",
+        "speaker-notes"
+      ],
+      "category": "Productivity"
     }
   ]
 }

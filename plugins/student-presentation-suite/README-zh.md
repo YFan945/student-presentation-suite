@@ -8,6 +8,8 @@
 
 `student-presentation-suite` 是一个面向大学生课堂汇报的插件。它帮助 agent 完成汇报规划、可编辑 PPTX 生成/改进和已有成品审阅，并统一使用课堂可读性、讲稿、素材来源、反 AI 套话和小组汇报标准。
 
+本插件采用严格触发边界：请求必须明确属于学生场景，并明确要求 PPT/幻灯片大纲、制作或改进 PPT/PPTX，或者审查已有 PPT 成品。通用演示、单独讲稿/Q&A、非学生场景的 deck 不应触发本插件。
+
 本文只说明插件本体。仓库安装、marketplace 和 GitHub 项目说明见根目录 [README-zh.md](../../README-zh.md)。
 
 ## Skills

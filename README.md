@@ -1,31 +1,25 @@
-# Student Presentation Suite
+# Local Agent Skills Marketplace
 
 [![Validate](https://github.com/YFan945/student-presentation-suite/actions/workflows/validate.yml/badge.svg)](https://github.com/YFan945/student-presentation-suite/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Codex](https://img.shields.io/badge/Codex-plugin-111827)](marketplace.json)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-5B35D5)](.claude-plugin/marketplace.json)
+[![Marketplace](https://img.shields.io/badge/Agent-marketplace-111827)](.claude-plugin/marketplace.json)
 
 [中文](README-zh.md) | English
 
-Student Presentation Suite is a local plugin marketplace for building university presentation workflows in both Codex and Claude Code.
+This repository is the local shared marketplace at `%USERPROFILE%\.agents\plugins` for Codex and Claude Code. Both runtimes use the same marketplace file: `.claude-plugin/marketplace.json`. It also keeps reusable skill source files for tools such as OpenCode.
 
-It ships one plugin, `student-presentation-suite`, with three skills:
+The parent `.agents` directory keeps obsolete marketplace experiments under `archive/`; this `plugins/` directory is the only active marketplace root.
+
+It currently publishes one plugin, `student-presentation-suite`, with three skills:
 
 - `student-presentation`: plan topics, outlines, scripts, transitions, handoffs, and Q&A.
 - `student-presentation-ppt`: generate or improve editable PPTX decks with speaker notes, visual styles, Slide Spec handoff, change summaries, and delivery QA.
 - `student-presentation-review`: review PPTX/PDF/screenshots/specs for logic, readability, rubric fit, AI-writing risk, and static PPTX issues.
 
-## Why This Exists
-
-University presentation work usually needs more than slide generation. This plugin keeps planning, PPTX production, and review as separate skills while sharing classroom readability, source-use, anti-AI wording, timing, and group-presentation standards.
-
-The repository is structured as a marketplace root so others can clone it and install the plugin directly.
-
 ## Repository Layout
 
 ```text
 .
-├── marketplace.json
 ├── .claude-plugin/
 │   └── marketplace.json
 ├── plugins/
@@ -40,80 +34,42 @@ The repository is structured as a marketplace root so others can clone it and in
 └── .github/workflows/validate.yml
 ```
 
-## Compatibility
-
-| Runtime | Entry point | PPTX route |
-| --- | --- | --- |
-| Codex | `marketplace.json` | Default `Presentations` skill/plugin + `artifact-tool` + `imagegen` |
-| Claude Code | `.claude-plugin/marketplace.json` | `document-skills` plugin, using its `pptx` skill |
-
-Claude Code PPTX generation expects `document-skills@anthropic-agent-skills` to be installed.
+`.claude-plugin/marketplace.json` is the shared marketplace manifest for Codex and Claude Code. It points to the plugin package at `plugins/student-presentation-suite`.
 
 ## Installation
 
-### Codex
-
-Clone this repository into a dedicated local directory. Avoid cloning directly over an existing `%USERPROFILE%\.agents\plugins` directory unless you intentionally want this repository to be your whole local marketplace root.
+Codex uses the same marketplace file:
 
 ```powershell
-git clone https://github.com/YFan945/student-presentation-suite.git `
-  "$env:USERPROFILE\student-presentation-suite-marketplace"
+codex plugin marketplace add "$env:USERPROFILE\.agents\plugins"
+codex plugin add student-presentation-suite@personal
 ```
 
-Register this repository as a non-default local Codex marketplace, then install the plugin from the marketplace name declared in `marketplace.json`:
+Claude Code uses the same marketplace file:
 
 ```powershell
-codex plugin marketplace add "$env:USERPROFILE\student-presentation-suite-marketplace"
-codex plugin add student-presentation-suite@student-presentation-marketplace
+claude plugin marketplace add "$env:USERPROFILE\.agents\plugins"
+claude plugin install student-presentation-suite@personal
 ```
 
-If you instead merge this into Codex's default personal marketplace at `%USERPROFILE%\.agents\plugins\marketplace.json`, do not run `codex plugin marketplace add`. Copy the plugin package into `%USERPROFILE%\.agents\plugins\plugins\student-presentation-suite`, merge the `plugins[]` entry from this repository's `marketplace.json`, then run `codex plugin add student-presentation-suite@<your-personal-marketplace-name>`.
+Inside Claude Code chat, the equivalent slash commands are:
 
-Codex PPTX generation also expects the built-in `Presentations` skill/plugin, `artifact-tool`, and `imagegen` to be available in the Codex runtime.
-
-### Claude Code
-
-Clone the same repository, install the Anthropic document skills dependency, then add this repository as a Claude Code marketplace and install the plugin:
-
-```powershell
-/plugin marketplace add anthropics/skills
-/plugin install document-skills@anthropic-agent-skills
-/plugin marketplace add <path-to-cloned-repository>
-/plugin install student-presentation-suite@student-presentation-suite
+```text
+/plugin marketplace add <path-to-this-repository>
+/plugin install student-presentation-suite@personal
 ```
 
-The equivalent Claude CLI commands are:
+The shared marketplace entry points to `plugins/student-presentation-suite` through:
 
-```powershell
-claude plugin marketplace add anthropics/skills
-claude plugin marketplace add "$env:USERPROFILE\student-presentation-suite-marketplace"
-claude plugin install document-skills@anthropic-agent-skills
-claude plugin install student-presentation-suite@student-presentation-suite
+```json
+"source": "./plugins/student-presentation-suite"
 ```
 
-For Claude Code PPTX generation and rendered QA, install the optional runtime dependencies after cloning:
+Codex PPTX generation expects the built-in `Presentations` skill/plugin, `artifact-tool`, and `imagegen` to be available in the Codex runtime. Claude Code PPTX generation expects the plugin-local Claude metadata and `document-skills` route documented in the plugin README.
 
-```powershell
-python -m pip install -r "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite\requirements-claude-pptx.txt"
-npm install --prefix "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite"
-python "$env:USERPROFILE\student-presentation-suite-marketplace\plugins\student-presentation-suite\scripts\check_claude_pptx_env.py" --json
-```
+## Other Agent Tools
 
-LibreOffice and Poppler are system tools and must still be installed separately.
-
-## Usage
-
-Use the plugin by asking for one of the three workflows:
-
-- Plan a class presentation from a topic.
-- Generate or improve an editable PPTX from an outline, Slide Spec, or review findings.
-- Review an existing deck, PDF export, screenshot, or Slide Spec.
-
-For full plugin-level details, see:
-
-- [Plugin README](plugins/student-presentation-suite/README.md)
-- [中文文档](plugins/student-presentation-suite/README-zh.md)
-- [Example presentation brief](plugins/student-presentation-suite/examples/ai-learning-report.md)
+OpenCode or similar tools should consume the skill source directly from `plugins/student-presentation-suite/skills/` or from the plugin-local metadata they support.
 
 ## Development
 
@@ -123,38 +79,28 @@ Install validation dependencies:
 python -m pip install -r plugins/student-presentation-suite/requirements.txt
 ```
 
-For Claude Code PPTX generation and rendered QA, install the optional runtime dependencies:
-
-```powershell
-python -m pip install -r plugins/student-presentation-suite/requirements-claude-pptx.txt
-npm install --prefix plugins/student-presentation-suite
-```
-
-LibreOffice and Poppler are system tools and must still be installed separately. Run `python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json` after installing them.
-
 Run tests and release checks from the repository root:
 
 ```powershell
 python -m pytest -q plugins/student-presentation-suite/tests
 python plugins/student-presentation-suite/scripts/check_plugin_release.py
-python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json
+python scripts/check_marketplace_release.py
 ```
 
-Validate plugin manifests:
+Validate the runtime manifests:
 
 ```powershell
 python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" `
   .\plugins\student-presentation-suite
-claude plugin validate .\plugins\student-presentation-suite
 claude plugin validate .
+claude plugin validate .\plugins\student-presentation-suite
 ```
 
 ## Notes
 
-- Generated PPTX, PNG, PDF, and cache files are ignored by default.
-- The root `marketplace.json` is for Codex.
-- The root `.claude-plugin/marketplace.json` is for Claude Code.
-- The plugin package lives under `plugins/student-presentation-suite`.
+- Generated PPTX, PNG, PDF, dependency, and cache files are ignored by default.
+- `plugins/student-presentation-suite/README.md` documents the plugin behavior.
+- The root README documents the shared Codex and Claude Code marketplace structure and installation.
 
 ## License
 

@@ -8,6 +8,8 @@
 
 `student-presentation-suite` is a plugin for university presentation work. It helps an agent plan a classroom presentation, generate or improve an editable PPTX deck, and review an existing deck with student-focused standards.
 
+The suite uses a strict trigger boundary: the request must clearly establish a student-owned context and explicitly ask for a PPT/slide outline, PPT/PPTX creation or improvement, or review of an existing PPT artifact. Generic presentation work, standalone scripts/Q&A, and non-student decks should use other skills.
+
 This file describes the plugin package itself. Repository-level installation and marketplace setup are documented in the root [README](../../README.md).
 
 ## Skills

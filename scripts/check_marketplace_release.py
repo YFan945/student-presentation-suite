@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the repository-level marketplace structure before publishing."""
+"""Check the repository-level shared marketplace structure before publishing."""
 
 from __future__ import annotations
 
@@ -32,7 +32,6 @@ def check_required_paths(errors: list[str]) -> None:
         "README-zh.md",
         "LICENSE",
         ".gitignore",
-        "marketplace.json",
         ".claude-plugin/marketplace.json",
         ".github/workflows/validate.yml",
         "plugins/student-presentation-suite/.codex-plugin/plugin.json",
@@ -48,60 +47,32 @@ def check_required_paths(errors: list[str]) -> None:
             errors.append(f"Missing required repository file: {rel}")
 
 
-def check_codex_marketplace(errors: list[str]) -> None:
-    path = ROOT / "marketplace.json"
-    data = load_json(path, errors)
-    if data is None:
-        return
-    if data.get("name") != "student-presentation-marketplace":
-        errors.append("Codex marketplace name should be student-presentation-marketplace")
-    plugins = data.get("plugins")
-    if not isinstance(plugins, list) or not plugins:
-        errors.append("Codex marketplace must include a non-empty plugins array")
-        return
-    names = {item.get("name") for item in plugins if isinstance(item, dict)}
-    if names != {"student-presentation-suite"}:
-        errors.append(f"Codex marketplace should publish only student-presentation-suite, got {sorted(names)}")
-    for item in plugins:
-        if not isinstance(item, dict):
-            errors.append("Codex marketplace plugin entry must be an object")
-            continue
-        source = item.get("source", {})
-        plugin_path = source.get("path")
-        if plugin_path != "./plugins/student-presentation-suite":
-            errors.append(f"Codex marketplace source.path should be ./plugins/student-presentation-suite, got {plugin_path}")
-        elif not (ROOT / plugin_path).is_dir():
-            errors.append(f"Codex marketplace source path does not exist: {plugin_path}")
-        policy = item.get("policy", {})
-        if policy.get("installation") != "AVAILABLE":
-            errors.append("Codex marketplace policy.installation should be AVAILABLE")
-        if policy.get("authentication") != "ON_INSTALL":
-            errors.append("Codex marketplace policy.authentication should be ON_INSTALL")
-
-
-def check_claude_marketplace(errors: list[str]) -> None:
+def check_shared_marketplace(errors: list[str]) -> None:
     path = ROOT / ".claude-plugin" / "marketplace.json"
     data = load_json(path, errors)
     if data is None:
         return
-    if data.get("name") != "student-presentation-suite":
-        errors.append("Claude marketplace name should be student-presentation-suite")
+    if data.get("name") != "personal":
+        errors.append("Shared marketplace name must be lowercase personal")
+    owner = data.get("owner", {})
+    if owner.get("name") in {None, "", "Local developer"}:
+        errors.append("Shared marketplace owner.name must be a publishable owner name")
     plugins = data.get("plugins")
     if not isinstance(plugins, list) or not plugins:
-        errors.append("Claude marketplace must include a non-empty plugins array")
+        errors.append("Shared marketplace must include a non-empty plugins array")
         return
     names = {item.get("name") for item in plugins if isinstance(item, dict)}
     if names != {"student-presentation-suite"}:
-        errors.append(f"Claude marketplace should publish only student-presentation-suite, got {sorted(names)}")
+        errors.append(f"Shared marketplace should publish only student-presentation-suite, got {sorted(names)}")
     for item in plugins:
         if not isinstance(item, dict):
-            errors.append("Claude marketplace plugin entry must be an object")
+            errors.append("Shared marketplace plugin entry must be an object")
             continue
         source = item.get("source")
         if source != "./plugins/student-presentation-suite":
-            errors.append(f"Claude marketplace source should be ./plugins/student-presentation-suite, got {source}")
+            errors.append(f"Shared marketplace source should be ./plugins/student-presentation-suite, got {source}")
         elif not (ROOT / source).is_dir():
-            errors.append(f"Claude marketplace source path does not exist: {source}")
+            errors.append(f"Shared marketplace source path does not exist: {source}")
 
 
 def check_readmes(errors: list[str]) -> None:
@@ -127,15 +98,17 @@ def check_readmes(errors: list[str]) -> None:
         errors.append("Plugin README-zh.md missing zh/en switch")
     for label, text in (("README.md", root_en), ("README-zh.md", root_zh)):
         for expected in (
+            ".claude-plugin/marketplace.json",
+            "plugins/student-presentation-suite",
             "codex plugin marketplace add",
-            "codex plugin add student-presentation-suite@student-presentation-marketplace",
+            "codex plugin add student-presentation-suite@personal",
             "claude plugin marketplace add",
-            "claude plugin install student-presentation-suite@student-presentation-suite",
-            "document-skills@anthropic-agent-skills",
-            "check_claude_pptx_env.py",
+            "claude plugin install student-presentation-suite@personal",
+            "Claude Code",
+            "OpenCode",
         ):
             if expected not in text:
-                errors.append(f"{label} missing user installation detail: {expected}")
+                errors.append(f"{label} missing repository usage detail: {expected}")
     for label, text in (
         ("plugins/student-presentation-suite/README.md", plugin_en),
         ("plugins/student-presentation-suite/README-zh.md", plugin_zh),
@@ -153,8 +126,7 @@ def main() -> None:
     args = parse_args()
     errors: list[str] = []
     check_required_paths(errors)
-    check_codex_marketplace(errors)
-    check_claude_marketplace(errors)
+    check_shared_marketplace(errors)
     check_readmes(errors)
     result = {"ok": not errors, "error_count": len(errors), "errors": errors}
     if args.json:

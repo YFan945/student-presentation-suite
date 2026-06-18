@@ -91,8 +91,8 @@ def check_manifests(errors: list[str]) -> None:
         errors.append("Codex manifest should document existing deck improvement with change summaries")
 
     dependencies = claude.get("dependencies", [])
-    if "document-skills" not in dependencies:
-        errors.append("Claude manifest must depend on document-skills")
+    if "document-skills@anthropic-agent-skills" not in dependencies:
+        errors.append("Claude manifest must depend on document-skills@anthropic-agent-skills")
 
 
 def check_codex_agent_dependencies(errors: list[str]) -> None:

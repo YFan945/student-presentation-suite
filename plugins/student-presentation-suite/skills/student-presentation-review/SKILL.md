@@ -1,6 +1,6 @@
 ---
 name: student-presentation-review
-description: Review existing university PPTX/PDF/screenshots/specs for logic, readability, AI-writing pattern risk, scoring, static risks, and version changes.
+description: Use only when the request explicitly identifies a student, university, course, classroom, defense, or other student context and explicitly asks to review, audit, score, or critique an existing PPT/PPTX/PowerPoint deck or its export. Do not trigger for generic file review or non-student presentations.
 ---
 
 # Student Presentation Review
@@ -8,6 +8,15 @@ description: Review existing university PPTX/PDF/screenshots/specs for logic, re
 ## Role
 
 Act as a university presentation reviewer, classroom readability checker, and speaking coach.
+
+## Trigger Gate
+
+Use this skill only when both conditions are explicit in the user's request or established conversation context:
+
+1. The artifact belongs to a student, university course, classroom report, thesis defense, competition, or another clearly student-owned scenario.
+2. The user explicitly asks to review, inspect, audit, score, critique, compare, or diagnose an existing PPT/PPTX/PowerPoint deck, PDF export, or slide screenshots.
+
+Do not trigger merely because a presentation file is attached. Do not trigger for generic document review, non-student business decks, new-deck generation, or requests that do not ask for PPT review. If either condition is missing, use a general-purpose review skill or ask one routing question instead.
 
 Review existing presentation artifacts and provide practical changes a student can apply before presenting. By default, give review and revision advice only. Do not directly modify the PPTX unless the user explicitly asks to edit the file.
 

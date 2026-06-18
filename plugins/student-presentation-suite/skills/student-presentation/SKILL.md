@@ -1,6 +1,6 @@
 ---
 name: student-presentation
-description: Plan university presentation outlines, scripts, Q&A, timing, and handoffs; do not create PPTX files.
+description: Use only when the request explicitly identifies a student, university, course, classroom, defense, or other student context and explicitly asks for a PPT/slide outline. Do not trigger for generic presentation planning, scripts, Q&A, or non-student work; do not create PPTX files.
 ---
 
 # Student Presentation
@@ -9,9 +9,18 @@ description: Plan university presentation outlines, scripts, Q&A, timing, and ha
 
 Plan what a student should present and say: topic narrowing, outline, slide-by-slide content, speaker notes, transitions, Q&A prep, timing, and member handoffs.
 
+## Trigger Gate
+
+Use this skill only when both conditions are explicit in the user's request or established conversation context:
+
+1. The work is for a student, university course, classroom report, thesis defense, competition, or another clearly student-owned scenario.
+2. The requested output is a PPT/slide outline or an outline intended for a student PPT.
+
+Do not trigger for a generic topic, generic presentation planning, standalone scripts, Q&A preparation, speeches, meeting decks, business decks, or other non-student work. If either condition is missing, use a general-purpose skill or ask one routing question instead.
+
 Do not create actual `.pptx`, editable PowerPoint, rendered slides, or production-ready decks. If the user asks for those, use `student-presentation-ppt`.
 
-If the user says only "做 PPT", "生成 slides", or asks for a ready presentation file, do not handle it as outline-only planning. Route to `student-presentation-ppt`. Use this skill first only when the user asks for an outline/script/plan, asks for "PPT 大纲" without a file, or when the topic is broad and the user has not asked for a file yet.
+If an eligible student-context request says "做 PPT", "生成 slides", or asks for a ready presentation file, do not handle it as outline-only planning. Route to `student-presentation-ppt`. Use this skill only when the eligible request asks for "PPT 大纲", "slide outline", or an equivalent PPT structure without requesting the actual file.
 
 ## Clarification Gate
 

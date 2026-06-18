@@ -19,18 +19,20 @@ Ask only for missing constraints that materially affect the next step. If the us
 
 ## Intent Routing
 
+Before routing to any skill in this suite, require both a clear student-owned context and an explicit PPT intent. Student-owned context includes a student, university course, classroom report, thesis defense, or student competition. PPT intent must be one of: requesting a PPT/slide outline, requesting PPT/PPTX creation or improvement, or requesting review of an existing PPT artifact. Do not use this suite for generic presentation work, standalone scripts/Q&A, attached decks without a review request, or non-student presentations.
+
 Choose the skill by the user's requested outcome, not only by the input type:
-- Use `student-presentation` when the requested output is an outline, script, Q&A prep, timing plan, group handoff, or Slide Spec handoff.
+- Use `student-presentation` when an eligible student-context request explicitly asks for a PPT/slide outline or Slide Spec outline handoff.
 - Use `student-presentation-ppt` when the user asks for PPT, PPTX, PowerPoint, slides, editable deck, rendered preview, or a ready presentation file.
 - Use `student-presentation-review` when the user provides an existing artifact and asks for review, scoring, risk checks, before/after comparison, or improvement advice.
 
 Ambiguous requests:
 - "做一个 PPT", "生成 slides", "make a slide deck", "make PowerPoint", or "make PPTX" means PPTX production unless the user explicitly says outline only.
-- "prepare a presentation" or "help me present" without deck/slides/PPTX wording means planning first.
-- "PPT 大纲", "slide outline", "presentation plan", "讲稿", or "答辩稿" means planning, not file generation, unless the user also asks for `.pptx`.
+- "prepare a presentation" or "help me present" without explicit student context and PPT wording is outside this suite.
+- "PPT 大纲" or "slide outline" in an explicit student context means planning, not file generation, unless the user also asks for `.pptx`.
 - "帮我看看/审一下/打分/有什么问题" with an existing artifact means review.
 - "帮我优化这个 PPT" with an existing artifact means first review and identify fixes; only edit or regenerate the deck if the user explicitly asks for file changes.
-- A broad topic with no output target means planning first, with optional Slide Spec if later PPTX generation is likely.
+- A broad topic with no explicit student context and PPT output target is outside this suite.
 - If a request mixes planning and PPTX generation, produce or confirm a slide plan/Slide Spec first, then build the PPTX from that plan.
 
 When the target is still unclear after reading the request, ask one routing question before doing detailed work: whether the user wants an outline/script, an editable PPTX, or a review of an existing file.

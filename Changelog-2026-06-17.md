@@ -8,19 +8,20 @@
 
 ## 今日概述
 
-今天主要围绕 `student-presentation-suite` 插件从单插件目录演进为同时适配 Codex 和 Claude Code 的本地 marketplace 仓库，并持续补齐安装、校验、运行时依赖和 skill 行为边界。整体成果包括 marketplace 根结构、Claude Code `document-skills` 路线、Codex `Presentations` 路线、已有 deck 改进交接、PPTX QA 环境检查、发布检查脚本和中英文 README。
+今天主要围绕 `student-presentation-suite` 插件从单插件目录演进为 Codex 与 Claude Code 都能直接添加的本地共享 marketplace，同时保留可被 OpenCode 等工具复用的 skill 源文件。最终结构只保留根 `.claude-plugin/marketplace.json` 作为共享市场文件；插件内部继续保留兼容元数据、Slide Spec bridge、PPTX QA 环境检查和 skill 行为边界。
 
 ## 变更内容
 
-### feat · 插件市场与双运行时适配
+### feat · Codex/Claude marketplace 与 skill 复用
 
-- **marketplace 根结构**：新增根级 `marketplace.json`、`.claude-plugin/marketplace.json`，把插件本体移动到 `plugins/student-presentation-suite/`，保留 Codex 与 Claude Code 两条入口路线。（`marketplace.json`、`.claude-plugin/marketplace.json`）
-- **Claude Code PPTX 路线**：为 Claude Code 增加 `.claude-plugin/plugin.json`，声明 `document-skills` 依赖，并通过 Slide Spec bridge 把本插件的课堂汇报约束传给 `pptx` skill。（`plugins/student-presentation-suite/.claude-plugin/plugin.json`、`plugins/student-presentation-suite/scripts/slide_spec_to_pptx_brief.py`）
+- **marketplace 根结构**：删除根级 `marketplace.json`，保留 `.claude-plugin/marketplace.json` 作为 Codex 和 Claude Code 共享的 marketplace；该文件指向 `plugins/student-presentation-suite/`。（`.claude-plugin/marketplace.json`）
+- **Claude/OpenCode 复用路线**：Claude Code 可直接从本目录添加插件市场；OpenCode 等工具仍可直接消费 `skills/` 源文件或插件本体内兼容元数据。（`.claude-plugin/marketplace.json`、`plugins/student-presentation-suite/skills/`、`plugins/student-presentation-suite/.claude-plugin/plugin.json`）
+- **Claude Code PPTX bridge**：插件内仍保留 `.claude-plugin/plugin.json` 和 `document-skills` 相关 bridge，用于需要直接读取插件本体的场景。（`plugins/student-presentation-suite/.claude-plugin/plugin.json`、`plugins/student-presentation-suite/scripts/slide_spec_to_pptx_brief.py`）
 - **已有 deck 改进交接**：扩展 Slide Spec schema 和文档，支持 `source_deck`、`edit_intent`、`review_findings`、`preserve`、`change_summary_required`，让 review 结果可稳定交给 PPTX 生成流程。（`plugins/student-presentation-suite/references/slide-spec.schema.json`、`plugins/student-presentation-suite/references/slide-spec.md`）
 
 ### fix · 安装与发布可用性
 
-- **安装文档闭环**：根 README 补齐 Codex 非默认 marketplace 安装命令、默认个人 marketplace 合并说明、Claude Code marketplace/install 命令，以及 PPTX 运行依赖检查步骤。（`README.md`、`README-zh.md`）
+- **安装文档闭环**：根 README 说明 Codex 和 Claude Code 都通过同一个 `.claude-plugin/marketplace.json` 添加本目录 marketplace。（`README.md`、`README-zh.md`）
 - **发布元数据**：将 manifest 中的 `Local developer` 替换为 `YFan945`，补充 Codex homepage/repository 作者信息，并刷新 Codex cachebuster 版本。（`plugins/student-presentation-suite/.codex-plugin/plugin.json`、`plugins/student-presentation-suite/.claude-plugin/plugin.json`）
 - **CI 导入路径**：修复 GitHub Actions 中测试导入路径问题，确保 `shared` 等插件内模块能在 CI 中正常导入。（`.github/workflows/validate.yml`）
 
@@ -32,13 +33,13 @@
 
 ### docs · README 与贡献说明
 
-- **根 README 重写**：把仓库定位、目录结构、兼容性、安装、使用、开发验证拆清楚，并维护中英文互链。（`README.md`、`README-zh.md`）
+- **根 README 重写**：把仓库定位为 Codex/Claude Code 共享 marketplace 和通用 skill 源目录，维护中英文互链。（`README.md`、`README-zh.md`）
 - **插件 README 重写**：将插件包 README 从安装混合说明调整为插件能力说明，覆盖三个 skill、输入输出、运行路线、辅助脚本和验证方式。（`plugins/student-presentation-suite/README.md`、`plugins/student-presentation-suite/README-zh.md`）
-- **贡献指南**：新增 AGENTS.md，明确 marketplace 根结构、测试命令、命名规范、Codex/Claude 双路线和 README 更新要求。（`AGENTS.md`）
+- **贡献指南**：更新 AGENTS.md，明确需要保留单一共享 marketplace 路线，不再恢复单独的根 `marketplace.json`。（`AGENTS.md`）
 
 ### test · 发布检查与行为契约
 
-- **marketplace 发布检查**：新增根级 `scripts/check_marketplace_release.py`，校验根 marketplace、Claude marketplace、README 中英互链、路径和安装说明。（`scripts/check_marketplace_release.py`）
+- **marketplace 发布检查**：根级 `scripts/check_marketplace_release.py` 校验共享 marketplace、README 中英互链、路径和安装说明。（`scripts/check_marketplace_release.py`）
 - **插件发布检查**：扩展 `check_plugin_release.py`，校验双 manifest、运行时依赖、已有 deck 改进字段、README 运行说明、禁止提交 `node_modules`/缓存目录等。（`plugins/student-presentation-suite/scripts/check_plugin_release.py`）
 - **行为契约测试**：新增/扩展测试，覆盖 vague PPTX 请求、review 到 edit 的交接、Slide Spec bridge、schema 字段和 README/skill 行为一致性。（`plugins/student-presentation-suite/tests/test_skill_behavior_contracts.py`、`plugins/student-presentation-suite/tests/test_slide_spec_bridge.py`）
 
@@ -51,7 +52,7 @@
 
 | 区域 | 主要变化 |
 | --- | --- |
-| 根目录 | marketplace manifest、README、AGENTS、CI、发布检查脚本 |
+| 根目录 | 共享 marketplace manifest、README、AGENTS、CI、发布检查脚本 |
 | 插件 manifest | Codex/Claude 插件元数据、依赖和版本 cachebuster |
 | Skill 文件 | 三个 skill 的职责、路由、澄清门、QA 和输出契约 |
 | references | Slide Spec、PPTX production、review output、shared standards |
@@ -66,7 +67,6 @@
 python scripts/check_marketplace_release.py --json
 python plugins/student-presentation-suite/scripts/check_plugin_release.py --json
 python -m pytest -q plugins/student-presentation-suite/tests
-python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json
 python %USERPROFILE%\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py .\plugins\student-presentation-suite
 claude plugin validate .\plugins\student-presentation-suite
 claude plugin validate .
@@ -75,12 +75,12 @@ claude plugin validate .
 ## 未完成事项
 
 - Codex CLI 在当前 shell 中执行 `codex plugin --help` 返回 `Access is denied`，因此 Codex 安装命令按 `plugin-creator` 规范写入文档并通过 Codex plugin validator 验证 manifest，但没有在当前 shell 实跑安装。
-- 尚未做一次从干净 clone 开始的真实用户安装演练，尤其是 Claude Code marketplace add/install 与 PPTX 生成端到端流程。
+- 尚未做一次从干净 clone、新 Codex 线程或 Claude Code 实例开始的真实用户安装演练。
 
 ## 明日计划
 
-- 在干净目录执行一次 clone 后的 Codex/Claude Code 安装路径演练，确认 README 命令可直接复现。
-- 准备一个最小 Slide Spec 示例，跑通 Claude Code `document-skills` PPTX 生成、渲染和 `pptx_delivery_check.py`。
+- 在干净目录、新 Codex 线程或 Claude Code 实例执行一次安装路径演练，确认 README 命令可直接复现。
+- 准备一个最小 Slide Spec 示例，跑通 Codex PPTX 生成、渲染和 `pptx_delivery_check.py`。
 - 继续检查 marketplace 元数据是否需要补充图标、截图、隐私/条款链接或更正式的发布说明。
 
 ## 备注

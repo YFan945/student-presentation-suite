@@ -25,6 +25,7 @@ TEXT_CHARS_PER_CM_LIMIT = 18
 CHINESE_PARAGRAPH_LIMIT = 160
 LATIN_PARAGRAPH_LIMIT = 220
 HEADING_PLACEHOLDER_TYPES = {"title", "ctrTitle", "subTitle"}
+PRIMARY_TITLE_PLACEHOLDER_TYPES = {"title", "ctrTitle"}
 BODY_PLACEHOLDER_TYPES = {"body", "dt", "ftr", "sldNum"}
 HEADING_NAME_HINTS = ("title", "subtitle", "heading", "header", "标题", "副标题")
 DEFAULT_MAX_PPTX_BYTES = 80 * 1024 * 1024
@@ -206,6 +207,15 @@ def is_heading_shape(el: ET.Element) -> bool:
     return any(hint.lower() in name for hint in HEADING_NAME_HINTS)
 
 
+def is_primary_title_shape(el: ET.Element) -> bool:
+    ph = el.find(".//p:nvPr/p:ph", NS)
+    if ph is not None:
+        return ph.attrib.get("type") in PRIMARY_TITLE_PLACEHOLDER_TYPES
+    c_nv_pr = el.find(".//p:cNvPr", NS)
+    name = (c_nv_pr.attrib.get("name", "") if c_nv_pr is not None else "").lower()
+    return "title" in name and "subtitle" not in name and "副标题" not in name
+
+
 def fill_colors(el: ET.Element) -> list[str]:
     colors = []
     for srgb in el.findall(".//a:srgbClr", NS):
@@ -281,6 +291,9 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
                     if not txt:
                         continue
                     heading = container_type == "shape" and is_heading_shape(container)
+                    primary_title = (
+                        container_type == "shape" and is_primary_title_shape(container)
+                    )
                     sizes = font_sizes(container)
                     font_size_source = "explicit" if sizes else None
                     if not sizes and container_type == "shape":
@@ -296,7 +309,7 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
                         risk.append("font-size-below-20pt")
                     elif is_cjk and min_size < 22:
                         risk.append("chinese-font-size-below-22pt")
-                    if heading and min_size is not None and min_size < 24:
+                    if primary_title and min_size is not None and min_size < 24:
                         risk.append("heading-font-size-below-24pt")
                     if bounds:
                         width_cm = max(bounds["cx"] / EMU_PER_CM, 0.1)
@@ -322,6 +335,7 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
                                 "char_count": chars,
                                 "detected_cjk": is_cjk,
                                 "heading_shape": heading,
+                                "primary_title_shape": primary_title,
                                 "bounds": bounds,
                                 "risk": risk,
                             }

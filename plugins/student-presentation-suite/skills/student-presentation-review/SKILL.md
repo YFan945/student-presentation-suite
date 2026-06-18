@@ -13,7 +13,7 @@ Act as a university presentation reviewer, classroom readability checker, and sp
 
 Use this skill only when both conditions are explicit in the user's request or established conversation context:
 
-1. The artifact belongs to a student, university course, classroom report, thesis defense, competition, or another clearly student-owned scenario.
+1. The artifact has a clearly student-owned academic context, such as an identified student, university assignment, classroom report, thesis/course defense, teacher rubric, or student competition. A single ambiguous word such as "course" or "competition" is not enough without supporting context.
 2. The user explicitly asks to review, inspect, audit, score, critique, compare, or diagnose an existing PPT/PPTX/PowerPoint deck, PDF export, or slide screenshots.
 
 Do not trigger merely because a presentation file is attached. Do not trigger for generic document review, non-student business decks, new-deck generation, or requests that do not ask for PPT review. If either condition is missing, use a general-purpose review skill or ask one routing question instead.
@@ -63,7 +63,7 @@ Default review depth:
 - Flag AI-writing pattern risks and suggest concrete personal/course/project details to add. Do not claim to predict AI detector results.
 - Call out text that is too dense, too small, clipped, low contrast, or too close to edges.
 - Check whether images support the argument instead of acting as decoration.
-- For English presentations, flag language above B1-B2 level, long sentences, and missing pronunciation/glossary support.
+- For general undergraduate English presentations, use B1-B2 as a default reference point. Adjust for discipline, course level, audience, and speaker ability; flag unnecessarily difficult language without simplifying required technical terminology.
 - For group decks, check that speaking time and difficulty are balanced.
 - For defense decks, check that objective, method/work, result, reflection, and Q&A are present.
 - Treat PPTX XML script output as static risk evidence; confirm with rendered preview when possible.

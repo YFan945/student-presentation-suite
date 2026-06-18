@@ -13,7 +13,7 @@ Plan what a student should present and say: topic narrowing, outline, slide-by-s
 
 Use this skill only when both conditions are explicit in the user's request or established conversation context:
 
-1. The work is for a student, university course, classroom report, thesis defense, competition, or another clearly student-owned scenario.
+1. The work has a clearly student-owned academic context, such as an identified student, university assignment, classroom report, thesis/course defense, teacher rubric, or student competition. A single ambiguous word such as "course" or "competition" is not enough without supporting context.
 2. The requested output is a PPT/slide outline or an outline intended for a student PPT.
 
 Do not trigger for a generic topic, generic presentation planning, standalone scripts, Q&A preparation, speeches, meeting decks, business decks, or other non-student work. If either condition is missing, use a general-purpose skill or ask one routing question instead.
@@ -40,13 +40,21 @@ Ask for missing items that affect the plan, including presentation type, languag
    - `../../references/image-strategy.md` for visual source planning
 3. If the topic is broad, offer 2-3 concrete angles that fit the duration, evidence, and likely conclusion. If the user asked the agent to decide, choose one angle and state why.
 4. Build the presentation spine: main claim, story arc, timing, and member ownership.
-5. Draft each slide with a claim-style title, concise on-slide content, visual idea, speaker note goal, and transition/handoff sentence.
+5. Match detail to the request. For a rough outline, provide slide purpose, title, and 1-3 content points only. For a production handoff or full planning request, draft each content slide with a claim-style title when it presents an argument or finding, concise on-slide content, a useful visual idea when the message benefits from one, a speaker-note goal, and a transition/handoff when there is a meaningful next step. Covers, section dividers, references, appendix, and Q&A slides may use descriptive titles and omit artificial transitions or visuals.
 6. Add Q&A, scoring-risk warnings, pronunciation/glossary support, or Slide Spec YAML when useful.
 7. If later PPTX generation is likely, include a handoff note that the outline is ready for `student-presentation-ppt` and list any unresolved constraints that would affect visual production.
 
 ## Output
 
-For outline requests:
+For rough outline requests:
+
+```markdown
+## Slide 1: Title
+- Purpose:
+- Key points:
+```
+
+For detailed planning or PPTX handoff requests:
 
 ```markdown
 ## Slide 1: Title

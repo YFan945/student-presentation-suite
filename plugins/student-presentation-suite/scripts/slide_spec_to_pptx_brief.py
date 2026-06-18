@@ -9,6 +9,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from shared.slide_spec_validation import semantic_errors
+
 
 def load_optional_dependencies():
     try:
@@ -52,13 +58,16 @@ def validate_spec(data: Any, schema_path: Path, jsonschema_module: Any) -> list[
     jsonschema_module.Draft202012Validator.check_schema(schema)
     validator = jsonschema_module.Draft202012Validator(schema)
     errors = sorted(validator.iter_errors(data), key=lambda err: list(err.path))
-    return [
+    errors = [
         {
             "path": "." + ".".join(str(part) for part in error.path),
             "message": error.message,
         }
         for error in errors
     ]
+    if not errors:
+        errors.extend(semantic_errors(data))
+    return errors
 
 
 def text_block(value: Any, indent: str = "") -> str:
@@ -167,10 +176,10 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
         [
             "",
             "## Student Presentation Requirements",
-            "- One clear message per slide; use claim-style titles where possible.",
+            "- Keep one clear message per content slide; use claim-style titles for argumentative and evidence slides.",
             "- Chinese normal body text must be >= 22pt; English normal body text must be >= 20pt.",
-            "- Titles, subtitles, section headers, card headers, chart titles, and panel labels must be >= 24pt.",
-            "- Use functional visual structures: timelines, process nodes, comparison cards, callouts, charts, panels, or diagrams.",
+            "- Primary slide titles should normally be >= 24pt; visually verify smaller secondary labels.",
+            "- Use functional visual structures when they clarify content; do not force decoration onto covers, dividers, references, appendix, or Q&A slides.",
             "- Avoid generic AI-sounding filler; prefer course/project-specific examples and modest claims.",
             "- Include speaker notes or a separate notes file with note goals and transitions.",
             "",
@@ -186,12 +195,13 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
                 f"- Layout intent: {slide['layout']}",
                 f"- Owner: {slide['owner']}",
                 f"- Timing seconds: {slide['timing_sec']}",
-                f"- Visual type: {visual.get('type', 'not specified')}",
-                f"- Visual purpose: {visual.get('purpose', 'not specified')}",
+                f"- Slide kind: {slide.get('kind', 'content')}",
+                f"- Visual type: {visual.get('type', 'not required')}",
+                f"- Visual purpose: {visual.get('purpose', 'not required')}",
                 "- Content:",
                 text_block(slide["content"], "  "),
-                f"- Speaker note goal: {slide['note_goal']}",
-                f"- Transition: {slide['transition']}",
+                f"- Speaker note goal: {slide.get('note_goal', 'not required')}",
+                f"- Transition: {slide.get('transition', 'not required')}",
             ]
         )
 
@@ -202,7 +212,7 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
             "- Run `python -m markitdown output.pptx` and inspect extracted text.",
             "- Render with LibreOffice, then convert PDF pages to images with Poppler.",
             "- Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop.",
-            "- From the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --json` when possible.",
+            "- From the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict --json` when possible.",
             "- For existing deck improvements, verify `outputs/<topic>-change-summary.md` lists kept content, changed slides, unresolved risks, and QA results.",
             "- Final response must report file existence, slide count, static XML risks, visual QA status, and limitations.",
             "",

@@ -140,6 +140,19 @@ class PptxStaticCoreTests(unittest.TestCase):
         self.assertEqual(result["findings"][0]["font_size_source"], "explicit")
         self.assertIn("heading-font-size-below-24pt", result["findings"][0]["risk"])
 
+    def test_subtitle_below_24pt_is_not_treated_as_primary_title(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            pptx = Path(tmp) / "subtitle-size.pptx"
+            self.write_pptx(
+                pptx,
+                [slide_xml("Readable subtitle", ph_type="subTitle", explicit_sz="2200")],
+            )
+
+            result = core.inspect_pptx(pptx)
+
+        risks = result["findings"][0]["risk"] if result["findings"] else []
+        self.assertNotIn("heading-font-size-below-24pt", risks)
+
 
 if __name__ == "__main__":
     unittest.main()

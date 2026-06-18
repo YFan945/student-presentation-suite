@@ -30,6 +30,7 @@ REQUIRED_FILES = [
     "scripts/slide_spec_to_pptx_brief.py",
     "scripts/validate_slide_spec.py",
     "tests/test_pptx_static_core.py",
+    "tests/test_pptx_delivery_check.py",
     "tests/test_slide_spec_bridge.py",
     "tests/test_skill_behavior_contracts.py",
 ]
@@ -81,6 +82,11 @@ def check_manifests(errors: list[str]) -> None:
         errors.append("Codex manifest interface.developerName must be a publishable developer name")
     if claude.get("author", {}).get("name") in {None, "", "Local developer"}:
         errors.append("Claude manifest author.name must be a publishable author name")
+    if codex.get("version") != claude.get("version"):
+        errors.append(
+            "Codex and Claude plugin manifest versions must match: "
+            f"{codex.get('version')} != {claude.get('version')}"
+        )
 
     capabilities = codex.get("interface", {}).get("capabilities", [])
     if "Codex PPTX production uses the default Presentations skill/artifact-tool workflow" not in capabilities:
@@ -122,6 +128,10 @@ def check_docs(errors: list[str]) -> None:
         ):
             if expected not in text:
                 errors.append(f"{label} missing install/compatibility detail: {expected}")
+        if "student-presentation-suite@student-presentation-suite" in text:
+            errors.append(f"{label} uses a plugin name instead of the shared marketplace name")
+        if "student-presentation-suite@personal" not in text:
+            errors.append(f"{label} must use the shared marketplace install name")
     if "Presentations" not in readme or "artifact-tool" not in readme:
         errors.append("README.md must mention Codex Presentations/artifact-tool compatibility")
     if "Presentations" not in readme_zh or "artifact-tool" not in readme_zh:

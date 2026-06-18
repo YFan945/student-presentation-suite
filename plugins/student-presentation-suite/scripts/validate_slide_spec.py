@@ -8,6 +8,12 @@ import json
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from shared.slide_spec_validation import semantic_errors
+
 
 def load_optional_dependencies():
     try:
@@ -44,7 +50,7 @@ def main() -> None:
         data = yaml.safe_load(args.spec.read_text(encoding="utf-8"))
         jsonschema.Draft202012Validator.check_schema(schema)
         validator = jsonschema.Draft202012Validator(schema)
-        errors = sorted(validator.iter_errors(data), key=lambda err: list(err.path))
+        schema_errors = sorted(validator.iter_errors(data), key=lambda err: list(err.path))
     except (OSError, json.JSONDecodeError, yaml.YAMLError, jsonschema.SchemaError) as exc:
         result = {"valid": False, "error": str(exc), "errors": []}
         if args.json:
@@ -53,16 +59,20 @@ def main() -> None:
             print(f"Slide Spec validation failed: {exc}")
         raise SystemExit(2) from exc
 
-    result = {
-        "valid": not errors,
-        "error_count": len(errors),
-        "errors": [
+    errors = [
             {
                 "path": "." + ".".join(str(part) for part in error.path),
                 "message": error.message,
             }
-            for error in errors
-        ],
+            for error in schema_errors
+        ]
+    if not errors:
+        errors.extend(semantic_errors(data))
+
+    result = {
+        "valid": not errors,
+        "error_count": len(errors),
+        "errors": errors,
     }
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))

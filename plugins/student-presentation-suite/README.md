@@ -8,7 +8,7 @@
 
 `student-presentation-suite` is a plugin for university presentation work. It helps an agent plan a classroom presentation, generate or improve an editable PPTX deck, and review an existing deck with student-focused standards.
 
-The suite uses a strict trigger boundary: the request must clearly establish a student-owned context and explicitly ask for a PPT/slide outline, PPT/PPTX creation or improvement, or review of an existing PPT artifact. Generic presentation work, standalone scripts/Q&A, and non-student decks should use other skills.
+The suite uses a focused trigger boundary: the request must establish a student-owned academic context and explicitly ask for a PPT/slide outline, PPT/PPTX creation or improvement, or review of an existing PPT artifact. A single ambiguous word such as "course" or "competition" is not enough by itself; use the surrounding academic cues or ask one routing question. Generic presentation work, standalone scripts/Q&A, and non-student decks should use other skills.
 
 This file describes the plugin package itself. Repository-level installation and marketplace setup are documented in the root [README](../../README.md).
 
@@ -74,6 +74,8 @@ All three skills share standards for:
 - group presentation handoffs
 - image/source safety
 
+Canonical rule ownership is explicit: `references/shared-standards.md` owns suite-wide routing, typography, density, language defaults, anti-AI, and group rules; `references/slide-spec.md` owns structured handoff rules; `references/image-strategy.md` owns source and visual policy. Skill-local references extend these rules instead of replacing them.
+
 Typography defaults:
 
 - Chinese normal body text: 22pt or larger
@@ -84,7 +86,7 @@ Typography defaults:
 
 The plugin can work from:
 
-- a broad topic
+- a broad topic when the same request or established context also identifies a student-owned academic PPT task
 - a course/rubric brief
 - an outline
 - source notes or research material
@@ -95,7 +97,13 @@ The plugin can work from:
 
 For vague PPTX requests, the PPT skill should either ask for production-critical constraints or offer a fast default / confirm-first path. It should not silently invent web sources, current facts, or grading-specific requirements.
 
+When visual style needs confirmation, the skill shows the complete style menu, ranks the strongest topic-fit choices first, and keeps every other available style visible.
+
+Each selected style is applied as generation control rather than a loose mood label. Style files define color roles, geometry, slide-type recipes, image treatment, density limits, chart/diagram behavior, fallback layouts, and rendered acceptance checks.
+
 Slide Spec YAML can also carry an existing-deck improvement handoff with `source_deck`, `edit_intent`, `review_findings`, `preserve`, and `change_summary_required`.
+
+Slide Spec validation checks both schema shape and cross-field consistency, including slide ids/count, total timing, group owners, and existing-deck field combinations.
 
 ## Outputs
 
@@ -141,7 +149,7 @@ Claude Code users should install the dependency plugin and this local marketplac
 /plugin marketplace add anthropics/skills
 /plugin install document-skills@anthropic-agent-skills
 /plugin marketplace add <path-to-this-repository>
-/plugin install student-presentation-suite@student-presentation-suite
+/plugin install student-presentation-suite@personal
 ```
 
 Then install local PPTX QA dependencies from this plugin directory:
@@ -180,8 +188,11 @@ python skills/student-presentation-ppt/scripts/pptx_delivery_check.py `
   --pptx outputs/<topic>-presentation.pptx `
   --notes outputs/<topic>-speaker-notes.md `
   --preview outputs/<topic>-preview.png `
+  --strict `
   --json
 ```
+
+Notes and preview paths are required by default and are derived from the PPTX filename when omitted. Use `--allow-missing-notes` or `--allow-missing-preview` only for an explicit exception; a missing preview means visual QA is incomplete.
 
 Run a static PPTX review:
 

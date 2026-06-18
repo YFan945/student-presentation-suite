@@ -6,7 +6,20 @@ Use these presets as creative directions when the user does not provide a school
 
 Each direction defines intent and guardrails, not a fixed template. The deck may vary layout, cover treatment, section rhythm, chart style, and visual metaphors as long as readability, density, contrast, source safety, and delivery QA remain intact.
 
-When the user is unsure about style, offer 3-5 suitable options from the style menu below. Keep the options tied to the topic and presentation situation, not a generic list. Each option should include a short reason, for example: "Academic Rigorous — safest for defense and teacher-facing evaluation" or "Creative Student — better for campus life and product showcase topics."
+## Applying A Style File
+
+Treat the selected style file as executable generation control, not mood-board language:
+
+1. Map its palette roles to actual slide colors: canvas, surface, primary text, secondary text, primary accent, and optional secondary accent.
+2. Follow its composition and geometry rules for margins, corner treatment, alignment, and visual weight.
+3. Use its slide-type recipes to vary cover, section, content, data, comparison, process, and closing pages.
+4. Follow its image and chart treatment instead of adding generic stock photos or default chart colors.
+5. Respect its density and repetition limits. Do not repeat one layout more than twice in succession unless a comparison sequence requires it.
+6. Run its acceptance checks after rendering. If a style-specific rule conflicts with readability, source safety, a supplied school template, or user instructions, those higher-priority constraints win.
+
+Style files use approximate ratios rather than pixel-perfect templates. Interpret `60/40`, `2/3 + 1/3`, or similar values as composition guidance within the slide safe area.
+
+When the user is unsure about style, show every style in the menu below. Rank the most suitable directions first and add short reasons to the top recommendations, for example: "Academic Rigorous — safest for defense and teacher-facing evaluation" or "Creative Student — better for campus life and product showcase topics." Keep the remaining styles visible in a compact list so the user can make an informed choice.
 
 ## Style Selection Menu
 
@@ -38,7 +51,7 @@ When the user says they are unsure, gives only a topic, or asks "你来定", off
 - Campus life/creative/product concept: offer `Creative Student`, `Coral Energy`, and `Modern Minimal`.
 - If the grading context is unknown, include at least one conservative option and one expressive option.
 
-When asking a Chinese user to choose, show the English style name and 中文别名, for example `Ocean Tech（海洋科技）`. Do not overwhelm the user with all styles. Offer the top choices, unless the user explicitly asks Codex to decide.
+When asking a Chinese user to choose, show the English style name and 中文别名, for example `Ocean Tech（海洋科技）`. List all styles, but separate 3-5 recommended choices from a compact "other available styles" list. If the user explicitly asks Codex to decide, choose one and state why instead of asking again.
 
 ## General Visual Principles
 
@@ -48,12 +61,12 @@ When asking a Chinese user to choose, show the English style name and 中文别�
 - use a consistent visual motif across the whole deck: rounded image frames, numbered tabs, side bars, circular icons, thick edge bands, or chart callout pills
 - vary layouts across slides instead of repeating the same card grid
 - use dark cover/conclusion with lighter content slides when appropriate
-- every slide should include a meaningful visual element: photo, chart, icon, diagram, structural shape, timeline, process, or comparison block
-- never use decorative underline strokes under titles; use spacing, bands, background blocks, or typography instead
+- content slides should use a meaningful visual element when it helps explain, compare, evidence, or organize the message; covers, section dividers, quotation slides, references, appendix, and Q&A pages do not need forced decoration
+- avoid decorative underline strokes when they are merely habitual; preserve them when they are part of a supplied template or a deliberate, consistent visual system
 
 ## Structural Visual Layer
 
-Every produced PPTX should use visible structural elements to organize information, unless the user explicitly asks for a plain text deck.
+Use visible structural elements when they organize information or establish hierarchy. Do not require a panel, card, divider, or diagram on every slide.
 
 Use:
 - background shape layers to divide sections

@@ -21,21 +21,21 @@ If duration is known but slide count is not, suggest choices rather than silentl
 - 10 minutes: 10-14 slides
 - 15 minutes: 14-18 slides
 
-If the user explicitly asks Codex to decide, or if the missing items are low-risk preferences for a general classroom deck, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer, avoid unsupported factual claims, avoid web images unless allowed, and state that the deck is not rubric-specific.
+If the user explicitly asks Codex to decide, or if the missing items are low-risk preferences for a general classroom deck, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer. Stable general knowledge may support basic explanations when identified as general background. Omit, qualify, or research source-sensitive, disputed, statistical, and current claims; avoid web images unless allowed; state that the deck is not rubric-specific.
 
 Fast default deck assumptions for vague PPTX requests:
 - language follows the user's request language
 - duration: 5 minutes
 - slide count: 7-9 slides
 - format: individual unless group members are mentioned
-- evidence: only user-provided facts plus general conceptual explanation
+- evidence: user-provided facts plus clearly identified stable general background; no invented statistics, current claims, or source-sensitive details
 - image policy: diagram-only or generated abstract visuals; no web images
 - style: one conservative classroom-safe direction from `visual-style-menu.md`
 
 ## Build Sequence
 
 1. Confirm production-critical constraints from the conversation or Slide Spec meta: presentation type, language, duration, slide count, format, course/rubric, source material, image-source limits, template/logo, and output prefix.
-2. Choose a creative direction from `visual-style-menu.md`. If the user has not specified one, pick the direction that best serves the topic and evidence type. If multiple directions are genuinely strong and the user has time to choose, offer 2-3 options.
+2. Choose a creative direction from `visual-style-menu.md`. If the user has not specified one and style choice needs confirmation, show the complete menu with the best topic-fit options first and concise reasons for the top recommendations. If the user delegates the choice, pick the direction that best serves the topic and evidence type.
 3. Generate or absorb Slide Spec structure. Preserve slide order, ownership, timing, visual purpose, and handoff intent unless changing them prevents crowding or improves clarity. If the Slide Spec includes `source_deck`, `edit_intent`, `review_findings`, `preserve`, or `change_summary_required`, treat those fields as the programmatic handoff from review to PPTX production.
 4. For existing deck improvement, convert review findings into a brief edit plan first. Preserve useful content and required template elements, decide which slides are rewritten vs redesigned, and write the improved deck to a new filename instead of overwriting the source. When `change_summary_required` is true, do not finish without `outputs/<topic>-change-summary.md` or an explicit limitation.
 5. Design the PPTX with variation inside guardrails. Layouts should express a function, not force a repeated template. Use topic-specific examples, visuals, chart forms, section rhythm, and opening/closing treatment. Keep a mismatch ledger while building: record any difference between requested constraints and the working assumptions, any missing source material, and any tool/API behavior discovered during production.
@@ -77,18 +77,18 @@ Check:
 
 ## Content Quality
 
-Every slide should have one message, one visual or structural focus, a speaker note point, and a transition. Move explanation into speaker notes instead of shrinking slide text. Avoid pages that look empty because they only contain a title and one vague sentence.
+Every content slide should have one message and a clear visual or structural focus when that helps explain the message. Argumentative and evidence slides should normally use claim-style titles. Covers, section dividers, quotation slides, references, appendix, and Q&A slides may use descriptive titles and may omit speaker-note goals, transitions, or additional visuals when those elements would be artificial. Move explanation into speaker notes instead of shrinking slide text. Avoid pages that look empty because they only contain a title and one vague sentence.
 
 Use concrete examples, data, diagrams, process steps, comparisons, or case details. Use shape-based structure such as panels, cards, dividers, process nodes, timeline blocks, callouts, or section bands. Use translucent panels or simulated glassmorphism only when they make text easier to read; fall back to opaque panels if PPTX/WPS rendering is weak.
 
 For data slides: one chart/table only, one conclusion sentence, no unexplained raw data.
 For defense decks: include objective, method/work, result, reflection, and Q&A.
 For group decks: include member assignment and handoff lines.
-For English decks: B1-B2 level, 2-4 short sentences per slide, natural connectors in notes, pronunciation/glossary help for difficult terms when useful.
+For general undergraduate English decks: use B1-B2 as the default reference point, 2-4 short sentences per content slide, natural connectors in notes, and pronunciation/glossary help when useful. Adjust language level for advanced courses, disciplinary terminology, audience, and speaker ability.
 
 ## Image Handling
 
-Follow `../../../references/image-strategy.md`. Images or meaningful visuals are expected unless the user explicitly asks for text-only, diagram-only, no network, or no generated assets. Avoid unrelated stock-like decoration. Record source URLs for web images when appropriate.
+Follow `../../../references/image-strategy.md`. Use images or meaningful visuals on content slides when they explain, evidence, compare, or organize the message. Do not force imagery onto covers, dividers, references, appendix, Q&A, or content that is clearer as text. Respect requests for text-only, diagram-only, no network, or no generated assets. Avoid unrelated stock-like decoration. Record source URLs for web images when appropriate.
 
 ## Anti-AI Review
 
@@ -122,7 +122,7 @@ Required QA inherited from the `pptx` skill:
 - Run `python -m markitdown output.pptx` for content extraction and sanity checking.
 - Render the deck with the `pptx` skill's LibreOffice helper, then convert PDF pages to images with Poppler, for example `scripts/office/soffice.py` plus `pdftoppm`.
 - Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop before calling the deck ready-to-present.
-- Also run this suite's `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` from the plugin package root when possible to report PPTX existence, notes existence, slide count, preview/contact sheet existence, and static XML risk signals.
+- Also run this suite's `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict` from the plugin package root when possible to report PPTX existence, notes existence, slide count, preview/contact sheet existence, and static XML risk signals.
 
 Dependencies and limitations:
 - The Claude plugin dependency is `document-skills`, not the standalone `pptx` skill path.
@@ -134,14 +134,14 @@ Dependencies and limitations:
 
 Before final response:
 - confirm `.pptx` exists and filename is topic-specific
-- from the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` when possible to verify PPTX existence, slide count, notes file, preview/contact sheet file, static XML risk summary, and risk breakdown
+- from the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict` when possible to verify PPTX existence, slide count, notes file, preview/contact sheet file, static XML risk summary, and risk breakdown
 - render or preview slides when possible; check at least the contact sheet or preview images
-- verify Chinese normal body text >= 22pt, English >= 20pt, titles/subtitles/section headers/card headers/chart titles/panel labels >= 24pt
+- verify Chinese normal body text >= 22pt, English normal body text >= 20pt, and primary slide titles normally >= 24pt; visually verify any smaller secondary labels
 - verify important keywords are visually emphasized
 - verify no text is out of frame, clipped, overflowing, or too close to box edges
 - verify layouts are neither too empty nor too crowded
 - verify images support the argument and are not decorative filler
-- verify each normal slide has a clear structural layer (shapes, panels, dividers, cards, callouts, or diagram nodes)
+- verify content slides have enough hierarchy to communicate clearly; do not add shapes, panels, cards, or diagrams solely to satisfy a structural-layer rule
 - verify background shapes or translucent panels improve hierarchy without reducing readability
 - verify text is not placed directly over busy images unless a sufficiently opaque panel protects readability
 - create a separate script/notes file if speaker notes are not embedded

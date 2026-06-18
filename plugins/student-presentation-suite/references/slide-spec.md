@@ -10,16 +10,19 @@ Do not force YAML for simple outline-only requests.
 
 ## Required Fields
 
-Each slide entry should include:
+Each slide entry must include:
 - `id`: slide number
-- `title`: claim-style slide title
+- `title`: claim-style title for argumentative/evidence slides; descriptive title is allowed for cover, divider, quotation, references, appendix, Q&A, and closing slides
 - `layout`: intended layout or slide type
 - `content`: short on-slide text or structured objects
-- `visual`: visual type and purpose
-- `note_goal`: what the speaker note should accomplish
-- `transition`: transition or handoff sentence
 - `timing_sec`: planned speaking time as an integer number of seconds
 - `owner`: speaker/member, or `Individual`
+
+Optional slide fields:
+- `kind`: `cover`, `content`, `section-divider`, `quotation`, `references`, `appendix`, `qa`, or `closing`; defaults conceptually to `content`
+- `visual`: visual type and purpose; omit when a visual would be forced or decorative
+- `note_goal`: what the speaker note should accomplish
+- `transition`: transition or handoff sentence; omit on the final slide or when no meaningful transition exists
 
 Optional deck-level `meta` may carry confirmed constraints across planning, PPTX production, and review:
 
@@ -44,6 +47,8 @@ Schema and validation:
 - JSON Schema: `references/slide-spec.schema.json`
 - Validator: `scripts/validate_slide_spec.py`
 - The validator requires `jsonschema` and `PyYAML` from `requirements.txt`.
+- Unknown fields are rejected in `meta`, slides, visuals, and review findings to catch spelling mistakes.
+- Semantic validation also checks contiguous slide ids, `slide_count`, total timing vs `duration_min`, group members/owners, and existing-deck field combinations.
 
 ```powershell
 # Run from the plugin package root.
@@ -99,12 +104,13 @@ slides:
 
 When `student-presentation-ppt` receives Slide Spec YAML:
 - preserve slide order and ownership
-- treat `visual.purpose` as required design intent
+- treat `visual.purpose` as required design intent when `visual` is present
 - use integer `timing_sec` values to balance speaker notes
 - keep `layout` unless a better layout is needed to prevent crowding
 - implement `layout` as a functional intent, not a fixed visual template
 - split slides or move details into speaker notes when content is dense; do not shrink normal body text below shared typography thresholds to make content fit
 - report any spec item that cannot be implemented
+- do not invent visuals or transitions for slide kinds where they would be decorative or artificial
 - when `source_deck` or `review_findings` is present, treat the spec as an existing-deck improvement plan: preserve listed elements, apply the findings, write a separate improved PPTX, and create `outputs/<topic>-change-summary.md` when required
 
 ## Layout Functional Mapping

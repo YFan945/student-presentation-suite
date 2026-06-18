@@ -73,6 +73,14 @@ def check_shared_marketplace(errors: list[str]) -> None:
             errors.append(f"Shared marketplace source should be ./plugins/student-presentation-suite, got {source}")
         elif not (ROOT / source).is_dir():
             errors.append(f"Shared marketplace source path does not exist: {source}")
+        plugin_root = ROOT / "plugins" / "student-presentation-suite"
+        for manifest_rel in (".codex-plugin/plugin.json", ".claude-plugin/plugin.json"):
+            manifest = load_json(plugin_root / manifest_rel, errors)
+            if manifest and item.get("version") != manifest.get("version"):
+                errors.append(
+                    "Marketplace and plugin manifest versions must match: "
+                    f"{item.get('version')} != {manifest.get('version')} ({manifest_rel})"
+                )
 
 
 def check_readmes(errors: list[str]) -> None:
@@ -115,7 +123,7 @@ def check_readmes(errors: list[str]) -> None:
     ):
         for expected in (
             "document-skills@anthropic-agent-skills",
-            "student-presentation-suite@student-presentation-suite",
+            "student-presentation-suite@personal",
             "check_claude_pptx_env.py --json",
         ):
             if expected not in text:

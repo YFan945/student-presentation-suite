@@ -2,6 +2,10 @@
 
 Use these standards across planning, PPTX production, and review.
 
+## Canonical Ownership
+
+This file is the canonical source for suite-wide routing, typography, density, language-level defaults, anti-AI wording, and group-presentation rules. Skill files should describe task-specific workflow and link here instead of redefining suite-wide thresholds. `slide-spec.md` owns structured handoff rules, `image-strategy.md` owns source/visual policy, and each skill-local reference owns only its task-specific extensions.
+
 ## Confirmed Constraints
 
 Before asking startup questions, check whether the user or Slide Spec meta already confirms:
@@ -19,7 +23,7 @@ Ask only for missing constraints that materially affect the next step. If the us
 
 ## Intent Routing
 
-Before routing to any skill in this suite, require both a clear student-owned context and an explicit PPT intent. Student-owned context includes a student, university course, classroom report, thesis defense, or student competition. PPT intent must be one of: requesting a PPT/slide outline, requesting PPT/PPTX creation or improvement, or requesting review of an existing PPT artifact. Do not use this suite for generic presentation work, standalone scripts/Q&A, attached decks without a review request, or non-student presentations.
+Before routing to any skill in this suite, require both a clear student-owned academic context and an explicit PPT intent. Strong context includes an identified student, university assignment, classroom report, thesis/course defense, teacher rubric, or student competition. Do not treat a single ambiguous word such as "course", "class", "competition", or "defense" as sufficient without supporting academic cues. PPT intent must be one of: requesting a PPT/slide outline, requesting PPT/PPTX creation or improvement, or requesting review of an existing PPT artifact. Do not use this suite for generic presentation work, standalone scripts/Q&A, attached decks without a review request, or non-student presentations.
 
 Choose the skill by the user's requested outcome, not only by the input type:
 - Use `student-presentation` when an eligible student-context request explicitly asks for a PPT/slide outline or Slide Spec outline handoff.
@@ -41,8 +45,8 @@ When the target is still unclear after reading the request, ask one routing ques
 
 - Chinese normal body text should be 22pt or larger.
 - English normal body text should be 20pt or larger.
-- Slide titles, subtitles, section headers, card headers, chart titles, panel labels, and other subheadings should be 24pt or larger.
-- Smaller text is allowed only for captions, citations, footnotes, chart labels, or minor explanations.
+- Primary slide titles should normally be 24pt or larger. Subtitles, card headers, chart titles, panel labels, legends, diagram labels, and other secondary text may be smaller when the layout requires it, but must remain projection-readable.
+- Smaller text is allowed for secondary labels, captions, citations, footnotes, chart labels, diagram annotations, or minor explanations.
 - Keep slide text inside boxes with comfortable padding.
 - Prefer high contrast and simple classroom projection-friendly layouts.
 
@@ -88,7 +92,7 @@ Reduce risk by adding:
 
 ## English Presentation Standard
 
-- Use B1-B2 level English by default.
+- Use B1-B2 level English for general undergraduate classroom presentations by default. Raise or lower the level when the course, audience, discipline, or speaker ability clearly requires it; do not simplify necessary technical terminology.
 - Keep each slide to 2-4 short sentences or phrase groups.
 - Avoid complex long sentences and passive-heavy academic writing.
 - Speaker notes should use natural connectors such as "First", "This example shows", "So the main point is", and "Now I will hand over to".

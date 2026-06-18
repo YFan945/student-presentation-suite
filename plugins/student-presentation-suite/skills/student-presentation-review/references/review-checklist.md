@@ -12,7 +12,7 @@ Critical:
 - English presentation is too difficult to speak naturally
 
 Major:
-- titles are labels instead of claims
+- argumentative or evidence-slide titles are labels when a claim would materially improve comprehension
 - slides contain dense paragraphs or script-like text
 - evidence, data, or examples are not interpreted
 - visuals are decorative or unrelated
@@ -48,7 +48,7 @@ Defense decks should include:
 ## Slide Content Review
 
 Check:
-- title is a claim, not only a label
+- argumentative and evidence-slide titles state the claim; covers, section dividers, references, appendix, and Q&A slides may use descriptive labels
 - body text is short enough to present
 - no normal slide has more than 4 bullets unless it is a deliberate summary/table
 - detailed explanation belongs in speaker notes
@@ -62,7 +62,7 @@ Typography thresholds below follow `../../../references/shared-standards.md`. Ke
 Flag:
 - Chinese normal body text likely below 22pt
 - English normal body text likely below 20pt
-- titles/subtitles likely below 24pt
+- primary slide titles likely below 24pt, or secondary headers/labels are too small for projection
 - low contrast
 - text touching edges
 - clipped or overflowing text
@@ -106,7 +106,7 @@ Do not claim to predict an AI detector result. Describe these as writing-pattern
 ## English Presentation Review
 
 Check:
-- B1-B2 level vocabulary and grammar by default
+- B1-B2 level vocabulary and grammar for general undergraduate classroom presentations by default, adjusted for course level, discipline, audience, and speaker ability
 - 2-4 short sentences or phrase groups per slide
 - notes use natural connectors
 - long sentences are split
@@ -136,7 +136,7 @@ Include one sentence explaining the score for each dimension. Do not let scoring
 
 ## Positive Feedback
 
-Always include strong parts worth keeping when the deck has them:
+Include strong parts worth keeping when the deck has them; omit this section when no defensible positive evidence is available:
 - clear topic angle
 - strong data/example
 - readable slide

@@ -31,6 +31,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     parser.add_argument(
+        "--allow-missing-notes",
+        action="store_true",
+        help="Do not require a notes file; use only when notes are embedded or explicitly out of scope",
+    )
+    parser.add_argument(
+        "--allow-missing-preview",
+        action="store_true",
+        help="Do not require a preview/contact sheet; visual QA must then be reported as incomplete",
+    )
+    parser.add_argument(
         "--strict",
         action="store_true",
         help="Exit non-zero when required PPTX, notes, or preview files are missing",
@@ -81,6 +91,27 @@ def file_info(path: Path | None) -> dict[str, Any] | None:
     }
 
 
+def expected_notes_path(pptx: Path) -> Path:
+    stem = pptx.stem
+    prefix = stem[: -len("-presentation")] if stem.endswith("-presentation") else stem
+    return pptx.with_name(f"{prefix}-speaker-notes.md")
+
+
+def expected_preview_paths(pptx: Path) -> list[Path]:
+    stem = pptx.stem
+    prefix = stem[: -len("-presentation")] if stem.endswith("-presentation") else stem
+    parent = pptx.parent
+    discovered = sorted(
+        {
+            *parent.glob(f"{prefix}*preview*.png"),
+            *parent.glob(f"{prefix}*contact*.png"),
+            *parent.glob(f"{prefix}*preview*.pdf"),
+            *parent.glob(f"{prefix}*contact*.pdf"),
+        }
+    )
+    return discovered or [parent / f"{prefix}-preview.png"]
+
+
 
 def summarize_static_risks(static_result: dict[str, Any]) -> dict[str, Any]:
     findings = static_result.get("findings", []) if isinstance(static_result, dict) else []
@@ -103,7 +134,6 @@ def summarize_static_risks(static_result: dict[str, Any]) -> dict[str, Any]:
         "high-text-density-overflow-risk",
         "paragraph-heavy-slide-text",
         "heading-font-size-below-24pt",
-        "font-size-not-explicit",
     }
     for item in findings:
         risks = item.get("risk", []) or []
@@ -139,16 +169,27 @@ def summarize_static_risks(static_result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def inspect_delivery(pptx: Path, notes: Path | None, previews: list[Path]) -> dict[str, Any]:
+def inspect_delivery(
+    pptx: Path,
+    notes: Path | None,
+    previews: list[Path],
+    *,
+    require_notes: bool = True,
+    require_preview: bool = True,
+) -> dict[str, Any]:
+    if require_notes and notes is None:
+        notes = expected_notes_path(pptx)
+    if require_preview and not previews:
+        previews = expected_preview_paths(pptx)
     pptx_info = file_info(pptx)
     slide_count, slide_error = count_slides(pptx)
     preview_infos = [file_info(path) for path in previews]
     missing = []
     if not pptx_info or not pptx_info["exists"]:
         missing.append("pptx")
-    if notes is not None and not notes.is_file():
+    if require_notes and (notes is None or not notes.is_file()):
         missing.append("notes")
-    if previews and any(info and not info["exists"] for info in preview_infos):
+    if require_preview and not any(info and info["exists"] for info in preview_infos):
         missing.append("preview")
 
     static_summary: dict[str, Any] = {
@@ -174,6 +215,10 @@ def inspect_delivery(pptx: Path, notes: Path | None, previews: list[Path]) -> di
         "slide_count_error": slide_error,
         "static_xml_risk_summary": static_summary,
         "missing_expected_files": missing,
+        "requirements": {
+            "notes_required": require_notes,
+            "preview_required": require_preview,
+        },
         "note": (
             "Delivery check verifies files and PPTX XML only. Rendered preview or "
             "contact-sheet review is still required for visual QA."
@@ -216,7 +261,13 @@ def print_text(result: dict[str, Any]) -> None:
 
 def main() -> None:
     args = parse_args()
-    result = inspect_delivery(args.pptx, args.notes, args.preview)
+    result = inspect_delivery(
+        args.pptx,
+        args.notes,
+        args.preview,
+        require_notes=not args.allow_missing_notes,
+        require_preview=not args.allow_missing_preview,
+    )
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:

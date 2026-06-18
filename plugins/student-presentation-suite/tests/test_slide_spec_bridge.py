@@ -44,7 +44,7 @@ class SlideSpecBridgeTests(unittest.TestCase):
                     },
                     "note_goal": "Explain AI as support, not replacement",
                     "transition": "接下来说明边界。",
-                    "timing_sec": 45,
+                    "timing_sec": 180,
                     "owner": "A",
                 }
             ],
@@ -93,7 +93,7 @@ class SlideSpecBridgeTests(unittest.TestCase):
                     },
                     "note_goal": "Explain the improved message",
                     "transition": "接下来说明边界。",
-                    "timing_sec": 40,
+                    "timing_sec": 300,
                     "owner": "A",
                 }
             ],
@@ -139,7 +139,7 @@ slides:
       purpose: Introduce the topic
     note_goal: Open naturally
     transition: Continue.
-    timing_sec: 30
+    timing_sec: 180
     owner: A
 """,
                 encoding="utf-8",
@@ -159,6 +159,72 @@ slides:
             self.assertIn(exit_code, (None, 0))
             self.assertTrue(output_path.is_file())
             self.assertIn("outputs/demo-presentation.pptx", output_path.read_text(encoding="utf-8"))
+
+    def test_semantic_validation_rejects_cross_field_mismatches(self) -> None:
+        bridge = load_bridge_module()
+        data = {
+            "meta": {
+                "duration_min": 5,
+                "slide_count": 3,
+                "format": "group",
+                "members": ["A", "B"],
+            },
+            "review_findings": [
+                {
+                    "severity": "Major",
+                    "target": "Slide 1",
+                    "problem": "Generic title",
+                    "fix": "Use a specific title",
+                }
+            ],
+            "slides": [
+                {
+                    "id": 2,
+                    "title": "First",
+                    "layout": "content",
+                    "content": "Point",
+                    "timing_sec": 20,
+                    "owner": "C",
+                }
+            ],
+        }
+
+        errors = bridge.validate_spec(
+            data,
+            ROOT / "references" / "slide-spec.schema.json",
+            __import__("jsonschema"),
+        )
+        messages = "\n".join(error["message"] for error in errors)
+
+        self.assertIn("contiguous", messages)
+        self.assertIn("slide_count", messages)
+        self.assertIn("inconsistent with duration_min", messages)
+        self.assertIn("not listed in meta.members", messages)
+        self.assertIn("source_deck is required", messages)
+
+    def test_schema_rejects_unknown_slide_fields(self) -> None:
+        bridge = load_bridge_module()
+        data = {
+            "slides": [
+                {
+                    "id": 1,
+                    "title": "Demo",
+                    "layout": "content",
+                    "content": "Point",
+                    "timing_sec": 30,
+                    "owner": "Individual",
+                    "timing_seconds": 30,
+                }
+            ]
+        }
+
+        errors = bridge.validate_spec(
+            data,
+            ROOT / "references" / "slide-spec.schema.json",
+            __import__("jsonschema"),
+        )
+
+        self.assertTrue(any("Additional properties" in error["message"] for error in errors))
 
 
 if __name__ == "__main__":

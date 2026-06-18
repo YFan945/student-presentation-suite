@@ -17,7 +17,13 @@ Example:
 
 ## General University Presentation
 
-Use 8-12 slides for a common 5-10 minute classroom presentation:
+Use the duration-specific ranges below for a common classroom presentation:
+
+- 3 minutes: 5-7 slides
+- 5 minutes: 7-9 slides
+- 8 minutes: 9-12 slides
+- 10 minutes: 10-14 slides
+- 15 minutes: 14-18 slides
 
 1. Title and team/member
 2. Why this topic matters
@@ -64,7 +70,7 @@ Use this for common class reports:
 
 ## English Presentation
 
-Use B1-B2 level English by default:
+Use B1-B2 level English by default for a general undergraduate classroom presentation, then adjust for course level, discipline, audience, and speaker ability:
 - keep each slide to 2-4 short sentences or phrase groups
 - avoid complex long sentences, passive-heavy academic wording, and abstract slogans
 - use simple connectors in notes: "First...", "This example shows...", "So the main point is..."
@@ -175,5 +181,5 @@ Before finalizing a plan, verify:
 - speaker notes are natural and speakable
 - transitions connect the story
 - group roles are balanced when applicable
-- English slides use B1-B2 level and short sentences
+- English slides use a course- and audience-appropriate level; B1-B2 and short sentences are the default for general undergraduate classroom work
 - the result does not sound like generic AI filler

@@ -8,7 +8,7 @@
   "properties": {
     "meta": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "presentation_type": { "type": "string", "minLength": 1 },
         "language": { "enum": ["Chinese", "English", "bilingual"] },
@@ -52,7 +52,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": ["severity", "target", "problem", "fix"],
         "properties": {
           "severity": { "enum": ["Critical", "Major", "Minor"] },
@@ -76,15 +76,12 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "required": [
           "id",
           "title",
           "layout",
           "content",
-          "visual",
-          "note_goal",
-          "transition",
           "timing_sec",
           "owner"
         ],
@@ -92,6 +89,18 @@
           "id": { "type": "integer", "minimum": 1 },
           "title": { "type": "string", "minLength": 1 },
           "layout": { "type": "string", "minLength": 1 },
+          "kind": {
+            "enum": [
+              "cover",
+              "content",
+              "section-divider",
+              "quotation",
+              "references",
+              "appendix",
+              "qa",
+              "closing"
+            ]
+          },
           "content": {
             "oneOf": [
               { "type": "object" },
@@ -102,10 +111,17 @@
           "visual": {
             "type": "object",
             "required": ["type", "purpose"],
-            "additionalProperties": true,
+            "additionalProperties": false,
             "properties": {
               "type": { "type": "string", "minLength": 1 },
-              "purpose": { "type": "string", "minLength": 1 }
+              "purpose": { "type": "string", "minLength": 1 },
+              "details": {
+                "oneOf": [
+                  { "type": "object" },
+                  { "type": "array" },
+                  { "type": "string" }
+                ]
+              }
             }
           },
           "note_goal": { "type": "string", "minLength": 1 },

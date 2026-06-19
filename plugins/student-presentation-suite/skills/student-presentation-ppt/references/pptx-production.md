@@ -21,7 +21,7 @@ If duration is known but slide count is not, suggest choices rather than silentl
 - 10 minutes: 10-14 slides
 - 15 minutes: 14-18 slides
 
-If the user explicitly asks Codex to decide, or if the missing items are low-risk preferences for a general classroom deck, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer. Stable general knowledge may support basic explanations when identified as general background. Omit, qualify, or research source-sensitive, disputed, statistical, and current claims; avoid web images unless allowed; state that the deck is not rubric-specific.
+If the user explicitly asks the agent to decide, or if the missing items are low-risk preferences for a general classroom deck, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer. Stable general knowledge may support basic explanations when identified as general background. Omit, qualify, or research source-sensitive, disputed, statistical, and current claims; avoid web images unless allowed; state that the deck is not rubric-specific.
 
 Fast default deck assumptions for vague PPTX requests:
 - language follows the user's request language
@@ -96,17 +96,7 @@ Remove or rewrite: generic openings, exaggerated claims, textbook paragraphs, mo
 
 Prefer: concrete class/project context, simple direct claims, examples from student life or source material, modest but clear conclusions.
 
-## Artifact-Tool Pitfalls
-
-When building through artifact-tool presentation primitives:
-- run a one-slide smoke test before generating many slides
-- verify shape positions use `left`, `top`, `width`, and `height` (not `x`/`y`)
-- verify text is written through the shape text API when required by the runtime
-- if helper scripts locate the runtime through `HOME`, set `HOME` explicitly on Windows when PowerShell points it at the workspace rather than the user profile
-- if the contact-sheet helper needs Python, set `PYTHON` to the bundled runtime Python when available
-- treat a nonblank PPTX file as insufficient evidence; the rendered PNG/contact sheet must show the intended layout
-
-## Anthropic PPTX Skill Notes (Claude Code)
+## Claude Code PPTX Production
 
 Claude Code PPTX production depends on the `document-skills` plugin from the `anthropic-agent-skills` marketplace. That plugin provides the `pptx` skill.
 

@@ -19,7 +19,7 @@ Before asking startup questions, check whether the user or Slide Spec meta alrea
 - source material, data, template, logo, and image-source constraints
 - output needs: outline only, PPTX, review, speaker notes, or full script
 
-Ask only for missing constraints that materially affect the next step. If the user says Codex may decide, state the assumption briefly and continue.
+Ask only for missing constraints that materially affect the next step. If the user says the agent may decide, state the assumption briefly and continue.
 
 ## Intent Routing
 

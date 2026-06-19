@@ -18,9 +18,7 @@ Use this skill only when both conditions are explicit in the user's request or e
 
 Do not trigger for generic presentation requests, non-student business decks, topic research, standalone outlines, scripts, or Q&A. If either condition is missing, use a general-purpose presentation skill or ask one routing question instead.
 
-Platform-specific PPTX generation:
-- **Codex 环境**：使用内置的 `Presentations` skill 和 artifact-tool presentation JSX workflow
-- **Claude Code 环境**：依赖 `document-skills@anthropic-agent-skills`，并使用其中的 `pptx` skill
+PPTX generation depends on `document-skills@anthropic-agent-skills` and uses its `pptx` skill.
 
 Do not stop at a text outline when the user asks for PPT, PPTX, PowerPoint, editable slides, rendered slides, or a ready presentation file.
 
@@ -34,7 +32,7 @@ Before planning or building, decide whether the user's request is specific enoug
 
 Ask for the missing items that materially affect the deck, including expected slide count, language, duration, course/rubric, audience, individual/group format, source material, visual style, template/logo requirements, and image-source preference. Prefer 3-6 grouped questions in one reply. If the user is unsure about visual style, show the complete style menu from `references/visual-style-menu.md`, rank the most suitable choices first, and briefly explain the top recommendations. Do not ask whether an outline is needed first after the user has already requested a PPTX; create a compact internal slide plan as part of production.
 
-Proceed without another question when the conversation or Slide Spec already confirms the core constraints, when the user explicitly asks Codex to decide, or when the missing items are low-risk defaults for a general classroom deck. In that case, write a short assumption block before production, covering at least language, duration, slide count, audience, source basis, visual style, image/source policy, and whether the deck is conceptual or evidence-backed. Do not hide defaults in the final response only. Stable general knowledge may be used for basic explanation when clearly labeled as general background, but source-sensitive, disputed, statistical, or current claims require supplied sources or permission to research. Never use web images without permission.
+Proceed without another question when the conversation or Slide Spec already confirms the core constraints, when the user explicitly asks the agent to decide, or when the missing items are low-risk defaults for a general classroom deck. In that case, write a short assumption block before production, covering at least language, duration, slide count, audience, source basis, visual style, image/source policy, and whether the deck is conceptual or evidence-backed. Do not hide defaults in the final response only. Stable general knowledge may be used for basic explanation when clearly labeled as general background, but source-sensitive, disputed, statistical, or current claims require supplied sources or permission to research. Never use web images without permission.
 
 If the request is too vague to build responsibly but clearly asks for PPTX, do not only ask open-ended questions. Give the user a short production choice:
 - "fast default": agent chooses a general classroom deck plan and proceeds with stated assumptions
@@ -59,11 +57,9 @@ Fast default assumptions:
    - After choosing a style, also load `references/visual-styles/<style>.md` for that style's detailed guardrails
    - `../../references/slide-spec.md` when input includes Slide Spec YAML
    - `../../references/image-strategy.md` for image/source choices and fallback visuals
-   - Platform-specific references:
-     - **Codex 环境**：`references/pptx-production.md` 中的 Artifact-Tool Pitfalls 章节
-     - **Claude Code 环境**：先遵循 `document-skills` 插件提供的 `pptx` skill；从零生成读 `pptxgenjs.md`，套模板/编辑读 `editing.md`
+   - Follow the `document-skills` `pptx` skill; read `pptxgenjs.md` for new decks and `editing.md` for templates or existing decks
    - Run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict` from the plugin package root after generation. The script derives expected notes/preview names when omitted; use `--allow-missing-notes` or `--allow-missing-preview` only for an explicit exception and report the limitation.
-3. Choose one creative direction before building. If the style is missing and materially affects the result, show every available direction from `references/visual-style-menu.md`, with the topic-fit recommendations listed first. Only select the best fit without another question when the prompt is already specific enough or the user explicitly asks Codex to decide; state the reason briefly.
+3. Choose one creative direction before building. If the style is missing and materially affects the result, show every available direction from `references/visual-style-menu.md`, with the topic-fit recommendations listed first. Only select the best fit without another question when the prompt is already specific enough or the user explicitly asks the agent to decide; state the reason briefly.
 4. Build or adapt the slide plan using student-presentation principles: one message per content slide, claim-style titles for argumentative or evidence slides, concise text, natural notes, audience-appropriate English, and balanced group ownership. Covers, section dividers, references, appendix, and Q&A slides may use descriptive titles and omit unnecessary transitions or visuals. When no approved outline exists, create a compact internal slide plan first and use it as the source of truth for PPTX generation.
 5. For existing deck improvement, convert review findings into an edit plan before building: keep useful content, identify slides to rewrite, identify slides to redesign, preserve required template/logo/footer elements, and choose whether to edit the original structure or rebuild a cleaner copy. Do not overwrite the source PPTX.
 6. Design and build the deck:
@@ -71,10 +67,8 @@ Fast default assumptions:
    - use shapes, panels, dividers, timeline blocks, process nodes, comparison cards, callouts, and background layers only when they clarify hierarchy or meaning, not as a mandatory layer on every slide
    - use simulated glassmorphism/translucent panels only when readability remains strong
    - follow shared typography: Chinese normal body >= 22pt, English normal body >= 20pt, and primary slide titles normally >= 24pt; allow smaller secondary labels when necessary and visually verified
-7. Build the deck using the platform-appropriate tool:
-   - **Codex 环境**：使用 artifact-tool presentation JSX workflow。先运行单页 toolchain smoke test，确认坐标、填充、文字、讲稿、PPTX 导出和 PNG 预览都正确。shape position 使用 `left`/`top`/`width`/`height`，勿用 `x`/`y`。
-   - **Claude Code 环境**：使用 `document-skills` 插件里的 `pptx` skill 生产 PPTX。从插件包根目录运行 `python scripts/check_claude_pptx_env.py --json` 检查 `pptx` skill 需要的工具；如果输入包含 Slide Spec，从插件包根目录运行 `python scripts/slide_spec_to_pptx_brief.py <spec.yaml> --output outputs/<topic>-claude-pptx-brief.md`，用生成的 brief 作为 `pptx` skill 的生产输入。然后读取该 skill 的 `SKILL.md`；从零生成时参考 `pptxgenjs.md`，编辑已有模板时参考 `editing.md`。保留本 skill 的课堂汇报约束、Slide Spec、风格选择、讲稿和 QA contract 作为上层要求。
-8. Export and validate through the presentation workflow. Do not claim ready-to-present unless the `.pptx` exists and has been verified. In Codex 环境下同时检查预览图；在 Claude Code 环境下按 `pptx` skill 要求使用 `python -m markitdown`、LibreOffice/Poppler 渲染图片，并从插件包根目录运行 `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` 验证文件完整性。
+7. Build the deck with the `document-skills` `pptx` skill. From the plugin root, run `python scripts/check_claude_pptx_env.py --json`. For Slide Spec input, run `python scripts/slide_spec_to_pptx_brief.py <spec.yaml> --output outputs/<topic>-claude-pptx-brief.md` and use that brief as the production input. Read the `pptx` skill's `SKILL.md`; use `pptxgenjs.md` for new decks and `editing.md` for existing decks or templates.
+8. Export and validate as required by the `pptx` skill: run `python -m markitdown`, render through LibreOffice/Poppler, inspect the rendered images, and run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py` from the plugin root.
 9. Before the final response, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict` from the plugin package root when possible. Report whether the PPTX, notes, and preview/contact sheet files actually exist, the detected slide count, static XML risk count, risk breakdown when available, and any validation limitations. If static risks are mostly expected small footer/kicker/caption text, say that explicitly and still confirm rendered visual QA. Treat `font-size-not-explicit` as unresolved style inheritance evidence, not a blocker by itself. If the script cannot run, state that limitation instead of implying the package was checked.
 
 ## Output Contract

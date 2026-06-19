@@ -98,24 +98,20 @@ class SkillBehaviorContractTests(unittest.TestCase):
         self.assertIn("skills/student-presentation-ppt/scripts/pptx_delivery_check.py", text)
         self.assertIn("Existing Deck Improvement Contract", text)
 
-    def test_codex_manifest_mentions_deck_improvement(self) -> None:
-        text = self.read(".codex-plugin/plugin.json")
-        self.assertIn("Existing deck improvement with change summaries", text)
-
-    def test_runtime_versions_match(self) -> None:
-        codex = json.loads(self.read(".codex-plugin/plugin.json"))
+    def test_claude_package_is_runtime_specific(self) -> None:
         claude = json.loads(self.read(".claude-plugin/plugin.json"))
         marketplace = json.loads(
             (ROOT.parents[1] / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(claude["version"], codex["version"])
         self.assertEqual(claude["version"], marketplace["plugins"][0]["version"])
+        self.assertFalse((ROOT / ".codex-plugin").exists())
+        self.assertFalse((ROOT / "skills/student-presentation-ppt/agents/openai.yaml").exists())
 
-    def test_plugin_readmes_use_shared_marketplace_name(self) -> None:
+    def test_plugin_readmes_document_claude_runtime(self) -> None:
         for rel in ("README.md", "README-zh.md"):
             text = self.read(rel)
             self.assertIn("student-presentation-suite@personal", text)
-            self.assertNotIn("student-presentation-suite@student-presentation-suite", text)
+            self.assertIn("document-skills@anthropic-agent-skills", text)
 
     def test_visual_style_menu_lists_every_style(self) -> None:
         menu = self.read("skills/student-presentation-ppt/references/visual-style-menu.md")

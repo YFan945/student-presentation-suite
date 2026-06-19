@@ -27,7 +27,7 @@ jobs:
           python plugins/student-presentation-suite/scripts/slide_spec_to_pptx_brief.py --help
           python plugins/student-presentation-suite/scripts/check_plugin_release.py --help
           python scripts/check_marketplace_release.py --help
-      - name: Check plugin release structure
-        run: python plugins/student-presentation-suite/scripts/check_plugin_release.py
-      - name: Check marketplace release structure
-        run: python scripts/check_marketplace_release.py
+      - name: Check release structures
+        run: |
+          python plugins/student-presentation-suite/scripts/check_plugin_release.py
+          python scripts/check_marketplace_release.py

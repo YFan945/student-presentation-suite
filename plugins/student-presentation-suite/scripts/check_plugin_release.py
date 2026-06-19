@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check repository structure before publishing the plugin to GitHub."""
+"""Validate the standalone Claude Code plugin package."""
 
 from __future__ import annotations
 
@@ -11,10 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
 REQUIRED_FILES = [
-    ".codex-plugin/plugin.json",
     ".claude-plugin/plugin.json",
     "README.md",
     "README-zh.md",
@@ -25,7 +22,6 @@ REQUIRED_FILES = [
     "skills/student-presentation/SKILL.md",
     "skills/student-presentation-ppt/SKILL.md",
     "skills/student-presentation-review/SKILL.md",
-    "skills/student-presentation-ppt/agents/openai.yaml",
     "scripts/check_claude_pptx_env.py",
     "scripts/slide_spec_to_pptx_brief.py",
     "scripts/validate_slide_spec.py",
@@ -34,117 +30,51 @@ REQUIRED_FILES = [
     "tests/test_slide_spec_bridge.py",
     "tests/test_skill_behavior_contracts.py",
 ]
-
-
+FORBIDDEN_PATHS = [
+    ".codex-plugin",
+    "skills/student-presentation/agents/openai.yaml",
+    "skills/student-presentation-ppt/agents/openai.yaml",
+    "skills/student-presentation-review/agents/openai.yaml",
+]
 FORBIDDEN_DIR_NAMES = {".pytest_cache", "__pycache__", "node_modules"}
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Check GitHub-ready plugin structure")
+    parser = argparse.ArgumentParser(description="Check standalone Claude Code plugin structure")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     return parser.parse_args()
 
 
-def read_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def check_required_files(errors: list[str]) -> None:
+def check_structure(errors: list[str]) -> None:
     for rel in REQUIRED_FILES:
         if not (ROOT / rel).is_file():
             errors.append(f"Missing required file: {rel}")
-    for rel in ("marketplace.json", ".claude-plugin/marketplace.json"):
+    for rel in FORBIDDEN_PATHS:
         if (ROOT / rel).exists():
-            errors.append(
-                f"Do not publish local marketplace file inside the single-plugin repository: {rel}"
-            )
+            errors.append(f"Codex-only path must not exist in Claude plugin: {rel}")
 
 
-def check_manifests(errors: list[str]) -> None:
-    codex_path = ROOT / ".codex-plugin" / "plugin.json"
-    claude_path = ROOT / ".claude-plugin" / "plugin.json"
-    if not codex_path.is_file() or not claude_path.is_file():
+def check_manifest(errors: list[str]) -> None:
+    path = ROOT / ".claude-plugin" / "plugin.json"
+    if not path.is_file():
         return
     try:
-        codex = read_json(codex_path)
-        claude = read_json(claude_path)
+        manifest = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        errors.append(f"Manifest JSON parse failed: {exc}")
+        errors.append(f"Claude manifest JSON parse failed: {exc}")
         return
-
-    if codex.get("name") != "student-presentation-suite":
-        errors.append(".codex-plugin/plugin.json name must be student-presentation-suite")
-    if claude.get("name") != "student-presentation-suite":
-        errors.append(".claude-plugin/plugin.json name must be student-presentation-suite")
-    if codex.get("author", {}).get("name") in {None, "", "Local developer"}:
-        errors.append("Codex manifest author.name must be a publishable author name")
-    if codex.get("interface", {}).get("developerName") in {None, "", "Local developer"}:
-        errors.append("Codex manifest interface.developerName must be a publishable developer name")
-    if claude.get("author", {}).get("name") in {None, "", "Local developer"}:
-        errors.append("Claude manifest author.name must be a publishable author name")
-    if codex.get("version") != claude.get("version"):
-        errors.append(
-            "Codex and Claude plugin manifest versions must match: "
-            f"{codex.get('version')} != {claude.get('version')}"
-        )
-
-    capabilities = codex.get("interface", {}).get("capabilities", [])
-    if "Codex PPTX production uses the default Presentations skill/artifact-tool workflow" not in capabilities:
-        errors.append("Codex manifest must explicitly preserve the default Presentations/artifact-tool workflow")
-    if "Uses document-skills pptx skill for Claude Code PPTX production" not in capabilities:
-        errors.append("Codex manifest should document the Claude Code document-skills route")
-    if "Existing deck improvement with change summaries" not in capabilities:
-        errors.append("Codex manifest should document existing deck improvement with change summaries")
-
-    dependencies = claude.get("dependencies", [])
-    if "document-skills@anthropic-agent-skills" not in dependencies:
+    if manifest.get("name") != "student-presentation-suite":
+        errors.append("Claude manifest name must be student-presentation-suite")
+    if manifest.get("author", {}).get("name") in {None, "", "Local developer"}:
+        errors.append("Claude manifest author.name must be publishable")
+    if "document-skills@anthropic-agent-skills" not in manifest.get("dependencies", []):
         errors.append("Claude manifest must depend on document-skills@anthropic-agent-skills")
 
 
-def check_codex_agent_dependencies(errors: list[str]) -> None:
-    text = (ROOT / "skills" / "student-presentation-ppt" / "agents" / "openai.yaml").read_text(
-        encoding="utf-8"
-    )
-    for item in ("Presentations", "artifact-tool", "imagegen"):
-        if f'- "{item}"' not in text:
-            errors.append(f"Codex PPT agent dependency missing: {item}")
-    if "document-skills" in text:
-        errors.append("Codex agent dependency file must not depend on document-skills")
-
-
-def check_docs(errors: list[str]) -> None:
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    readme_zh = (ROOT / "README-zh.md").read_text(encoding="utf-8")
-    for label, text in (("README.md", readme), ("README-zh.md", readme_zh)):
-        for expected in (
-            ".codex-plugin/plugin.json",
-            ".claude-plugin/plugin.json",
-            "document-skills",
-            "requirements-claude-pptx.txt",
-            "npm install",
-            "document-skills@anthropic-agent-skills",
-            "check_claude_pptx_env.py --json",
-            "student-presentation-ppt",
-        ):
-            if expected not in text:
-                errors.append(f"{label} missing install/compatibility detail: {expected}")
-        if "student-presentation-suite@student-presentation-suite" in text:
-            errors.append(f"{label} uses a plugin name instead of the shared marketplace name")
-        if "student-presentation-suite@personal" not in text:
-            errors.append(f"{label} must use the shared marketplace install name")
-    if "Presentations" not in readme or "artifact-tool" not in readme:
-        errors.append("README.md must mention Codex Presentations/artifact-tool compatibility")
-    if "Presentations" not in readme_zh or "artifact-tool" not in readme_zh:
-        errors.append("README-zh.md must mention Codex Presentations/artifact-tool compatibility")
-
-
-def check_behavior_contracts(errors: list[str]) -> None:
-    schema = (ROOT / "references" / "slide-spec.schema.json").read_text(encoding="utf-8")
-    slide_spec = (ROOT / "references" / "slide-spec.md").read_text(encoding="utf-8")
-    bridge = (ROOT / "scripts" / "slide_spec_to_pptx_brief.py").read_text(encoding="utf-8")
-    review_format = (
-        ROOT / "skills" / "student-presentation-review" / "references" / "review-output-format.md"
-    ).read_text(encoding="utf-8")
+def check_behavior(errors: list[str]) -> None:
+    schema = (ROOT / "references/slide-spec.schema.json").read_text(encoding="utf-8")
+    bridge = (ROOT / "scripts/slide_spec_to_pptx_brief.py").read_text(encoding="utf-8")
+    ppt_skill = (ROOT / "skills/student-presentation-ppt/SKILL.md").read_text(encoding="utf-8")
     for expected in (
         "source_deck",
         "edit_intent",
@@ -153,56 +83,54 @@ def check_behavior_contracts(errors: list[str]) -> None:
         "change_summary_required",
     ):
         if expected not in schema:
-            errors.append(f"Slide Spec schema missing existing-deck improvement field: {expected}")
-        if expected not in slide_spec:
-            errors.append(f"Slide Spec docs missing existing-deck improvement field: {expected}")
+            errors.append(f"Slide Spec schema missing field: {expected}")
     for expected in ("Existing Deck Improvement Contract", "outputs/{output_prefix}-change-summary.md"):
         if expected not in bridge:
-            errors.append(f"Slide Spec bridge missing improvement handoff detail: {expected}")
-    for expected in ("## Edit Plan", "## Change Summary Handoff", "student-presentation-ppt"):
-        if expected not in review_format:
-            errors.append(f"Review output format missing edit handoff detail: {expected}")
+            errors.append(f"Claude Slide Spec bridge missing detail: {expected}")
+    for expected in (
+        "document-skills@anthropic-agent-skills",
+        "check_claude_pptx_env.py",
+        "slide_spec_to_pptx_brief.py",
+        "markitdown",
+    ):
+        if expected not in ppt_skill:
+            errors.append(f"Claude PPT skill missing workflow detail: {expected}")
+    if "artifact-tool" in ppt_skill or "Presentations` skill" in ppt_skill:
+        errors.append("Claude PPT skill still contains Codex production instructions")
 
 
-def check_forbidden_tracked_files(errors: list[str]) -> None:
-    try:
-        proc = subprocess.run(
-            ["git", "ls-files"],
-            cwd=ROOT,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=20,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return
+def check_tracked_files(errors: list[str]) -> None:
+    proc = subprocess.run(
+        ["git", "ls-files"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
     if proc.returncode != 0:
         return
     for rel in proc.stdout.splitlines():
-        parts = Path(rel).parts
-        if any(part in FORBIDDEN_DIR_NAMES for part in parts) or rel.endswith(".pyc"):
+        if any(part in FORBIDDEN_DIR_NAMES for part in Path(rel).parts) or rel.endswith(".pyc"):
             errors.append(f"Generated cache file is tracked by git: {rel}")
 
 
 def main() -> None:
     args = parse_args()
     errors: list[str] = []
-    check_required_files(errors)
-    check_manifests(errors)
-    check_codex_agent_dependencies(errors)
-    check_docs(errors)
-    check_behavior_contracts(errors)
-    check_forbidden_tracked_files(errors)
-
+    check_structure(errors)
+    check_manifest(errors)
+    check_behavior(errors)
+    check_tracked_files(errors)
     result = {"ok": not errors, "error_count": len(errors), "errors": errors}
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     elif errors:
-        print("Plugin release check failed:", file=sys.stderr)
+        print("Claude Code plugin release check failed:", file=sys.stderr)
         for error in errors:
             print(f"- {error}", file=sys.stderr)
     else:
-        print("Plugin release check passed.")
+        print("Claude Code plugin release check passed.")
     if errors:
         raise SystemExit(1)
 

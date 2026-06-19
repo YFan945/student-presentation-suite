@@ -1,9 +1,0 @@
-interface:
-  display_name: "Student Presentation PPT"
-  short_description: "仅在明确学生场景并要求制作或改进 PPT/PPTX 时触发。"
-  default_prompt: "帮我根据主题、大纲、Slide Spec YAML 或已有 deck 审查结果生成/改进可编辑大学生 PPTX：用一轮问题确认缺失约束，选择风格时列出完整风格菜单并标出推荐项，再完成必要视觉、讲稿、规范命名、变更摘要和预览 QA。"
-dependencies:
-  tools:
-    - "Presentations"
-    - "artifact-tool"
-    - "imagegen"

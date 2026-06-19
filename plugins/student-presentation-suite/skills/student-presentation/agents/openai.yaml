@@ -1,4 +1,0 @@
-interface:
-  display_name: "Student Presentation"
-  short_description: "仅在明确学生场景并要求 PPT 大纲时触发；规划结构、讲稿和 Q&A。"
-  default_prompt: "帮我规划一个大学生展示：先确认缺失约束，再做破题、大纲、逐页内容、讲稿、转场、Q&A 攻防、扣分点预警和可选 Slide Spec YAML；不要生成 PPTX 文件。"

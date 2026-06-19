@@ -1,144 +1,115 @@
 from __future__ import annotations
 
-import unittest
 import json
+import unittest
 from pathlib import Path
+
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = ROOT.parents[1]
+
+
+def frontmatter(path: Path) -> dict:
+    text = path.read_text(encoding="utf-8")
+    return yaml.safe_load(text.split("---", 2)[1])
 
 
 class SkillBehaviorContractTests(unittest.TestCase):
     def read(self, rel: str) -> str:
         return (ROOT / rel).read_text(encoding="utf-8")
 
-    def test_shared_standards_define_intent_routing(self) -> None:
-        text = self.read("references/shared-standards.md")
-        self.assertIn("## Intent Routing", text)
-        self.assertIn(
-            "require both a clear student-owned academic context and an explicit PPT intent",
-            text,
-        )
-        self.assertIn("Use `student-presentation`", text)
-        self.assertIn("Use `student-presentation-ppt`", text)
-        self.assertIn("Use `student-presentation-review`", text)
-        self.assertIn('"PPT 大纲"', text)
-        self.assertIn('"帮我优化这个 PPT"', text)
-
-    def test_skill_descriptions_require_student_context_and_ppt_intent(self) -> None:
-        expectations = {
-            "skills/student-presentation/SKILL.md": (
-                "Use only when",
-                "student context",
-                "PPT/slide outline",
-            ),
-            "skills/student-presentation-ppt/SKILL.md": (
-                "Use only when",
-                "student context",
-                "PPT, PPTX, PowerPoint, or slide deck",
-            ),
-            "skills/student-presentation-review/SKILL.md": (
-                "Use only when",
-                "student context",
-                "review, audit, score, or critique",
-            ),
-        }
-        for rel, required_phrases in expectations.items():
-            frontmatter = self.read(rel).split("---", 2)[1]
-            for phrase in required_phrases:
-                self.assertIn(phrase, frontmatter, rel)
-
-    def test_ppt_skill_defines_vague_request_defaults(self) -> None:
-        text = self.read("skills/student-presentation-ppt/SKILL.md")
-        self.assertIn("Fast default assumptions", text)
-        self.assertIn("7-9 slides", text)
-        self.assertIn("no web images", text)
-        self.assertIn("If an eligible request asks only for \"PPT 大纲\"", text)
-        self.assertIn("existing deck improvement", text)
-        self.assertIn("change-summary.md", text)
-        self.assertIn("show every available direction", text)
-        self.assertIn("Do not ask whether an outline is needed first", text)
-        self.assertIn("Stable general knowledge may be used", text)
-
-    def test_planning_skill_allows_low_risk_assumptions(self) -> None:
-        text = self.read("skills/student-presentation/SKILL.md")
-        self.assertIn("state low-risk assumptions and continue", text)
-        self.assertIn("Route to `student-presentation-ppt`", text)
-
-    def test_review_skill_does_not_overwrite_original_deck(self) -> None:
-        text = self.read("skills/student-presentation-review/SKILL.md")
-        self.assertIn("Do not overwrite the original deck", text)
-        self.assertIn("Default review depth", text)
-        self.assertIn("Do not block the review", text)
-        self.assertIn("skills/student-presentation-review/scripts/pptx_static_check.py", text)
-        self.assertIn("change-summary.md", text)
-
-    def test_review_output_format_supports_edit_handoff(self) -> None:
-        text = self.read("skills/student-presentation-review/references/review-output-format.md")
-        self.assertIn("## Edit Plan", text)
-        self.assertIn("## Change Summary Handoff", text)
-        self.assertIn("student-presentation-ppt", text)
-
-    def test_slide_spec_schema_supports_existing_deck_improvement(self) -> None:
-        schema = self.read("references/slide-spec.schema.json")
-        guide = self.read("references/slide-spec.md")
-        for expected in (
-            "source_deck",
-            "edit_intent",
-            "review_findings",
-            "preserve",
-            "change_summary_required",
-        ):
-            self.assertIn(expected, schema)
-            self.assertIn(expected, guide)
-
-    def test_claude_brief_uses_plugin_root_for_delivery_check(self) -> None:
-        text = self.read("scripts/slide_spec_to_pptx_brief.py")
-        self.assertIn("From the plugin package root", text)
-        self.assertIn("skills/student-presentation-ppt/scripts/pptx_delivery_check.py", text)
-        self.assertIn("Existing Deck Improvement Contract", text)
-
-    def test_claude_package_is_runtime_specific(self) -> None:
-        claude = json.loads(self.read(".claude-plugin/plugin.json"))
+    def test_manifest_and_marketplace_are_claude_specific(self) -> None:
+        manifest = json.loads(self.read(".claude-plugin/plugin.json"))
         marketplace = json.loads(
-            (ROOT.parents[1] / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8")
+            (REPO_ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(claude["version"], marketplace["plugins"][0]["version"])
+        entry = marketplace["plugins"][0]
+        self.assertEqual("claude-personal", marketplace["name"])
+        self.assertEqual("0.2.0", manifest["version"])
+        self.assertEqual(manifest["version"], entry["version"])
+        self.assertEqual(manifest["name"], entry["name"])
+        self.assertIn("document-skills@anthropic-agent-skills", manifest["dependencies"])
+        for field in ("homepage", "repository", "license", "keywords"):
+            self.assertTrue(manifest[field])
+            self.assertTrue(entry[field])
         self.assertFalse((ROOT / ".codex-plugin").exists())
-        self.assertFalse((ROOT / "skills/student-presentation-ppt/agents/openai.yaml").exists())
+        self.assertFalse(any(ROOT.glob("skills/*/agents/openai.yaml")))
 
-    def test_plugin_readmes_document_claude_runtime(self) -> None:
-        for rel in ("README.md", "README-zh.md"):
-            text = self.read(rel)
-            self.assertIn("student-presentation-suite@personal", text)
-            self.assertIn("document-skills@anthropic-agent-skills", text)
+    def test_skill_frontmatter_has_distinct_intents(self) -> None:
+        planning = frontmatter(ROOT / "skills/student-presentation/SKILL.md")
+        ppt = frontmatter(ROOT / "skills/student-presentation-ppt/SKILL.md")
+        review = frontmatter(ROOT / "skills/student-presentation-review/SKILL.md")
+        self.assertIn("outline", planning["description"])
+        self.assertIn("editable", ppt["description"])
+        self.assertIn("review", review["description"])
 
-    def test_visual_style_menu_lists_every_style(self) -> None:
+    def test_runtime_and_output_contracts_are_portable(self) -> None:
+        planning = self.read("skills/student-presentation/SKILL.md")
+        ppt = self.read("skills/student-presentation-ppt/SKILL.md")
+        review = self.read("skills/student-presentation-review/SKILL.md")
+        self.assertIn("${CLAUDE_PLUGIN_ROOT}", ppt)
+        self.assertIn("${CLAUDE_PROJECT_DIR}", ppt)
+        self.assertIn("run_with_pptxgenjs.js", ppt)
+        self.assertIn("blocked", ppt)
+        self.assertIn("incomplete", ppt)
+        self.assertIn("Never write deliverables into `${CLAUDE_PLUGIN_ROOT}`", planning)
+        self.assertIn("${CLAUDE_PLUGIN_ROOT}", review)
+        self.assertIn("${CLAUDE_PROJECT_DIR}", review)
+
+    def test_cross_skill_handoff_is_deterministic(self) -> None:
+        shared = self.read("references/shared-standards.md")
+        self.assertIn("Outline-only work never creates", shared)
+        self.assertIn("“看看问题” means review only", shared)
+        self.assertIn("“直接改好” means review diagnosis followed by PPTX editing", shared)
+        review = self.read("skills/student-presentation-review/SKILL.md")
+        self.assertIn("diagnose first, then hand off", review)
+        self.assertIn("Never overwrite the original deck", review)
+
+    def test_style_selection_contract(self) -> None:
         menu = self.read("skills/student-presentation-ppt/references/visual-style-menu.md")
-        style_dir = ROOT / "skills" / "student-presentation-ppt" / "references" / "visual-styles"
-        style_files = sorted(style_dir.glob("*.md"))
-        self.assertGreaterEqual(len(style_files), 14)
-        for style_file in style_files:
-            style_text = style_file.read_text(encoding="utf-8")
-            heading = style_text.splitlines()[0].removeprefix("# ")
-            english_name = heading.split("（", 1)[0]
-            self.assertIn(english_name, menu)
-            for control in (
-                "**Color roles:**",
-                "**Geometry:**",
-                "**Slide recipes:**",
-                "**Image treatment:**",
-                "**Density control:**",
-                "**Acceptance checks:**",
-            ):
-                self.assertIn(control, style_text, f"{style_file.name}: {control}")
+        styles = sorted(
+            (ROOT / "skills/student-presentation-ppt/references/visual-styles").glob("*.md")
+        )
+        self.assertEqual(14, len(styles))
+        self.assertIn("three best topic-fit choices", menu)
+        self.assertIn("complete 14-style menu only", menu)
+        for style in styles:
+            heading = style.read_text(encoding="utf-8").splitlines()[0].removeprefix("# ")
+            self.assertIn(heading.split("（", 1)[0], menu)
 
-    def test_style_menu_defines_executable_application_contract(self) -> None:
-        menu = self.read("skills/student-presentation-ppt/references/visual-style-menu.md")
-        self.assertIn("## Applying A Style File", menu)
-        self.assertIn("palette roles", menu)
-        self.assertIn("slide-type recipes", menu)
-        self.assertIn("acceptance checks", menu)
+    def test_six_scenario_examples_exist(self) -> None:
+        names = {
+            "chinese-coursework.md",
+            "english-class-report.md",
+            "thesis-defense.md",
+            "group-presentation.md",
+            "review-only.md",
+            "existing-deck-improvement.md",
+        }
+        self.assertTrue(names.issubset({path.name for path in (ROOT / "examples").glob("*.md")}))
+
+    def test_readmes_use_new_install_id(self) -> None:
+        for path in (REPO_ROOT / "README.md", REPO_ROOT / "README-zh.md", ROOT / "README.md"):
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("student-presentation-suite@claude-personal", text)
+            self.assertNotIn("student-presentation-suite@personal", text)
+
+    def test_install_script_has_safe_migration_contract(self) -> None:
+        script = (REPO_ROOT / "scripts/install_claude_plugin.ps1").read_text(encoding="utf-8")
+        self.assertIn("$Marketplace = \"claude-personal\"", script)
+        self.assertIn("$OldPluginId = \"$Plugin@personal\"", script)
+        self.assertIn("plugin marketplace remove personal", script)
+        self.assertIn("Remove-PluginCache -MarketplaceName \"personal\"", script)
+        self.assertNotIn("Remove-Item -LiteralPath $InstallRoot", script)
+
+    def test_review_edit_handoff_requires_separate_outputs(self) -> None:
+        review = self.read("skills/student-presentation-review/SKILL.md")
+        ppt = self.read("skills/student-presentation-ppt/SKILL.md")
+        self.assertIn("diagnose first, then hand off", review)
+        self.assertIn("separate improved deck and change summary", review)
+        self.assertIn("Do not overwrite an existing source deck", ppt)
 
 
 if __name__ == "__main__":

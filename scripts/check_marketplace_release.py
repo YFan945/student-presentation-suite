@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Validate the Claude Code-only marketplace layout."""
+"""Validate the Claude Code-only marketplace release."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PLUGIN_ROOT = ROOT / "plugins" / "student-presentation-suite"
 
 
 def parse_args() -> argparse.Namespace:
@@ -19,41 +20,99 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def git_output(*args: str) -> str:
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError((proc.stderr or proc.stdout or "git failed").strip())
+    return proc.stdout.strip()
+
+
+def load_json(path: Path) -> dict:
+    raw = path.read_bytes()
+    if raw.startswith(b"\xef\xbb\xbf"):
+        raise ValueError(f"UTF-8 BOM is not allowed: {path.relative_to(ROOT)}")
+    return json.loads(raw.decode("utf-8"))
+
+
 def main() -> None:
     args = parse_args()
     errors: list[str] = []
     required = [
         ".claude-plugin/marketplace.json",
-        "plugins/student-presentation-suite/.claude-plugin/plugin.json",
         "README.md",
         "README-zh.md",
+        "CHANGELOG.md",
         ".github/workflows/validate.yml",
+        "scripts/install_claude_plugin.ps1",
     ]
     for rel in required:
         if not (ROOT / rel).is_file():
             errors.append(f"Missing required file: {rel}")
-    if (ROOT / ".agents").exists():
-        errors.append("Claude marketplace root must not contain Codex .agents metadata")
+
     try:
-        marketplace = json.loads(
-            (ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+        branch = (
+            git_output("branch", "--show-current")
+            or os.environ.get("GITHUB_HEAD_REF")
+            or os.environ.get("GITHUB_REF_NAME")
+            or ""
         )
-        manifest = json.loads(
-            (PLUGIN_ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8")
-        )
-        entry = marketplace["plugins"][0]
-        if marketplace.get("name") != "personal":
-            errors.append("Claude marketplace name must be personal")
-        if entry.get("name") != manifest.get("name"):
-            errors.append("Claude marketplace and manifest names must match")
-        if entry.get("source") != "./plugins/student-presentation-suite":
-            errors.append("Claude marketplace source path is incorrect")
-        if entry.get("version") != manifest.get("version"):
-            errors.append("Claude marketplace and manifest versions must match")
-        if (PLUGIN_ROOT / ".codex-plugin").exists():
-            errors.append("Claude plugin must not contain .codex-plugin")
-    except (OSError, json.JSONDecodeError, KeyError, IndexError, TypeError) as exc:
-        errors.append(f"Cannot validate Claude marketplace JSON: {exc}")
+        if branch != "claude-code":
+            errors.append(f"Claude marketplace must be released from claude-code, got {branch!r}")
+        tracked = git_output("ls-files").splitlines()
+        folded: dict[str, str] = {}
+        for rel in tracked:
+            key = rel.casefold()
+            if key in folded and folded[key] != rel:
+                errors.append(f"Case-colliding tracked paths: {folded[key]} and {rel}")
+            folded[key] = rel
+    except RuntimeError as exc:
+        errors.append(f"Cannot inspect Git release state: {exc}")
+
+    try:
+        marketplace = load_json(ROOT / ".claude-plugin/marketplace.json")
+        if marketplace.get("name") != "claude-personal":
+            errors.append("Claude marketplace name must be claude-personal")
+        plugins = marketplace.get("plugins")
+        if not isinstance(plugins, list) or not plugins:
+            errors.append("Claude marketplace must contain at least one plugin")
+            plugins = []
+        names: set[str] = set()
+        for index, entry in enumerate(plugins):
+            name = entry.get("name")
+            if not name or name in names:
+                errors.append(f"Marketplace plugin entry {index} has a missing or duplicate name")
+                continue
+            names.add(name)
+            source = entry.get("source")
+            if not isinstance(source, str) or not source.startswith("./plugins/"):
+                errors.append(f"{name}: source must be a ./plugins/ path")
+                continue
+            plugin_root = (ROOT / source).resolve()
+            try:
+                plugin_root.relative_to(ROOT.resolve())
+            except ValueError:
+                errors.append(f"{name}: source escapes marketplace root")
+                continue
+            manifest = load_json(plugin_root / ".claude-plugin/plugin.json")
+            if manifest.get("name") != name:
+                errors.append(f"{name}: marketplace and manifest names differ")
+            if manifest.get("version") != entry.get("version"):
+                errors.append(f"{name}: marketplace and manifest versions differ")
+            for field in ("homepage", "repository", "license", "keywords"):
+                if not entry.get(field):
+                    errors.append(f"{name}: marketplace entry missing metadata {field}")
+            if (plugin_root / ".codex-plugin").exists():
+                errors.append(f"{name}: Claude plugin must not contain .codex-plugin")
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        errors.append(f"Cannot validate Claude marketplace: {exc}")
+
     result = {"ok": not errors, "error_count": len(errors), "errors": errors}
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))

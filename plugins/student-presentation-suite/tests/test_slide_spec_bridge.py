@@ -55,7 +55,7 @@ class SlideSpecBridgeTests(unittest.TestCase):
         self.assertIn("document-skills", brief)
         self.assertIn("Target skill: `pptx`", brief)
         self.assertIn("pptxgenjs.md", brief)
-        self.assertIn("outputs/ai-class-demo-presentation.pptx", brief)
+        self.assertIn("ai-class-demo-presentation.pptx", brief)
         self.assertIn("AI 帮助我们更快形成初稿", brief)
         self.assertIn("python -m markitdown output.pptx", brief)
 
@@ -110,7 +110,7 @@ class SlideSpecBridgeTests(unittest.TestCase):
         self.assertIn("Existing Deck Improvement Contract", brief)
         self.assertIn("original-demo.pptx", brief)
         self.assertIn("Use `editing.md`", brief)
-        self.assertIn("outputs/improved-demo-change-summary.md", brief)
+        self.assertIn("improved-demo-change-summary.md", brief)
         self.assertIn("Rewrite it as a claim-style title", brief)
 
     def test_script_writes_output_file(self) -> None:
@@ -158,7 +158,7 @@ slides:
 
             self.assertIn(exit_code, (None, 0))
             self.assertTrue(output_path.is_file())
-            self.assertIn("outputs/demo-presentation.pptx", output_path.read_text(encoding="utf-8"))
+            self.assertIn("demo-presentation.pptx", output_path.read_text(encoding="utf-8"))
 
     def test_semantic_validation_rejects_cross_field_mismatches(self) -> None:
         bridge = load_bridge_module()

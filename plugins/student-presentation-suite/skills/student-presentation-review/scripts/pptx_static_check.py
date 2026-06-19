@@ -5,7 +5,7 @@ This script inspects PPTX XML and reports risk signals. It cannot prove true
 rendered overflow or classroom readability; use its findings as review evidence.
 
 Windows usage:
-    python skills/student-presentation-review/scripts/pptx_static_check.py deck.pptx --json
+    python "${CLAUDE_PLUGIN_ROOT}/skills/student-presentation-review/scripts/pptx_static_check.py" deck.pptx --json
 """
 
 from __future__ import annotations
@@ -15,6 +15,9 @@ import json
 import sys
 from pathlib import Path
 
+PLUGIN_ROOT = Path(__file__).resolve().parents[3]
+if str(PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(PLUGIN_ROOT))
 
 
 def inspect_pptx(path: Path) -> dict:

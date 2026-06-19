@@ -16,9 +16,14 @@ Run validation from this directory:
 
 ```powershell
 python -m pip install -r plugins/student-presentation-suite/requirements.txt
+python -m pip install -r plugins/student-presentation-suite/requirements-claude-pptx.txt
+npm --prefix plugins/student-presentation-suite ci
 $env:PYTHONPATH=(Resolve-Path "plugins/student-presentation-suite").Path
 python -m unittest discover -s plugins/student-presentation-suite/tests
+python plugins/student-presentation-suite/scripts/smoke_pptx.py
 python plugins/student-presentation-suite/scripts/check_plugin_release.py
 python scripts/check_marketplace_release.py
-claude plugin validate .\plugins\student-presentation-suite
+python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json --strict
+claude plugin validate --strict .\plugins\student-presentation-suite
+claude plugin validate --strict .
 ```

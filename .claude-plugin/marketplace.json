@@ -1,16 +1,16 @@
 {
-  "name": "personal",
+  "name": "claude-personal",
   "owner": {
     "name": "YFan945"
   },
-  "description": "A collection of plugins for personal use, including a student presentation suite for university presentation planning, PPTX generation, and review skills.",
+  "description": "Claude Code-only plugins maintained on the claude-code branch.",
   "plugins": [
     {
       "name": "student-presentation-suite",
       "displayName": "Student Presentation Suite",
       "source": "./plugins/student-presentation-suite",
       "description": "University presentation planning, PPTX generation, and review skills.",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": {
         "name": "YFan945"
       },
@@ -19,9 +19,14 @@
         "pptx",
         "student",
         "review",
-        "speaker-notes"
+        "speaker-notes",
+        "coursework",
+        "defense"
       ],
-      "category": "Productivity"
+      "category": "Productivity",
+      "homepage": "https://github.com/YFan945/student-presentation-suite/tree/claude-code",
+      "repository": "https://github.com/YFan945/student-presentation-suite",
+      "license": "MIT"
     }
   ]
 }

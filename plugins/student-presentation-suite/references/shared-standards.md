@@ -39,7 +39,21 @@ Ambiguous requests:
 - A broad topic with no explicit student context and PPT output target is outside this suite.
 - If a request mixes planning and PPTX generation, produce or confirm a slide plan/Slide Spec first, then build the PPTX from that plan.
 
-When the target is still unclear after reading the request, ask one routing question before doing detailed work: whether the user wants an outline/script, an editable PPTX, or a review of an existing file.
+When the target remains genuinely ambiguous, ask one routing question: outline, editable PPTX, or review. Do not ask when the requested artifact or action already makes the route clear.
+
+## Cross-Skill Handoff
+
+- Outline-only work never creates or claims to create a PPTX.
+- A file-generation request goes directly to `student-presentation-ppt`; planning happens inside that workflow.
+- “看看问题” means review only.
+- “直接改好” means review diagnosis followed by PPTX editing in the same task.
+- Existing source decks are evidence and must not be overwritten.
+
+## Runtime and Output Boundary
+
+- Plugin resources and scripts are addressed through `${CLAUDE_PLUGIN_ROOT}`.
+- User deliverables belong under `${CLAUDE_PROJECT_DIR}/outputs`; when that variable is unavailable, use the active project directory.
+- Never write generated decks, notes, previews, or reports into the installed plugin or Claude plugin cache.
 
 ## Classroom Readability
 

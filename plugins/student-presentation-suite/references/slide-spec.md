@@ -51,8 +51,7 @@ Schema and validation:
 - Semantic validation also checks contiguous slide ids, `slide_count`, total timing vs `duration_min`, group members/owners, and existing-deck field combinations.
 
 ```powershell
-# Run from the plugin package root.
-python scripts/validate_slide_spec.py path/to/slide-spec.yaml --json
+python "${CLAUDE_PLUGIN_ROOT}/scripts/validate_slide_spec.py" path/to/slide-spec.yaml --json
 ```
 
 ```yaml

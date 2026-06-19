@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the standalone Claude Code plugin package."""
+"""Validate the standalone Claude Code plugin release package."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+REPOSITORY_ROOT = ROOT.parents[1]
 REQUIRED_FILES = [
     ".claude-plugin/plugin.json",
     "README.md",
@@ -23,20 +24,15 @@ REQUIRED_FILES = [
     "skills/student-presentation-ppt/SKILL.md",
     "skills/student-presentation-review/SKILL.md",
     "scripts/check_claude_pptx_env.py",
+    "scripts/run_with_pptxgenjs.js",
+    "scripts/smoke_pptx.py",
     "scripts/slide_spec_to_pptx_brief.py",
     "scripts/validate_slide_spec.py",
-    "tests/test_pptx_static_core.py",
-    "tests/test_pptx_delivery_check.py",
-    "tests/test_slide_spec_bridge.py",
-    "tests/test_skill_behavior_contracts.py",
+    "tests/test_runtime_paths.py",
 ]
-FORBIDDEN_PATHS = [
-    ".codex-plugin",
-    "skills/student-presentation/agents/openai.yaml",
-    "skills/student-presentation-ppt/agents/openai.yaml",
-    "skills/student-presentation-review/agents/openai.yaml",
-]
-FORBIDDEN_DIR_NAMES = {".pytest_cache", "__pycache__", "node_modules"}
+FORBIDDEN_PATH_PARTS = {".codex-plugin", "agents", "__pycache__", ".pytest_cache", "node_modules"}
+FORBIDDEN_SUFFIXES = {".pyc", ".pptx", ".png"}
+REQUIRED_METADATA = ("homepage", "repository", "license", "keywords")
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,74 +41,100 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def check_structure(errors: list[str]) -> None:
-    for rel in REQUIRED_FILES:
-        if not (ROOT / rel).is_file():
-            errors.append(f"Missing required file: {rel}")
-    for rel in FORBIDDEN_PATHS:
-        if (ROOT / rel).exists():
-            errors.append(f"Codex-only path must not exist in Claude plugin: {rel}")
-
-
-def check_manifest(errors: list[str]) -> None:
-    path = ROOT / ".claude-plugin" / "plugin.json"
-    if not path.is_file():
-        return
-    try:
-        manifest = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        errors.append(f"Claude manifest JSON parse failed: {exc}")
-        return
-    if manifest.get("name") != "student-presentation-suite":
-        errors.append("Claude manifest name must be student-presentation-suite")
-    if manifest.get("author", {}).get("name") in {None, "", "Local developer"}:
-        errors.append("Claude manifest author.name must be publishable")
-    if "document-skills@anthropic-agent-skills" not in manifest.get("dependencies", []):
-        errors.append("Claude manifest must depend on document-skills@anthropic-agent-skills")
-
-
-def check_behavior(errors: list[str]) -> None:
-    schema = (ROOT / "references/slide-spec.schema.json").read_text(encoding="utf-8")
-    bridge = (ROOT / "scripts/slide_spec_to_pptx_brief.py").read_text(encoding="utf-8")
-    ppt_skill = (ROOT / "skills/student-presentation-ppt/SKILL.md").read_text(encoding="utf-8")
-    for expected in (
-        "source_deck",
-        "edit_intent",
-        "review_findings",
-        "preserve",
-        "change_summary_required",
-    ):
-        if expected not in schema:
-            errors.append(f"Slide Spec schema missing field: {expected}")
-    for expected in ("Existing Deck Improvement Contract", "outputs/{output_prefix}-change-summary.md"):
-        if expected not in bridge:
-            errors.append(f"Claude Slide Spec bridge missing detail: {expected}")
-    for expected in (
-        "document-skills@anthropic-agent-skills",
-        "check_claude_pptx_env.py",
-        "slide_spec_to_pptx_brief.py",
-        "markitdown",
-    ):
-        if expected not in ppt_skill:
-            errors.append(f"Claude PPT skill missing workflow detail: {expected}")
-    if "artifact-tool" in ppt_skill or "Presentations` skill" in ppt_skill:
-        errors.append("Claude PPT skill still contains Codex production instructions")
-
-
-def check_tracked_files(errors: list[str]) -> None:
+def run_git(*args: str) -> list[str]:
     proc = subprocess.run(
-        ["git", "ls-files"],
-        cwd=ROOT,
+        ["git", *args],
+        cwd=REPOSITORY_ROOT,
         check=False,
         capture_output=True,
         text=True,
         timeout=20,
     )
     if proc.returncode != 0:
+        raise RuntimeError((proc.stderr or proc.stdout or "git failed").strip())
+    return proc.stdout.splitlines()
+
+
+def tracked_files(errors: list[str]) -> list[str]:
+    try:
+        return run_git("ls-files")
+    except RuntimeError as exc:
+        errors.append(f"Cannot inspect tracked files: {exc}")
+        return []
+
+
+def check_structure(errors: list[str]) -> None:
+    for rel in REQUIRED_FILES:
+        if not (ROOT / rel).is_file():
+            errors.append(f"Missing required file: {rel}")
+
+
+def check_manifest(errors: list[str]) -> None:
+    try:
+        manifest = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
+        package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"Manifest/package JSON parse failed: {exc}")
         return
-    for rel in proc.stdout.splitlines():
-        if any(part in FORBIDDEN_DIR_NAMES for part in Path(rel).parts) or rel.endswith(".pyc"):
-            errors.append(f"Generated cache file is tracked by git: {rel}")
+    if manifest.get("name") != "student-presentation-suite":
+        errors.append("Claude manifest name must be student-presentation-suite")
+    if manifest.get("version") != "0.2.0" or package.get("version") != manifest.get("version"):
+        errors.append("Claude manifest and package.json versions must both be 0.2.0")
+    if manifest.get("author", {}).get("name") in {None, "", "Local developer"}:
+        errors.append("Claude manifest author.name must be publishable")
+    if "document-skills@anthropic-agent-skills" not in manifest.get("dependencies", []):
+        errors.append("Claude manifest must depend on document-skills@anthropic-agent-skills")
+    for field in REQUIRED_METADATA:
+        if not manifest.get(field):
+            errors.append(f"Claude manifest missing metadata: {field}")
+    if len(manifest.get("keywords", [])) < 5:
+        errors.append("Claude manifest should provide at least five keywords")
+
+
+def check_runtime_contract(errors: list[str]) -> None:
+    combined = "\n".join(
+        (ROOT / rel).read_text(encoding="utf-8")
+        for rel in (
+            "skills/student-presentation-ppt/SKILL.md",
+            "skills/student-presentation-review/SKILL.md",
+            "skills/student-presentation-ppt/references/pptx-production.md",
+        )
+    )
+    for expected in (
+        "${CLAUDE_PLUGIN_ROOT}",
+        "${CLAUDE_PROJECT_DIR}",
+        "document-skills@anthropic-agent-skills",
+        "run_with_pptxgenjs.js",
+        "blocked",
+        "incomplete",
+    ):
+        if expected not in combined:
+            errors.append(f"Claude runtime contract missing: {expected}")
+    for forbidden in ("artifact-tool", "Presentations` skill", "agents/openai.yaml"):
+        if forbidden in combined:
+            errors.append(f"Claude runtime instructions contain Codex-only text: {forbidden}")
+
+
+def check_tracked_files(errors: list[str]) -> None:
+    files = tracked_files(errors)
+    folded: dict[str, str] = {}
+    for rel in files:
+        path = Path(rel)
+        if not rel.startswith("plugins/student-presentation-suite/"):
+            continue
+        local = rel.removeprefix("plugins/student-presentation-suite/")
+        local_path = Path(local)
+        if any(part in FORBIDDEN_PATH_PARTS for part in local_path.parts):
+            errors.append(f"Forbidden generated or Codex path is tracked: {local}")
+        if local_path.suffix.lower() in FORBIDDEN_SUFFIXES:
+            errors.append(f"Generated artifact is tracked: {local}")
+        key = local.casefold()
+        if key in folded and folded[key] != local:
+            errors.append(f"Case-colliding tracked paths: {folded[key]} and {local}")
+        folded[key] = local
+        disk_path = ROOT / local
+        if disk_path.is_file() and disk_path.read_bytes().startswith(b"\xef\xbb\xbf"):
+            errors.append(f"UTF-8 BOM is not allowed: {local}")
 
 
 def main() -> None:
@@ -120,7 +142,7 @@ def main() -> None:
     errors: list[str] = []
     check_structure(errors)
     check_manifest(errors)
-    check_behavior(errors)
+    check_runtime_contract(errors)
     check_tracked_files(errors)
     result = {"ok": not errors, "error_count": len(errors), "errors": errors}
     if args.json:

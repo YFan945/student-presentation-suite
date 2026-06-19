@@ -2,32 +2,57 @@ name: validate
 
 on:
   push:
+    branches: [claude-code]
   pull_request:
+    branches: [claude-code]
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
+  runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - name: Install validation dependencies
-        run: python -m pip install -r plugins/student-presentation-suite/requirements.txt
-      - name: Validate Slide Spec schema
-        run: python -m json.tool plugins/student-presentation-suite/references/slide-spec.schema.json > /dev/null
-      - name: Run unit tests
-        run: PYTHONPATH=plugins/student-presentation-suite python -m unittest discover -s plugins/student-presentation-suite/tests
-      - name: Check script entrypoints
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        shell: pwsh
         run: |
-          python plugins/student-presentation-suite/skills/student-presentation-review/scripts/pptx_static_check.py --help
-          python plugins/student-presentation-suite/skills/student-presentation-ppt/scripts/pptx_delivery_check.py --help
-          python plugins/student-presentation-suite/scripts/validate_slide_spec.py --help
-          python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --help
-          python plugins/student-presentation-suite/scripts/slide_spec_to_pptx_brief.py --help
-          python plugins/student-presentation-suite/scripts/check_plugin_release.py --help
-          python scripts/check_marketplace_release.py --help
-      - name: Check release structures
+          python -m pip install -r plugins/student-presentation-suite/requirements.txt
+          python -m pip install -r plugins/student-presentation-suite/requirements-claude-pptx.txt
+          npm --prefix plugins/student-presentation-suite ci
+      - name: Validate schema and tests
+        shell: pwsh
+        run: |
+          python -m json.tool plugins/student-presentation-suite/references/slide-spec.schema.json | Out-Null
+          python -m unittest discover -s plugins/student-presentation-suite/tests
+          node plugins/student-presentation-suite/scripts/run_with_pptxgenjs.js --probe
+          python plugins/student-presentation-suite/scripts/smoke_pptx.py
+      - name: Release checks
+        shell: pwsh
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
           python plugins/student-presentation-suite/scripts/check_plugin_release.py
           python scripts/check_marketplace_release.py
+
+  claude-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Strict Claude validation
+        run: |
+          claude plugin validate --strict ./plugins/student-presentation-suite
+          claude plugin validate --strict .

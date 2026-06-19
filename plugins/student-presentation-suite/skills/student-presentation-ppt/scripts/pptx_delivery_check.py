@@ -17,6 +17,9 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+PLUGIN_ROOT = Path(__file__).resolve().parents[3]
+if str(PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(PLUGIN_ROOT))
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check PPTX delivery package")

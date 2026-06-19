@@ -58,7 +58,7 @@ Use topic-specific filenames under `outputs/`:
 - `outputs/<topic>-preview.png` or a generated contact sheet
 - `outputs/<topic>-change-summary.md` when improving an existing deck
 
-If Slide Spec meta includes `output_prefix`, use it as the `<topic>` slug; otherwise derive a short ASCII-safe slug from the topic. Keep the final response paths absolute.
+If Slide Spec meta includes `output_prefix`, use it as the `<topic>` slug; otherwise derive a short ASCII-safe slug from the topic. Write deliverables under `${CLAUDE_PROJECT_DIR}/outputs` or the current project fallback. Keep final response paths absolute and never write deliverables into `${CLAUDE_PLUGIN_ROOT}`.
 
 ## Classroom Readability
 
@@ -96,13 +96,13 @@ Remove or rewrite: generic openings, exaggerated claims, textbook paragraphs, mo
 
 Prefer: concrete class/project context, simple direct claims, examples from student life or source material, modest but clear conclusions.
 
-## Claude Code PPTX Production
+## Claude Code PPTX Production and Priority
 
-Claude Code PPTX production depends on the `document-skills` plugin from the `anthropic-agent-skills` marketplace. That plugin provides the `pptx` skill.
+Claude Code PPTX production depends on `document-skills@anthropic-agent-skills`. Its `pptx` skill owns the low-level generation and editing mechanics. This suite owns the student-context route, classroom typography, Slide Spec, output location, notes, change summary, and delivery gate. When generic upstream advice conflicts with these requirements, this suite takes priority.
 
 When building in Claude Code:
-- From the plugin package root, run `python scripts/check_claude_pptx_env.py --json` before production. If required tools are missing, report the exact missing generation or QA capability before continuing.
-- If the input includes a Slide Spec YAML/JSON file, run `python scripts/slide_spec_to_pptx_brief.py <spec> --output outputs/<topic>-claude-pptx-brief.md` from the plugin package root first. Use the generated brief as the execution handoff into the `pptx` skill. When the spec includes `source_deck` or `review_findings`, the generated brief must route to the `pptx` skill's editing workflow and require a separate change summary.
+- Run `python "${CLAUDE_PLUGIN_ROOT}/scripts/check_claude_pptx_env.py" --json --strict` before production. Missing required tools make production `blocked`.
+- For Slide Spec input, run `python "${CLAUDE_PLUGIN_ROOT}/scripts/slide_spec_to_pptx_brief.py" <spec> --output-dir "${CLAUDE_PROJECT_DIR}/outputs" --output "${CLAUDE_PROJECT_DIR}/outputs/<topic>-claude-pptx-brief.md"`. When `CLAUDE_PROJECT_DIR` is unavailable, substitute the current project directory.
 - First follow the `pptx` skill's `SKILL.md`.
 - For a new deck from scratch, read and follow `pptxgenjs.md`.
 - For editing an existing PPTX or template, read and follow `editing.md`.
@@ -112,7 +112,8 @@ Required QA inherited from the `pptx` skill:
 - Run `python -m markitdown output.pptx` for content extraction and sanity checking.
 - Render the deck with the `pptx` skill's LibreOffice helper, then convert PDF pages to images with Poppler, for example `scripts/office/soffice.py` plus `pdftoppm`.
 - Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop before calling the deck ready-to-present.
-- Also run this suite's `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict` from the plugin package root when possible to report PPTX existence, notes existence, slide count, preview/contact sheet existence, and static XML risk signals.
+- Run generated deck JavaScript with `node "${CLAUDE_PLUGIN_ROOT}/scripts/run_with_pptxgenjs.js" <deck-script.js>`.
+- Run `python "${CLAUDE_PLUGIN_ROOT}/skills/student-presentation-ppt/scripts/pptx_delivery_check.py" --pptx <pptx> --notes <notes> --preview <preview> --strict --json`. A failed gate makes delivery `incomplete`.
 
 Dependencies and limitations:
 - The Claude plugin dependency is `document-skills`, not the standalone `pptx` skill path.
@@ -124,8 +125,8 @@ Dependencies and limitations:
 
 Before final response:
 - confirm `.pptx` exists and filename is topic-specific
-- from the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict` when possible to verify PPTX existence, slide count, notes file, preview/contact sheet file, static XML risk summary, and risk breakdown
-- render or preview slides when possible; check at least the contact sheet or preview images
+- run the `${CLAUDE_PLUGIN_ROOT}` delivery-check command above and require it to pass
+- render and inspect at least the contact sheet or preview images
 - verify Chinese normal body text >= 22pt, English normal body text >= 20pt, and primary slide titles normally >= 24pt; visually verify any smaller secondary labels
 - verify important keywords are visually emphasized
 - verify no text is out of frame, clipped, overflowing, or too close to box edges

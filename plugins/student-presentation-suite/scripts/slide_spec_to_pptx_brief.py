@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from shared.slide_spec_validation import semantic_errors
+from shared.runtime_paths import output_root
 
 
 def load_optional_dependencies():
@@ -42,6 +43,11 @@ def parse_args() -> argparse.Namespace:
         help="JSON Schema path",
     )
     parser.add_argument("--output", type=Path, help="Markdown brief output path")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        help="Deliverable directory; defaults to CLAUDE_PROJECT_DIR/outputs or cwd/outputs",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON metadata instead of Markdown")
     return parser.parse_args()
 
@@ -94,10 +100,19 @@ def meta_value(meta: dict[str, Any], key: str, default: str = "not specified") -
     return value
 
 
-def build_brief(data: dict[str, Any], source: Path) -> str:
+def build_brief(
+    data: dict[str, Any],
+    source: Path,
+    deliverable_dir: Path | None = None,
+) -> str:
     meta = data.get("meta") or {}
     slides = data["slides"]
     output_prefix = meta.get("output_prefix") or source.stem
+    resolved_output_dir = output_root(deliverable_dir)
+    pptx_path = resolved_output_dir / f"{output_prefix}-presentation.pptx"
+    notes_path = resolved_output_dir / f"{output_prefix}-speaker-notes.md"
+    preview_path = resolved_output_dir / f"{output_prefix}-preview.png"
+    change_summary_path = resolved_output_dir / f"{output_prefix}-change-summary.md"
     total_timing = sum(int(slide.get("timing_sec", 0)) for slide in slides)
     members = meta.get("members") or []
     member_text = ", ".join(members) if members else "not specified"
@@ -124,12 +139,13 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
         "- Keep all student-presentation constraints in this brief while using the pptx skill for PPTX generation.",
         "",
         "## Output Contract",
-        f"- PPTX: `outputs/{output_prefix}-presentation.pptx`",
-        f"- Notes: `outputs/{output_prefix}-speaker-notes.md`",
-        f"- Preview/contact sheet: `outputs/{output_prefix}-preview.png` or a contact sheet",
+        f"- Project output directory: `{resolved_output_dir}`",
+        f"- PPTX: `{pptx_path}`",
+        f"- Notes: `{notes_path}`",
+        f"- Preview/contact sheet: `{preview_path}` or a contact sheet in the same directory",
     ]
     if is_improvement or data.get("change_summary_required"):
-        lines.append(f"- Change summary: `outputs/{output_prefix}-change-summary.md`")
+        lines.append(f"- Change summary: `{change_summary_path}`")
     lines.extend(
         [
             "",
@@ -212,8 +228,8 @@ def build_brief(data: dict[str, Any], source: Path) -> str:
             "- Run `python -m markitdown output.pptx` and inspect extracted text.",
             "- Render with LibreOffice, then convert PDF pages to images with Poppler.",
             "- Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop.",
-            "- From the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict --json` when possible.",
-            "- For existing deck improvements, verify `outputs/<topic>-change-summary.md` lists kept content, changed slides, unresolved risks, and QA results.",
+            "- Run `python \"${CLAUDE_PLUGIN_ROOT}/skills/student-presentation-ppt/scripts/pptx_delivery_check.py\" --pptx <pptx> --notes <notes> --preview <preview> --strict --json`.",
+            f"- For existing deck improvements, verify `{change_summary_path}` lists kept content, changed slides, unresolved risks, and QA results.",
             "- Final response must report file existence, slide count, static XML risks, visual QA status, and limitations.",
             "",
         ]
@@ -245,10 +261,12 @@ def main() -> None:
                 print(f"- {error['path']}: {error['message']}", file=sys.stderr)
         raise SystemExit(1)
 
-    brief = build_brief(data, args.spec)
+    deliverable_dir = output_root(args.output_dir)
+    brief = build_brief(data, args.spec, deliverable_dir)
     result = {
         "valid": True,
         "slide_count": len(data["slides"]),
+        "output_dir": str(deliverable_dir),
         "output": str(args.output) if args.output else None,
         "brief": brief,
     }

@@ -344,13 +344,13 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
         return {
             "file": str(path),
             "error": str(exc),
-            "note": "Static XML risk scan failed; verify the file format and use rendered previews when possible.",
+            "note": "Static XML risk scan failed; status is blocked until the file can be read.",
             "findings": [],
         }
     return {
         "file": str(path),
         "note": (
-            "Static XML risk scan only; verify with rendered previews when possible. "
+            "Static XML risk scan only; status remains incomplete until rendered previews are inspected. "
             "Common layout/master inherited font sizes are resolved, but PowerPoint rendering may still differ."
         ),
         "findings": findings,

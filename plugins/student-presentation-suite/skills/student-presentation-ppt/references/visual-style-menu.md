@@ -51,7 +51,7 @@ When the user says they are unsure, gives only a topic, or asks "你来定", off
 - Campus life/creative/product concept: offer `Creative Student`, `Coral Energy`, and `Modern Minimal`.
 - If the grading context is unknown, include at least one conservative option and one expressive option.
 
-When asking a Chinese user to choose, show the English style name and 中文别名, for example `Ocean Tech（海洋科技）`. List all styles, but separate 3-5 recommended choices from a compact "other available styles" list. If the user explicitly asks the agent to decide, choose one and state why instead of asking again.
+When style selection is needed, show the three best topic-fit choices first using the English name and 中文别名, for example `Ocean Tech（海洋科技）`. Show the complete 14-style menu only when the user explicitly asks for all styles. If the user asks the agent to decide, choose one and state why instead of asking again.
 
 ## General Visual Principles
 

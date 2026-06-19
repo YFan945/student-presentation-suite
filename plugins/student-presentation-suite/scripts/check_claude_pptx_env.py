@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check local tools expected by Claude document-skills/pptx production."""
+"""Check tools required by the Claude document-skills/pptx workflow."""
 
 from __future__ import annotations
 
@@ -9,34 +9,37 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from shared.runtime_paths import document_skills_compatibility, project_root
 
 
 COMMON_SOFFICE_PATHS = [
     Path(r"C:\Program Files\LibreOffice\program\soffice.exe"),
     Path(r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"),
 ]
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check Claude document-skills/pptx environment")
     parser.add_argument("--json", action="store_true", help="Emit JSON result")
-    parser.add_argument(
-        "--strict",
-        action="store_true",
-        help="Exit non-zero when required tools are missing",
-    )
+    parser.add_argument("--strict", action="store_true", help="Exit non-zero when required tools are missing")
+    parser.add_argument("--project-root", type=Path, help="Override the active Claude project root")
     return parser.parse_args()
 
 
 def command_path(name: str, extra_paths: list[Path] | None = None) -> str | None:
     if os.name == "nt" and not Path(name).suffix:
         for suffix in (".cmd", ".exe", ".bat"):
-            found_with_suffix = shutil.which(name + suffix)
-            if found_with_suffix:
-                return found_with_suffix
+            found = shutil.which(name + suffix)
+            if found:
+                return found
     found = shutil.which(name)
     if found:
         return found
@@ -50,7 +53,7 @@ def python_module(name: str) -> bool:
     return importlib.util.find_spec(name) is not None
 
 
-def run_probe(command: list[str]) -> tuple[bool, str]:
+def run_probe(command: list[str], env: dict[str, str] | None = None) -> tuple[bool, str]:
     try:
         proc = subprocess.run(
             command,
@@ -58,6 +61,7 @@ def run_probe(command: list[str]) -> tuple[bool, str]:
             capture_output=True,
             text=True,
             timeout=20,
+            env=env,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
         return False, str(exc)
@@ -65,52 +69,73 @@ def run_probe(command: list[str]) -> tuple[bool, str]:
     return proc.returncode == 0, output
 
 
-def check_pptxgenjs() -> dict[str, Any]:
+def npm_global_root(npm: str | None) -> Path | None:
+    if not npm:
+        return None
+    ok, output = run_probe([npm, "root", "-g"])
+    if not ok or not output:
+        return None
+    return Path(output.splitlines()[-1].strip()).expanduser().resolve()
+
+
+def resolve_pptxgenjs(project: Path) -> dict[str, Any]:
     node = command_path("node")
     npm = command_path("npm")
     if not node:
-        return {
-            "ok": False,
-            "method": "node",
-            "detail": "node is not available; cannot load pptxgenjs",
-        }
-    resolve_script = (
-        "console.log(require.resolve('pptxgenjs', "
-        f"{{ paths: [{json.dumps(str(ROOT))}] }}))"
+        return {"ok": False, "module_source": None, "detail": "node is not available"}
+
+    candidates: list[tuple[str, Path]] = [
+        ("project", project),
+        ("plugin", ROOT),
+    ]
+    global_root = npm_global_root(npm)
+    if global_root:
+        candidates.append(("global", global_root))
+
+    probe = (
+        "const fs=require('node:fs'),p=require('node:path');"
+        "const modulePath=require.resolve('pptxgenjs',{paths:[process.argv[1]]});"
+        "let dir=p.dirname(modulePath),pkgPath=null;"
+        "while(dir!==p.dirname(dir)){"
+        "const candidate=p.join(dir,'package.json');"
+        "if(fs.existsSync(candidate)){"
+        "const pkg=JSON.parse(fs.readFileSync(candidate,'utf8'));"
+        "if(pkg.name==='pptxgenjs'){pkgPath=candidate;break;}}"
+        "dir=p.dirname(dir);}"
+        "if(!pkgPath)throw new Error('pptxgenjs package.json not found');"
+        "const pkg=JSON.parse(fs.readFileSync(pkgPath,'utf8'));"
+        "console.log(JSON.stringify({path:modulePath,version:pkg.version}));"
     )
-    ok, output = run_probe([node, "-e", resolve_script])
-    if ok:
-        return {
-            "ok": True,
-            "method": "node require.resolve with plugin root",
-            "detail": output,
-        }
-    result: dict[str, Any] = {
+    attempts: list[dict[str, str]] = []
+    for source, base in candidates:
+        ok, output = run_probe([node, "-e", probe, str(base)])
+        if ok:
+            data = json.loads(output.splitlines()[-1])
+            return {
+                "ok": True,
+                "module_source": source,
+                "module_root": str(base),
+                "module_path": data["path"],
+                "module_version": data["version"],
+                "attempts": attempts,
+            }
+        attempts.append({"source": source, "root": str(base), "detail": output})
+    return {
         "ok": False,
-        "method": "node require.resolve with plugin root",
-        "detail": output,
-        "warning": (
-            "pptxgenjs must be resolvable from the plugin root by the Node process "
-            "that builds the deck. Run `npm install --prefix plugins/student-presentation-suite` "
-            "from the repository root. A global npm install alone is not treated as sufficient."
-        ),
+        "module_source": None,
+        "module_version": None,
+        "attempts": attempts,
+        "detail": "pptxgenjs was not resolvable from project, plugin, or global npm roots",
     }
-    if npm:
-        ok_global, global_output = run_probe([npm, "list", "-g", "pptxgenjs", "--depth=0"])
-        result["global_installed"] = ok_global
-        result["global_detail"] = global_output
-        if not output:
-            result["detail"] = global_output
-        return result
-    result["detail"] = output or "npm is not available for a global package check"
-    return result
 
 
-def inspect_environment() -> dict[str, Any]:
+def inspect_environment(project: Path | None = None) -> dict[str, Any]:
+    active_project = (project or project_root()).resolve()
+    dependency = document_skills_compatibility()
     checks = {
         "node": {"ok": command_path("node") is not None, "path": command_path("node")},
         "npm": {"ok": command_path("npm") is not None, "path": command_path("npm")},
-        "pptxgenjs": check_pptxgenjs(),
+        "pptxgenjs": resolve_pptxgenjs(active_project),
         "markitdown": {"ok": python_module("markitdown"), "module": "markitdown"},
         "Pillow": {"ok": python_module("PIL"), "module": "PIL"},
         "LibreOffice": {
@@ -123,37 +148,41 @@ def inspect_environment() -> dict[str, Any]:
         },
         "jsonschema": {"ok": python_module("jsonschema"), "module": "jsonschema"},
         "PyYAML": {"ok": python_module("yaml"), "module": "yaml"},
+        "document-skills": dependency,
     }
-    required = ["node", "pptxgenjs", "markitdown", "Pillow", "LibreOffice", "Poppler pdftoppm"]
-    missing_required = [name for name in required if not checks[name]["ok"]]
+    required = [
+        "node",
+        "pptxgenjs",
+        "markitdown",
+        "Pillow",
+        "LibreOffice",
+        "Poppler pdftoppm",
+        "document-skills",
+    ]
+    missing = [name for name in required if not checks[name]["ok"]]
     return {
-        "ok": not missing_required,
-        "missing_required": missing_required,
+        "ok": not missing,
+        "project_root": str(active_project),
+        "plugin_root": str(ROOT),
+        "dependency_compatibility": dependency,
+        "missing_required": missing,
         "checks": checks,
         "note": (
-            "Missing required tools do not break the student planning/review skills, "
-            "but Claude document-skills/pptx generation or rendered QA will degrade."
+            "Planning and review can still run without every production tool, "
+            "but PPTX generation is incomplete until all required checks pass."
         ),
     }
 
 
-def print_text(result: dict[str, Any]) -> None:
-    print(result["note"])
-    for name, check in result["checks"].items():
-        status = "ok" if check["ok"] else "missing"
-        detail = check.get("path") or check.get("module") or check.get("detail") or ""
-        print(f"{name}: {status} {detail}".rstrip())
-    if result["missing_required"]:
-        print("Missing required: " + ", ".join(result["missing_required"]))
-
-
 def main() -> None:
     args = parse_args()
-    result = inspect_environment()
+    result = inspect_environment(args.project_root)
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
-        print_text(result)
+        print(result["note"])
+        for name, check in result["checks"].items():
+            print(f"{name}: {'ok' if check['ok'] else 'missing'}")
     if args.strict and result["missing_required"]:
         raise SystemExit(2)
 

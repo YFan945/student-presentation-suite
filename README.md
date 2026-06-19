@@ -2,42 +2,40 @@
 
 [中文](README-zh.md) | English
 
-This directory is the Claude Code-only plugin marketplace at `%USERPROFILE%\.agents\claude-plugins`.
+Claude Code-only marketplace published from the
+[`claude-code`](https://github.com/YFan945/student-presentation-suite/tree/claude-code)
+branch. The marketplace name is `claude-personal`.
 
-It publishes `student-presentation-suite` from `plugins/student-presentation-suite`. The package uses `.claude-plugin/plugin.json`, depends on `document-skills@anthropic-agent-skills`, and contains the Claude PPTX environment checker and Slide Spec production bridge.
-
-```text
-.
-├── .claude-plugin/marketplace.json
-├── plugins/
-│   └── student-presentation-suite/
-│       ├── .claude-plugin/plugin.json
-│       ├── skills/
-│       ├── scripts/
-│       ├── shared/
-│       ├── references/
-│       └── tests/
-├── scripts/check_marketplace_release.py
-└── .github/workflows/validate.yml
-```
-
-## Installation
+## Install or migrate
 
 ```powershell
-claude plugin marketplace add "$env:USERPROFILE\.agents\claude-plugins"
-claude plugin install student-presentation-suite@personal
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\install_claude_plugin.ps1 -Migrate
 ```
 
-## Dependencies
+The script:
+
+- keeps the Codex workspace untouched
+- removes the obsolete Claude `personal` registration and plugin cache
+- installs dependencies
+- registers this directory as `claude-personal`
+- installs `document-skills@anthropic-agent-skills`
+- installs and validates `student-presentation-suite@claude-personal`
+
+Restart Claude Code after installation.
+
+## Manual development setup
 
 ```powershell
+git clone --branch claude-code --single-branch `
+  git@github.com:YFan945/student-presentation-suite.git `
+  "$env:USERPROFILE\.agents\claude-plugins"
 python -m pip install -r plugins/student-presentation-suite/requirements.txt
 python -m pip install -r plugins/student-presentation-suite/requirements-claude-pptx.txt
-npm --prefix plugins/student-presentation-suite install
-python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json
+npm --prefix plugins/student-presentation-suite ci
+claude plugin marketplace add --scope user "$env:USERPROFILE\.agents\claude-plugins"
+claude plugin install -s user student-presentation-suite@claude-personal
 ```
-
-LibreOffice and Poppler are system dependencies for rendered PPTX QA.
 
 ## Validation
 
@@ -46,10 +44,13 @@ $env:PYTHONPATH=(Resolve-Path "plugins/student-presentation-suite").Path
 python -m unittest discover -s plugins/student-presentation-suite/tests
 python plugins/student-presentation-suite/scripts/check_plugin_release.py
 python scripts/check_marketplace_release.py
-claude plugin validate .\plugins\student-presentation-suite
+python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json --strict
+claude plugin validate --strict .\plugins\student-presentation-suite
+claude plugin validate --strict .
 ```
 
-The independent Codex marketplace remains in the sibling directory `%USERPROFILE%\.agents\plugins`.
+Claude-specific changes are published only to `claude-code`; `main` remains the
+separate Codex line.
 
 ## License
 

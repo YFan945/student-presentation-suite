@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the repository-level shared marketplace structure before publishing."""
+"""Validate the Codex-only marketplace layout."""
 
 from __future__ import annotations
 
@@ -10,141 +10,130 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+MARKETPLACE_PATH = ROOT / ".agents" / "plugins" / "marketplace.json"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Check marketplace repository release structure")
+    parser = argparse.ArgumentParser(description="Check Codex marketplace release structure")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     return parser.parse_args()
 
-
-def load_json(path: Path, errors: list[str]) -> dict | None:
+def load_utf8_json(path: Path, label: str, errors: list[str]) -> dict | None:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        errors.append(f"Cannot read JSON {path.relative_to(ROOT)}: {exc}")
+        raw = path.read_bytes()
+    except OSError as exc:
+        errors.append(f"Cannot read {label}: {exc}")
         return None
-
-
-def check_required_paths(errors: list[str]) -> None:
-    required = [
-        "README.md",
-        "README-zh.md",
-        "LICENSE",
-        ".gitignore",
-        ".claude-plugin/marketplace.json",
-        ".github/workflows/validate.yml",
-        "plugins/student-presentation-suite/.codex-plugin/plugin.json",
-        "plugins/student-presentation-suite/.claude-plugin/plugin.json",
-        "plugins/student-presentation-suite/README.md",
-        "plugins/student-presentation-suite/README-zh.md",
-        "plugins/student-presentation-suite/requirements-claude-pptx.txt",
-        "plugins/student-presentation-suite/package.json",
-        "plugins/student-presentation-suite/package-lock.json",
-    ]
-    for rel in required:
-        if not (ROOT / rel).is_file():
-            errors.append(f"Missing required repository file: {rel}")
-
-
-def check_shared_marketplace(errors: list[str]) -> None:
-    path = ROOT / ".claude-plugin" / "marketplace.json"
-    data = load_json(path, errors)
-    if data is None:
-        return
-    if data.get("name") != "personal":
-        errors.append("Shared marketplace name must be lowercase personal")
-    owner = data.get("owner", {})
-    if owner.get("name") in {None, "", "Local developer"}:
-        errors.append("Shared marketplace owner.name must be a publishable owner name")
-    plugins = data.get("plugins")
-    if not isinstance(plugins, list) or not plugins:
-        errors.append("Shared marketplace must include a non-empty plugins array")
-        return
-    names = {item.get("name") for item in plugins if isinstance(item, dict)}
-    if names != {"student-presentation-suite"}:
-        errors.append(f"Shared marketplace should publish only student-presentation-suite, got {sorted(names)}")
-    for item in plugins:
-        if not isinstance(item, dict):
-            errors.append("Shared marketplace plugin entry must be an object")
-            continue
-        source = item.get("source")
-        if source != "./plugins/student-presentation-suite":
-            errors.append(f"Shared marketplace source should be ./plugins/student-presentation-suite, got {source}")
-        elif not (ROOT / source).is_dir():
-            errors.append(f"Shared marketplace source path does not exist: {source}")
-        plugin_root = ROOT / "plugins" / "student-presentation-suite"
-        for manifest_rel in (".codex-plugin/plugin.json", ".claude-plugin/plugin.json"):
-            manifest = load_json(plugin_root / manifest_rel, errors)
-            if manifest and item.get("version") != manifest.get("version"):
-                errors.append(
-                    "Marketplace and plugin manifest versions must match: "
-                    f"{item.get('version')} != {manifest.get('version')} ({manifest_rel})"
-                )
-
-
-def check_readmes(errors: list[str]) -> None:
-    root_en = (ROOT / "README.md").read_text(encoding="utf-8")
-    root_zh = (ROOT / "README-zh.md").read_text(encoding="utf-8")
-    plugin_en = (ROOT / "plugins/student-presentation-suite/README.md").read_text(encoding="utf-8")
-    plugin_zh = (ROOT / "plugins/student-presentation-suite/README-zh.md").read_text(encoding="utf-8")
-    for label, text in (
-        ("README.md", root_en),
-        ("README-zh.md", root_zh),
-        ("plugins/student-presentation-suite/README.md", plugin_en),
-        ("plugins/student-presentation-suite/README-zh.md", plugin_zh),
-    ):
-        if "C:\\Users\\28603" in text:
-            errors.append(f"{label} contains a machine-specific absolute path")
-    if "[中文](README-zh.md) | English" not in root_en:
-        errors.append("Root README.md missing zh/en switch")
-    if "中文 | [English](README.md)" not in root_zh:
-        errors.append("Root README-zh.md missing zh/en switch")
-    if "[中文](README-zh.md) | English" not in plugin_en:
-        errors.append("Plugin README.md missing zh/en switch")
-    if "中文 | [English](README.md)" not in plugin_zh:
-        errors.append("Plugin README-zh.md missing zh/en switch")
-    for label, text in (("README.md", root_en), ("README-zh.md", root_zh)):
-        for expected in (
-            ".claude-plugin/marketplace.json",
-            "plugins/student-presentation-suite",
-            "codex plugin marketplace add",
-            "codex plugin add student-presentation-suite@personal",
-            "claude plugin marketplace add",
-            "claude plugin install student-presentation-suite@personal",
-            "Claude Code",
-            "OpenCode",
-        ):
-            if expected not in text:
-                errors.append(f"{label} missing repository usage detail: {expected}")
-    for label, text in (
-        ("plugins/student-presentation-suite/README.md", plugin_en),
-        ("plugins/student-presentation-suite/README-zh.md", plugin_zh),
-    ):
-        for expected in (
-            "document-skills@anthropic-agent-skills",
-            "student-presentation-suite@personal",
-            "check_claude_pptx_env.py --json",
-        ):
-            if expected not in text:
-                errors.append(f"{label} missing plugin runtime detail: {expected}")
+    if raw.startswith(b"\xef\xbb\xbf"):
+        errors.append(f"{label} must be UTF-8 without BOM")
+        return None
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        errors.append(f"{label} must contain valid UTF-8 JSON: {exc}")
+        return None
+    if not isinstance(payload, dict):
+        errors.append(f"{label} must contain a JSON object")
+        return None
+    return payload
 
 
 def main() -> None:
     args = parse_args()
     errors: list[str] = []
-    check_required_paths(errors)
-    check_shared_marketplace(errors)
-    check_readmes(errors)
+    required = [
+        ".agents/plugins/marketplace.json",
+        "plugins/student-presentation-suite/.codex-plugin/plugin.json",
+        "README.md",
+        "README-zh.md",
+        ".github/workflows/validate.yml",
+    ]
+    for rel in required:
+        if not (ROOT / rel).is_file():
+            errors.append(f"Missing required file: {rel}")
+    if (ROOT / ".claude-plugin").exists():
+        errors.append("Codex marketplace root must not contain .claude-plugin")
+    if (ROOT / "claude-plugins").exists():
+        errors.append("Claude plugins must live outside the Codex marketplace root")
+    marketplace = load_utf8_json(MARKETPLACE_PATH, "marketplace.json", errors)
+    if marketplace is not None:
+        if marketplace.get("name") != "personal":
+            errors.append("Codex marketplace name must be personal")
+        if marketplace.get("interface", {}).get("displayName") != "Personal":
+            errors.append("Codex marketplace interface.displayName must be Personal")
+        entries = marketplace.get("plugins")
+        if not isinstance(entries, list) or not entries:
+            errors.append("Codex marketplace must publish at least one plugin")
+            entries = []
+        names = [
+            entry.get("name")
+            for entry in entries
+            if isinstance(entry, dict) and isinstance(entry.get("name"), str)
+        ]
+        duplicate_names = sorted({name for name in names if names.count(name) > 1})
+        if duplicate_names:
+            errors.append(
+                "Codex marketplace contains duplicate plugin names: "
+                + ", ".join(duplicate_names)
+            )
+        for index, entry in enumerate(entries):
+            label = f"plugins[{index}]"
+            if not isinstance(entry, dict):
+                errors.append(f"{label} must be an object")
+                continue
+            name = entry.get("name")
+            source = entry.get("source", {})
+            if not isinstance(name, str) or not name:
+                errors.append(f"{label}.name must be a non-empty string")
+                continue
+            if not isinstance(source, dict) or source.get("source") != "local":
+                errors.append(f"{label}.source.source must be local")
+                continue
+            source_path = source.get("path")
+            if not isinstance(source_path, str) or not source_path.startswith("./plugins/"):
+                errors.append(f"{label}.source.path must use ./plugins/<name>")
+                continue
+            plugin_root = (ROOT / source_path).resolve()
+            if not plugin_root.is_relative_to(ROOT.resolve()) or not plugin_root.is_dir():
+                errors.append(f"{label}.source.path does not resolve to a plugin directory")
+                continue
+            manifest_path = plugin_root / ".codex-plugin" / "plugin.json"
+            manifest = load_utf8_json(
+                manifest_path,
+                f"{name} plugin.json",
+                errors,
+            )
+            if manifest is not None and manifest.get("name") != name:
+                errors.append(f"{label}.name must match plugin.json name")
+            if entry.get("policy") != {
+                "installation": "AVAILABLE",
+                "authentication": "ON_INSTALL",
+            }:
+                errors.append(f"{label}.policy must use AVAILABLE/ON_INSTALL")
+            if not isinstance(entry.get("category"), str) or not entry["category"]:
+                errors.append(f"{label}.category must be a non-empty string")
+
+    for rel in ("README.md", "README-zh.md", "AGENTS.md"):
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        for required_text in (
+            ".agents/plugins/marketplace.json",
+            "--marketplace-path .agents/plugins/marketplace.json",
+        ):
+            if required_text not in text:
+                errors.append(f"{rel} missing repository marketplace instruction: {required_text}")
+    for rel in ("README.md", "README-zh.md"):
+        text = (ROOT / rel).read_text(encoding="utf-8")
+        if "codex plugin marketplace add" not in text:
+            errors.append(f"{rel} missing explicit marketplace registration command")
     result = {"ok": not errors, "error_count": len(errors), "errors": errors}
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     elif errors:
-        print("Marketplace release check failed:", file=sys.stderr)
+        print("Codex marketplace release check failed:", file=sys.stderr)
         for error in errors:
             print(f"- {error}", file=sys.stderr)
     else:
-        print("Marketplace release check passed.")
+        print("Codex marketplace release check passed.")
     if errors:
         raise SystemExit(1)
 

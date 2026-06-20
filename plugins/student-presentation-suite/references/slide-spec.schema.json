@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.local/student-presentation-suite/slide-spec.schema.json",
+  "$id": "https://raw.githubusercontent.com/YFan945/student-presentation-suite/main/plugins/student-presentation-suite/references/slide-spec.schema.json",
   "title": "Student Presentation Slide Spec",
   "type": "object",
   "additionalProperties": false,

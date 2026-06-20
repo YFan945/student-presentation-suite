@@ -87,3 +87,4 @@ claude plugin validate .
 
 - 本日志按 UTC+8 的 2026-06-17 自然日统计，包含提交 `5bd40ca` 到 `1dd173e`。
 - 日志本身是在提交 `1dd173e` 之后生成，用于记录今天已完成的仓库改动。
+> 历史说明：本文记录的是 2026-06-17 当时的共享 marketplace 方案。自 2026-06-19 起，本仓库已迁移为 Codex-only marketplace；当前结构和命令以根目录 `README.md`、`README-zh.md` 与 `AGENTS.md` 为准。Claude Code 版本已迁移到同级目录 `..\claude-plugins`。

@@ -1,31 +1,20 @@
-# 本地 Agent Skills Marketplace
+# Codex Plugins
 
 [![Validate](https://github.com/YFan945/student-presentation-suite/actions/workflows/validate.yml/badge.svg)](https://github.com/YFan945/student-presentation-suite/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Marketplace](https://img.shields.io/badge/Agent-marketplace-111827)](.claude-plugin/marketplace.json)
 
 中文 | [English](README.md)
 
-这个仓库是 Codex 和 Claude Code 共享的本地 marketplace，位置是 `%USERPROFILE%\.agents\plugins`。两个运行时共用同一个市场文件：`.claude-plugin/marketplace.json`。它也保存给 OpenCode 等工具复用的 skill 源文件。
+本目录是仅适配 Codex、需要显式注册的仓库型 marketplace，不是 Codex 默认自动发现的 personal marketplace 布局。
 
-父级 `.agents` 目录会把旧的 marketplace 实验放在 `archive/`；当前这个 `plugins/` 目录是唯一活跃的 marketplace 根目录。
-
-当前发布一个插件：`student-presentation-suite`，内部有三个 skill：
-
-- `student-presentation`：选题、提纲、讲稿、转场、小组衔接和 Q&A 准备。
-- `student-presentation-ppt`：根据主题、大纲、Slide Spec 或已有 deck 审查结果生成/改进可编辑 PPTX、讲稿、变更摘要和交付 QA。
-- `student-presentation-review`：审阅 PPTX/PDF/截图/Slide Spec，检查逻辑、可读性、评分适配、AI 写作风险和 PPTX 静态问题。
-
-## 目录结构
+当前发布 `plugins/student-presentation-suite`。插件使用 `.codex-plugin/plugin.json` 和 Codex `Presentations` workflow，并可按需使用 `imagegen`，不包含 Claude Code manifest 或 `document-skills` 依赖。
 
 ```text
 .
-├── .claude-plugin/
-│   └── marketplace.json
+├── .agents/plugins/marketplace.json
 ├── plugins/
 │   └── student-presentation-suite/
 │       ├── .codex-plugin/plugin.json
-│       ├── .claude-plugin/plugin.json
 │       ├── skills/
 │       ├── scripts/
 │       ├── shared/
@@ -34,73 +23,41 @@
 └── .github/workflows/validate.yml
 ```
 
-`.claude-plugin/marketplace.json` 是 Codex 和 Claude Code 共享的 marketplace manifest，指向插件本体：`plugins/student-presentation-suite`。
-
 ## 安装
 
-Codex 使用同一个市场文件：
-
 ```powershell
-codex plugin marketplace add "$env:USERPROFILE\.agents\plugins"
+Set-Location "$env:USERPROFILE\.agents\plugins"
+codex plugin marketplace add (Get-Location).Path
 codex plugin add student-presentation-suite@personal
 ```
 
-Claude Code 使用同一个市场文件：
+更新时必须从仓库 manifest 显式读取 marketplace 名称：
 
 ```powershell
-claude plugin marketplace add "$env:USERPROFILE\.agents\plugins"
-claude plugin install student-presentation-suite@personal
+python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\read_marketplace_name.py" `
+  --marketplace-path .agents/plugins/marketplace.json
 ```
 
-在 Claude Code chat 里，等价 slash 命令是：
+## 运行前提
 
-```text
-/plugin marketplace add <path-to-this-repository>
-/plugin install student-presentation-suite@personal
-```
+- `student-presentation-ppt` 依赖 Codex `Presentations` 能力。
+- PPTX 生产只使用 Codex 标准 presentation workflow，插件不内置第二套 PPTX 引擎。
+- `imagegen` 是可选能力，只在视觉确有价值且用户允许时使用。
+- 若 `Presentations` 不可用，PPT skill 必须明确报告缺失前提并停止，不能退化为大纲后宣称已生成 PPTX。恢复或安装 presentations 插件后，应在新线程重试。
 
-共享 marketplace 条目通过下面的相对路径指向插件本体：
-
-```json
-"source": "./plugins/student-presentation-suite"
-```
-
-Codex 生成 PPTX 需要 Codex runtime 中已有默认 `Presentations` skill/plugin、`artifact-tool` 和 `imagegen`。Claude Code 生成 PPTX 使用插件 README 中记录的插件内 Claude 元数据和 `document-skills` 路线。
-
-## 其他 Agent 工具
-
-OpenCode 或类似工具应直接消费 `plugins/student-presentation-suite/skills/` 下的 skill 源文件，或读取它们支持的插件本体元数据。
-
-## 开发与验证
-
-安装校验依赖：
+## 验证
 
 ```powershell
 python -m pip install -r plugins/student-presentation-suite/requirements.txt
-```
-
-从仓库根目录运行测试和发布检查：
-
-```powershell
-python -m pytest -q plugins/student-presentation-suite/tests
+$env:PYTHONPATH=(Resolve-Path "plugins/student-presentation-suite").Path
+python -m unittest discover -s plugins/student-presentation-suite/tests
 python plugins/student-presentation-suite/scripts/check_plugin_release.py
 python scripts/check_marketplace_release.py
-```
-
-校验运行时 manifest：
-
-```powershell
 python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" `
   .\plugins\student-presentation-suite
-claude plugin validate .
-claude plugin validate .\plugins\student-presentation-suite
 ```
 
-## 说明
-
-- 生成的 PPTX、PNG、PDF、依赖目录和缓存文件默认不会提交。
-- `plugins/student-presentation-suite/README-zh.md` 说明插件行为。
-- 根 README 说明 Codex 和 Claude Code 共享 marketplace 的结构与安装方式。
+独立 Claude Code marketplace 位于同级目录 `%USERPROFILE%\.agents\claude-plugins`。
 
 ## License
 

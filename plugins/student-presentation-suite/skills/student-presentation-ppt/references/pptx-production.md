@@ -2,6 +2,13 @@
 
 Load `../../../references/shared-standards.md` for shared readability, anti-AI wording, AI-writing pattern risk, English, Chinese, and group standards. Load `../../../references/image-strategy.md` for image/source choices. Load `visual-style-menu.md` for the style menu and selection guide; after choosing a style, load only the matching file from `visual-styles/<style>.md`.
 
+## Runtime Contract
+
+- Require the Codex `Presentations` capability before production.
+- If it is unavailable, report the missing prerequisite and stop. Do not fall back to a Markdown outline or claim a PPTX was generated.
+- Use the standard Presentations workflow only. Artifact-tool is an internal implementation detail, not a separate public dependency or alternate engine.
+- Use `imagegen` only when generated imagery materially helps and the user permits it. Diagram-only and shape-based decks must remain valid without it.
+
 ## Before Building
 
 Check confirmed constraints first, then ask the user to choose or confirm only missing production items that would materially change the deck:
@@ -96,9 +103,9 @@ Remove or rewrite: generic openings, exaggerated claims, textbook paragraphs, mo
 
 Prefer: concrete class/project context, simple direct claims, examples from student life or source material, modest but clear conclusions.
 
-## Artifact-Tool Pitfalls
+## Presentations Workflow Pitfalls
 
-When building through artifact-tool presentation primitives:
+When the Presentations workflow uses artifact-tool presentation primitives:
 - run a one-slide smoke test before generating many slides
 - verify shape positions use `left`, `top`, `width`, and `height` (not `x`/`y`)
 - verify text is written through the shape text API when required by the runtime
@@ -106,35 +113,11 @@ When building through artifact-tool presentation primitives:
 - if the contact-sheet helper needs Python, set `PYTHON` to the bundled runtime Python when available
 - treat a nonblank PPTX file as insufficient evidence; the rendered PNG/contact sheet must show the intended layout
 
-## Anthropic PPTX Skill Notes (Claude Code)
-
-Claude Code PPTX production depends on the `document-skills` plugin from the `anthropic-agent-skills` marketplace. That plugin provides the `pptx` skill.
-
-When building in Claude Code:
-- From the plugin package root, run `python scripts/check_claude_pptx_env.py --json` before production. If required tools are missing, report the exact missing generation or QA capability before continuing.
-- If the input includes a Slide Spec YAML/JSON file, run `python scripts/slide_spec_to_pptx_brief.py <spec> --output outputs/<topic>-claude-pptx-brief.md` from the plugin package root first. Use the generated brief as the execution handoff into the `pptx` skill. When the spec includes `source_deck` or `review_findings`, the generated brief must route to the `pptx` skill's editing workflow and require a separate change summary.
-- First follow the `pptx` skill's `SKILL.md`.
-- For a new deck from scratch, read and follow `pptxgenjs.md`.
-- For editing an existing PPTX or template, read and follow `editing.md`.
-- Keep this student-presentation skill as the upper-level brief: confirmed classroom constraints, Slide Spec, creative direction, readability, notes, anti-AI wording review, and final QA contract still apply.
-
-Required QA inherited from the `pptx` skill:
-- Run `python -m markitdown output.pptx` for content extraction and sanity checking.
-- Render the deck with the `pptx` skill's LibreOffice helper, then convert PDF pages to images with Poppler, for example `scripts/office/soffice.py` plus `pdftoppm`.
-- Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop before calling the deck ready-to-present.
-- Also run this suite's `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict` from the plugin package root when possible to report PPTX existence, notes existence, slide count, preview/contact sheet existence, and static XML risk signals.
-
-Dependencies and limitations:
-- The Claude plugin dependency is `document-skills`, not the standalone `pptx` skill path.
-- The expected install target is `document-skills@anthropic-agent-skills`; if the local plugin is named differently, use the actual name from the marketplace manifest.
-- The `pptx` skill expects environment tools such as `pptxgenjs`, `markitdown[pptx]`, Pillow, LibreOffice, and Poppler. If any are unavailable, report the missing QA or generation step explicitly.
-- The `pptx` skill does not natively enforce this suite's Slide Spec schema. Use `slide_spec_to_pptx_brief.py` as the programmatic bridge: it validates the schema and converts the Slide Spec into a Claude `pptx` production brief, including existing-deck improvement fields such as `source_deck`, `edit_intent`, `review_findings`, `preserve`, and `change_summary_required`. The final generation still depends on the `pptx` skill following that brief.
-
 ## Final Deliverable QA
 
 Before final response:
 - confirm `.pptx` exists and filename is topic-specific
-- from the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict` when possible to verify PPTX existence, slide count, notes file, preview/contact sheet file, static XML risk summary, and risk breakdown
+- from the plugin package root, run `python skills/student-presentation-ppt/scripts/pptx_delivery_check.py --pptx <pptx> --notes <notes> --preview <preview> --strict --fail-on-blockers` when possible to verify PPTX integrity, slide count, notes, preview/contact sheet, static XML risk summary, and blocker-like findings
 - render or preview slides when possible; check at least the contact sheet or preview images
 - verify Chinese normal body text >= 22pt, English normal body text >= 20pt, and primary slide titles normally >= 24pt; visually verify any smaller secondary labels
 - verify important keywords are visually emphasized

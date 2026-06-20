@@ -1,0 +1,57 @@
+meta:
+  presentation_type: coursework report
+  language: Chinese
+  duration_min: 3
+  slide_count: 3
+  format: group
+  members:
+    - A
+    - B
+  course: Introduction to AI
+  image_source: diagram-only
+  output_prefix: ai-learning-report
+slides:
+  - id: 1
+    kind: cover
+    title: AI 可以帮助开始，但不能替代判断
+    layout: title
+    content:
+      bullets:
+        - 大学生课程作业中的 AI 使用
+    visual:
+      type: workflow-shapes
+      purpose: Introduce AI as one step in the coursework process
+    note_goal: Introduce the question and course context
+    transition: 先看 AI 通常参与哪些环节。
+    timing_sec: 45
+    owner: A
+  - id: 2
+    title: AI 最常用于找方向、理结构和改表达
+    layout: three-step-process
+    content:
+      bullets:
+        - 找方向
+        - 理结构
+        - 改表达
+    visual:
+      type: three-step-process
+      purpose: Explain the main support stages
+    note_goal: Explain assistance without overstating automation
+    transition: 这些便利也带来了事实和引用风险。
+    timing_sec: 75
+    owner: A
+  - id: 3
+    kind: closing
+    title: 先生成选项，再核查并用自己的话重写
+    layout: summary-qa
+    content:
+      bullets:
+        - 生成多个选项
+        - 核查事实和来源
+        - 人工重写与负责
+    visual:
+      type: three-step-loop
+      purpose: Close with a responsible usage method
+    note_goal: State the takeaway and invite questions
+    timing_sec: 60
+    owner: B

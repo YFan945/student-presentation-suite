@@ -1,9 +1,0 @@
-{
-  "name": "student-presentation-suite-runtime",
-  "private": true,
-  "version": "0.1.0",
-  "description": "Node runtime dependencies for Claude Code document-skills/pptx checks.",
-  "dependencies": {
-    "pptxgenjs": "^4.0.1"
-  }
-}

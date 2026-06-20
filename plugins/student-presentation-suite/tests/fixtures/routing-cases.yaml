@@ -1,0 +1,37 @@
+cases:
+  - prompt: "帮我做一个大学软件工程课程汇报的 PPT 大纲"
+    expected: student-presentation
+    language: zh
+  - prompt: "Create a slide outline for my university thesis defense."
+    expected: student-presentation
+    language: en
+  - prompt: "帮我生成一个大学生创新项目答辩 PPTX"
+    expected: student-presentation-ppt
+    language: zh
+  - prompt: "Build an editable PowerPoint for my undergraduate biology class."
+    expected: student-presentation-ppt
+    language: en
+  - prompt: "请审查我上传的大学课程 PPT，按页指出问题"
+    expected: student-presentation-review
+    language: zh
+  - prompt: "Score this existing university defense deck and diagnose weak slides."
+    expected: student-presentation-review
+    language: en
+  - prompt: "帮我优化这个大学课程 PPT，先给修改建议，不要改文件"
+    expected: student-presentation-review
+    language: zh
+  - prompt: "直接修改我上传的大学课程 PPTX，并另存改进版"
+    expected: review-then-student-presentation-ppt
+    language: zh
+  - prompt: "Prepare a presentation about climate change."
+    expected: none
+    language: en
+  - prompt: "帮公司做一个季度业务汇报 PPT"
+    expected: none
+    language: zh
+  - prompt: "我上传了一个 PPT"
+    expected: none
+    language: zh
+  - prompt: "帮我准备演讲稿和 Q&A"
+    expected: none
+    language: zh

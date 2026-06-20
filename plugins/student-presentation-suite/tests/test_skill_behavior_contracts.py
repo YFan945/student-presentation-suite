@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import unittest
 import json
+import subprocess
+import sys
 from pathlib import Path
+
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +28,24 @@ class SkillBehaviorContractTests(unittest.TestCase):
         self.assertIn("Use `student-presentation-review`", text)
         self.assertIn('"PPT 大纲"', text)
         self.assertIn('"帮我优化这个 PPT"', text)
+
+    def test_routing_case_matrix_covers_required_boundaries(self) -> None:
+        payload = yaml.safe_load(self.read("tests/fixtures/routing-cases.yaml"))
+        cases = payload["cases"]
+        expected = {case["expected"] for case in cases}
+        self.assertTrue(
+            {
+                "student-presentation",
+                "student-presentation-ppt",
+                "student-presentation-review",
+                "review-then-student-presentation-ppt",
+                "none",
+            }.issubset(expected)
+        )
+        self.assertTrue({"zh", "en"}.issubset({case["language"] for case in cases}))
+        none_prompts = [case["prompt"] for case in cases if case["expected"] == "none"]
+        self.assertTrue(any("公司" in prompt for prompt in none_prompts))
+        self.assertTrue(any("uploaded" in prompt or "上传" in prompt for prompt in none_prompts))
 
     def test_skill_descriptions_require_student_context_and_ppt_intent(self) -> None:
         expectations = {
@@ -48,17 +70,15 @@ class SkillBehaviorContractTests(unittest.TestCase):
             for phrase in required_phrases:
                 self.assertIn(phrase, frontmatter, rel)
 
-    def test_ppt_skill_defines_vague_request_defaults(self) -> None:
+    def test_ppt_skill_delegates_defaults_and_qa_to_reference(self) -> None:
         text = self.read("skills/student-presentation-ppt/SKILL.md")
-        self.assertIn("Fast default assumptions", text)
-        self.assertIn("7-9 slides", text)
-        self.assertIn("no web images", text)
         self.assertIn("If an eligible request asks only for \"PPT 大纲\"", text)
         self.assertIn("existing deck improvement", text)
         self.assertIn("change-summary.md", text)
-        self.assertIn("show every available direction", text)
-        self.assertIn("Do not ask whether an outline is needed first", text)
-        self.assertIn("Stable general knowledge may be used", text)
+        self.assertIn("requires the Codex `Presentations` capability", text)
+        self.assertIn("must not fall back to a text outline", text)
+        self.assertIn("references/pptx-production.md", text)
+        self.assertNotIn("Fast default assumptions:", text)
 
     def test_planning_skill_allows_low_risk_assumptions(self) -> None:
         text = self.read("skills/student-presentation/SKILL.md")
@@ -72,6 +92,17 @@ class SkillBehaviorContractTests(unittest.TestCase):
         self.assertIn("Do not block the review", text)
         self.assertIn("skills/student-presentation-review/scripts/pptx_static_check.py", text)
         self.assertIn("change-summary.md", text)
+
+    def test_review_checker_cli_can_import_shared_package(self) -> None:
+        script = ROOT / "skills/student-presentation-review/scripts/pptx_static_check.py"
+        proc = subprocess.run(
+            [sys.executable, str(script), "--help"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, proc.returncode, proc.stderr)
 
     def test_review_output_format_supports_edit_handoff(self) -> None:
         text = self.read("skills/student-presentation-review/references/review-output-format.md")
@@ -92,30 +123,40 @@ class SkillBehaviorContractTests(unittest.TestCase):
             self.assertIn(expected, schema)
             self.assertIn(expected, guide)
 
-    def test_claude_brief_uses_plugin_root_for_delivery_check(self) -> None:
-        text = self.read("scripts/slide_spec_to_pptx_brief.py")
-        self.assertIn("From the plugin package root", text)
-        self.assertIn("skills/student-presentation-ppt/scripts/pptx_delivery_check.py", text)
-        self.assertIn("Existing Deck Improvement Contract", text)
-
     def test_codex_manifest_mentions_deck_improvement(self) -> None:
-        text = self.read(".codex-plugin/plugin.json")
-        self.assertIn("Existing deck improvement with change summaries", text)
+        manifest = json.loads(self.read(".codex-plugin/plugin.json"))
+        prompts = manifest["interface"]["defaultPrompt"]
+        self.assertEqual(3, len(prompts))
+        self.assertTrue(any("大纲" in prompt for prompt in prompts))
+        self.assertTrue(any("PPTX" in prompt for prompt in prompts))
+        self.assertTrue(any("审查" in prompt for prompt in prompts))
 
-    def test_runtime_versions_match(self) -> None:
+    def test_codex_package_is_runtime_specific(self) -> None:
         codex = json.loads(self.read(".codex-plugin/plugin.json"))
-        claude = json.loads(self.read(".claude-plugin/plugin.json"))
-        marketplace = json.loads(
-            (ROOT.parents[1] / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8")
-        )
-        self.assertEqual(claude["version"], codex["version"])
-        self.assertEqual(claude["version"], marketplace["plugins"][0]["version"])
+        self.assertEqual("student-presentation-suite", codex["name"])
+        self.assertFalse((ROOT / ".claude-plugin").exists())
+        self.assertFalse((ROOT / "scripts/check_claude_pptx_env.py").exists())
 
-    def test_plugin_readmes_use_shared_marketplace_name(self) -> None:
+    def test_plugin_readmes_document_codex_only_runtime(self) -> None:
         for rel in ("README.md", "README-zh.md"):
             text = self.read(rel)
-            self.assertIn("student-presentation-suite@personal", text)
-            self.assertNotIn("student-presentation-suite@student-presentation-suite", text)
+            self.assertIn(".codex-plugin/plugin.json", text)
+            self.assertIn("artifact-tool", text)
+
+    def test_codex_agent_metadata_uses_skill_invocation_prompts(self) -> None:
+        for skill_name in (
+            "student-presentation",
+            "student-presentation-ppt",
+            "student-presentation-review",
+        ):
+            data = yaml.safe_load(
+                self.read(f"skills/{skill_name}/agents/openai.yaml")
+            )
+            self.assertIn(
+                f"${skill_name}",
+                data["interface"]["default_prompt"],
+            )
+            self.assertNotIn("dependencies", data)
 
     def test_visual_style_menu_lists_every_style(self) -> None:
         menu = self.read("skills/student-presentation-ppt/references/visual-style-menu.md")

@@ -1,6 +1,6 @@
 # PPTX Production
 
-Load `../../../references/shared-standards.md` for shared readability, anti-AI wording, AI-writing pattern risk, English, Chinese, and group standards. Load `../../../references/image-strategy.md` for image/source choices. Load `visual-style-menu.md` for the style menu and selection guide; after choosing a style, load only the matching file from `visual-styles/<style>.md`.
+Load `../../../references/suite-contract.md` for scope and decision authority. Load `../../../references/shared-standards.md` for readability, anti-AI wording, language, and group standards. Load `../../../references/image-strategy.md` for image/source choices. Load `visual-style-menu.md` for the style menu; after selection, load only the matching file from `visual-styles/<style>.md`.
 
 ## Runtime Contract
 
@@ -9,39 +9,44 @@ Load `../../../references/shared-standards.md` for shared readability, anti-AI w
 - Use the standard Presentations workflow only. Artifact-tool is an internal implementation detail, not a separate public dependency or alternate engine.
 - Use `imagegen` only when generated imagery materially helps and the user permits it. Diagram-only and shape-based decks must remain valid without it.
 
-## Before Building
+## Mandatory Decision Gate
 
-Check confirmed constraints first, then ask the user to choose or confirm only missing production items that would materially change the deck:
-- topic and course
-- presentation type
-- audience and language
-- duration and slide count
-- individual or group format
-- required sections or rubric
-- source material, data, images, and template constraints
-- image source preference: user assets, web search, generated visuals, diagram-only, or text-only
+Before creating a slide plan, Slide Spec, or PPTX, inspect the conversation, attachments, source deck, rubric, and supplied constraints. Identify unresolved decisions that materially change the deck:
 
-If duration is known but slide count is not, suggest choices rather than silently deciding:
-- 3 minutes: 5-7 slides
-- 5 minutes: 7-9 slides
-- 8 minutes: 9-12 slides
-- 10 minutes: 10-14 slides
-- 15 minutes: 14-18 slides
+- presentation type, purpose, and expected conclusion
+- audience, course, rubric, and grading emphasis
+- duration or target slide count
+- content scope and required sections
+- individual/group format and ownership
+- visual direction or school template
+- source material, data, image assets, and permitted image sources
 
-If the user explicitly asks Codex to decide, or if the missing items are low-risk preferences for a general classroom deck, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer. Stable general knowledge may support basic explanations when identified as general background. Omit, qualify, or research source-sensitive, disputed, statistical, and current claims; avoid web images unless allowed; state that the deck is not rubric-specific.
+If any high-impact decision is unresolved:
 
-Fast default deck assumptions for vague PPTX requests:
-- language follows the user's request language
-- duration: 5 minutes
-- slide count: 7-9 slides
-- format: individual unless group members are mentioned
-- evidence: user-provided facts plus clearly identified stable general background; no invented statistics, current claims, or source-sensitive details
-- image policy: diagram-only or generated abstract visuals; no web images
-- style: one conservative classroom-safe direction from `visual-style-menu.md`
+1. Ask only the 1–3 highest-impact questions in the current turn.
+2. Give 2–4 mutually exclusive, topic-specific options for each question.
+3. Put the recommended option first and label it `(Recommended)`.
+4. Add one concise sentence explaining the impact or tradeoff of each option.
+5. Wait for the user's choices. Do not create the slide plan, invoke production, or claim work has started.
+6. Continue the gate in another round only when additional high-impact decisions remain.
+
+Do not use abstract labels such as “方案 A/B” without describing the actual direction. Low-risk details may use visible defaults, but defaults must not bypass unresolved purpose, audience, grading emphasis, content scope, or other decisions that would substantially change the result.
+
+If the user explicitly says “你决定”, “按推荐方案”, or equivalent, choose the recommended options and show a short `Production assumptions` block before building. Do not ask again. A direct request to “马上制作” does not waive the gate when the goal remains materially unclear.
+
+When duration is known but slide count is not, offer density choices rather than one silent default. For 5 minutes, use:
+
+- `Standard 8–9 slides (Recommended)` — balanced explanation and speaking pace
+- `Concise 6–7 slides` — stronger focus with less supporting detail
+- `Detailed 10–11 slides` — more evidence but faster delivery and higher crowding risk
+
+Scale equivalent choices for other durations. When visual direction is unresolved and materially important, show 3–5 topic-fit recommendations with reasons and provide the complete style menu as an additional reference.
+
+The gate is resolved only when every high-impact decision is either confirmed by the user, supplied by an artifact/Slide Spec, or explicitly delegated. Record the resolved choices before production.
 
 ## Build Sequence
 
-1. Confirm production-critical constraints from the conversation or Slide Spec meta: presentation type, language, duration, slide count, format, course/rubric, source material, image-source limits, template/logo, and output prefix.
+1. Complete the Mandatory Decision Gate and record confirmed or delegated production choices.
 2. Choose a creative direction from `visual-style-menu.md`. If the user has not specified one and style choice needs confirmation, show the complete menu with the best topic-fit options first and concise reasons for the top recommendations. If the user delegates the choice, pick the direction that best serves the topic and evidence type.
 3. Generate or absorb Slide Spec structure. Preserve slide order, ownership, timing, visual purpose, and handoff intent unless changing them prevents crowding or improves clarity. If the Slide Spec includes `source_deck`, `edit_intent`, `review_findings`, `preserve`, or `change_summary_required`, treat those fields as the programmatic handoff from review to PPTX production.
 4. For existing deck improvement, convert review findings into a brief edit plan first. Preserve useful content and required template elements, decide which slides are rewritten vs redesigned, and write the improved deck to a new filename instead of overwriting the source. When `change_summary_required` is true, do not finish without `outputs/<topic>-change-summary.md` or an explicit limitation.

@@ -1,4 +1,4 @@
 interface:
   display_name: "Student Presentation"
-  short_description: "仅在明确学生场景并要求 PPT 大纲时触发；规划结构、讲稿和 Q&A。"
-  default_prompt: "使用 $student-presentation 规划大学生 PPT 大纲、逐页内容、讲稿、转场和 Q&A；不要生成 PPTX 文件。"
+  short_description: "仅用于明确学生学术场景的 PPT 大纲或 Slide Spec。"
+  default_prompt: "使用 $student-presentation 规划学生学术 PPT 大纲或 Slide Spec；讲稿和 Q&A 只能作为该 PPT 任务的配套输出，不生成 PPTX。"

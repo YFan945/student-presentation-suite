@@ -8,9 +8,19 @@ cases:
   - prompt: "帮我生成一个大学生创新项目答辩 PPTX"
     expected: student-presentation-ppt
     language: zh
+    decision_gate: required
   - prompt: "Build an editable PowerPoint for my undergraduate biology class."
     expected: student-presentation-ppt
     language: en
+    decision_gate: required
+  - prompt: "帮我做一个大学软件工程课程 PPT，5 分钟，面向老师评分，重点展示需求、设计、实现和测试，8 页，使用 Ocean Tech 风格，仅使用我提供的项目材料"
+    expected: student-presentation-ppt
+    language: zh
+    decision_gate: resolved
+  - prompt: "做一个 5 分钟的大学课程答辩 PPT，其他内容你决定"
+    expected: student-presentation-ppt
+    language: zh
+    decision_gate: delegated
   - prompt: "请审查我上传的大学课程 PPT，按页指出问题"
     expected: student-presentation-review
     language: zh
@@ -35,3 +45,9 @@ cases:
   - prompt: "帮我准备演讲稿和 Q&A"
     expected: none
     language: zh
+  - prompt: "给公司新人做一套培训 PPTX"
+    expected: none
+    language: zh
+  - prompt: "Create a teacher professional-development slide deck."
+    expected: none
+    language: en

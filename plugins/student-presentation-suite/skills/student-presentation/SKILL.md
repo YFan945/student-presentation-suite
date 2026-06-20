@@ -1,72 +1,41 @@
 ---
 name: student-presentation
-description: Use only when the request explicitly identifies a student, university, course, classroom, defense, or other student context and explicitly asks for a PPT/slide outline. Do not trigger for generic presentation planning, scripts, Q&A, or non-student work; do not create PPTX files.
+description: Use only when an explicit student academic context asks for a PPT/slide outline or Slide Spec. Supporting scripts and Q&A are allowed only within that eligible PPT planning task. Do not create PPTX files.
 ---
 
 # Student Presentation
 
-## Role
+## Contract
 
-Plan what a student should present and say: topic narrowing, outline, slide-by-slide content, speaker notes, transitions, Q&A prep, timing, and member handoffs.
+Plan an eligible student PPT: topic angle, story, slide-by-slide outline, Slide Spec, and supporting speaker notes, transitions, Q&A, timing, or group handoffs.
 
-## Trigger Gate
-
-Use this skill only when both conditions are explicit in the user's request or established conversation context:
-
-1. The work has a clearly student-owned academic context, such as an identified student, university assignment, classroom report, thesis/course defense, teacher rubric, or student competition. A single ambiguous word such as "course" or "competition" is not enough without supporting context.
-2. The requested output is a PPT/slide outline or an outline intended for a student PPT.
-
-Do not trigger for a generic topic, generic presentation planning, standalone scripts, Q&A preparation, speeches, meeting decks, business decks, or other non-student work. If either condition is missing, use a general-purpose skill or ask one routing question instead.
-
-Do not create actual `.pptx`, editable PowerPoint, rendered slides, or production-ready decks. If the user asks for those, use `student-presentation-ppt`.
-
-If an eligible student-context request says "做 PPT", "生成 slides", or asks for a ready presentation file, do not handle it as outline-only planning. Route to `student-presentation-ppt`. Use this skill only when the eligible request asks for "PPT 大纲", "slide outline", or an equivalent PPT structure without requesting the actual file.
-
-## Clarification Gate
-
-Before drafting an outline or script, decide whether the user's request is specific enough to plan responsibly. If the prompt is vague, incomplete, or only names a broad topic, ask concise follow-up questions for missing constraints that would materially change the plan. Avoid blocking on minor preferences that can be handled with explicit assumptions.
-
-Ask for missing items that affect the plan, including presentation type, language, duration, expected slide count, audience/course, rubric, individual/group format, members, whether a full script is needed, and whether later PPTX generation is expected. Prefer 3-6 grouped questions in one reply and wait for confirmation when the answer changes the structure. If the user asks the agent to decide, or if the missing items are low-risk defaults for a general classroom outline, state assumptions and continue.
+Load `../../references/suite-contract.md` first. Do not use this skill for standalone scripts/Q&A, generic presentations, non-student work, or actual PPTX production. Route PPTX requests to `student-presentation-ppt`.
 
 ## Workflow
 
-1. Enforce the Clarification Gate. Check confirmed constraints from the conversation or Slide Spec meta. Ask for missing items only when they would materially change the plan: type, language, duration, slide count, audience/course, rubric, individual/group format, members, script needs, and whether later PPTX generation is expected. For a general classroom outline, state low-risk assumptions and continue.
-2. Load `../../references/shared-standards.md` first. Load only the needed task references:
-   - `references/slide-structures.md` for templates, topic narrowing, subject presets, density examples, and quality checklist
-   - `references/transition-phrases.md` for transition and defense phrase banks
-   - When the presentation is a group format, also load `references/group-handoff.md`
-   - `references/qa-prediction.md` for defense/report Q&A preparation
-   - `../../references/slide-spec.md` for optional structured handoff
+1. Confirm the request passes the suite scope and routes to outline planning.
+2. Check known constraints before asking: presentation type, language, duration, slide count, audience/course, rubric, individual/group format, members, script needs, and later PPTX intent.
+3. Ask only for missing constraints that materially change the outline. If the user delegates low-risk choices, state assumptions and continue.
+4. Load `../../references/shared-standards.md` and only the references needed:
+   - `references/slide-structures.md` for structures, topic narrowing, and subject patterns
+   - `references/transition-phrases.md` for transitions and defense phrases
+   - `references/group-handoff.md` for group work
+   - `references/qa-prediction.md` for Q&A attached to the eligible PPT
+   - `../../references/slide-spec.md` for structured handoff
    - `../../references/image-strategy.md` for visual source planning
-3. If the topic is broad, offer 2-3 concrete angles that fit the duration, evidence, and likely conclusion. If the user asked the agent to decide, choose one angle and state why.
-4. Build the presentation spine: main claim, story arc, timing, and member ownership.
-5. Match detail to the request. For a rough outline, provide slide purpose, title, and 1-3 content points only. For a production handoff or full planning request, draft each content slide with a claim-style title when it presents an argument or finding, concise on-slide content, a useful visual idea when the message benefits from one, a speaker-note goal, and a transition/handoff when there is a meaningful next step. Covers, section dividers, references, appendix, and Q&A slides may use descriptive titles and omit artificial transitions or visuals.
-6. Add Q&A, scoring-risk warnings, pronunciation/glossary support, or Slide Spec YAML when useful.
-7. If later PPTX generation is likely, include a handoff note that the outline is ready for `student-presentation-ppt` and list any unresolved constraints that would affect visual production.
+5. If the topic is broad, offer 2–3 concrete angles or choose one when authorized.
+6. Build the main claim, story arc, timing, slide purposes, and ownership.
+7. Match detail to the request: concise outline by default; include notes, visuals, transitions, Q&A, and Slide Spec only when useful or requested.
+8. If PPTX production follows, list unresolved production constraints and hand off to `student-presentation-ppt`.
 
 ## Output
 
-For rough outline requests:
+Use claim-style titles for argumentative or evidence slides; descriptive titles are allowed for covers, dividers, references, appendix, Q&A, and closing.
 
-```markdown
-## Slide 1: Title
-- Purpose:
-- Key points:
-```
+When saving deliverables:
 
-For detailed planning or PPTX handoff requests:
-
-```markdown
-## Slide 1: Title
-- Main content:
-- Visual suggestion:
-- Speaker note:
-- Transition:
-```
-
-When saving deliverables, use:
 - `outputs/<topic>-outline.md`
 - `outputs/<topic>-speaker-notes.md`
 - `outputs/<topic>-handoff-plan.md` for group presentations
 
-If later PPTX production is expected, append optional Slide Spec YAML following `../../references/slide-spec.md`.
+Follow `../../references/slide-spec.md` when emitting Slide Spec YAML.

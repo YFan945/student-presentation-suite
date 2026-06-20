@@ -1,4 +1,4 @@
 interface:
   display_name: "Student Presentation PPT"
-  short_description: "仅在明确学生场景并要求制作或改进 PPT/PPTX 时触发。"
-  default_prompt: "使用 $student-presentation-ppt 根据主题、大纲、Slide Spec 或审查结果生成或改进可编辑大学生 PPTX，并完成讲稿、预览和 QA。"
+  short_description: "学生学术 PPTX 制作与改进；目标不明确时先提供选项。"
+  default_prompt: "使用 $student-presentation-ppt 创建或改进学生学术 PPTX；先执行 Decision Gate，用互斥选项确认关键目标，再完成讲稿、预览和 QA。"

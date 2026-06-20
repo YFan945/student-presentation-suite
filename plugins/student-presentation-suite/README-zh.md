@@ -2,35 +2,34 @@
 
 中文 | [English](README.md)
 
-仅适配 Codex 的学生汇报插件，覆盖汇报规划、可编辑 PPTX 生成/改进和 deck 审查。
+仅适配 Codex、严格限定于学生学术 PPT。通用演示、商业汇报、教师培训、独立演讲稿或独立 Q&A 不属于插件范围。
 
-## Skills
+## 路由
 
-- `student-presentation`：选题、提纲、讲稿、转场、小组衔接和 Q&A。
-- `student-presentation-ppt`：生成或改进可编辑 PPTX，包含讲稿、视觉风格、Slide Spec 交接、变更摘要、预览和交付 QA。
-- `student-presentation-review`：审查 PPTX/PDF/截图/Slide Spec 的逻辑、可读性、评分适配、AI 写作风险、讲稿和 PPTX 静态问题。
+| 用户目标 | Skill | 结果 |
+| --- | --- | --- |
+| 学生 PPT 大纲或 Slide Spec | `student-presentation` | 大纲及可选的配套讲稿、转场、Q&A 和交接 |
+| 创建、重建或明确修改学生 PPTX | `student-presentation-ppt` | 可编辑 PPTX、讲稿、预览和 QA |
+| 审查或评分已有学生 deck/export | `student-presentation-review` | 基于证据的问题与具体修改建议 |
+| 审查并明确要求修改文件 | review → PPT skill | 单独保存的改进版 deck 和变更摘要 |
 
-## 运行时
+讲稿、Q&A 和小组衔接只能作为合格 PPT 任务的配套输出，不能单独触发插件。规范边界以 `references/suite-contract.md` 为准。
 
-本目录仅服务 Codex：
+## PPTX Decision Gate
+
+开始制作前，PPT skill 必须读取已有对话、附件和 Slide Spec，并识别尚未确定的高影响决策。每轮只问 1–3 个问题；每个问题提供 2–4 个结合主题的互斥选项，将推荐项放在最前，并说明选择影响，然后等待用户决定。
+
+当目标、受众或评分重点、内容范围等关键决策仍未解决时，不得开始制作。只有低风险细节或用户明确说“你决定”“按推荐方案”时才能采用默认值，并须先列出最终假设。
+
+## 运行时与输出
 
 - Manifest：`.codex-plugin/plugin.json`
-- PPTX 生产：Codex `Presentations`；artifact-tool 仅是该标准 workflow 的内部实现细节
-- 可选视觉生成：`imagegen`，只在确有价值且用户允许时使用
-- Skill UI metadata：`skills/*/agents/openai.yaml`
+- PPTX 生产：Codex `Presentations`；artifact-tool 只是内部实现细节
+- 可选视觉：`imagegen`，只在有价值且获得允许时使用
+- 结构化交接：Slide Spec
+- 永不覆盖原始 deck
 
-本目录不再包含 `.claude-plugin`、`document-skills` 依赖、Claude 环境检查脚本或 Claude 生产 brief。
-
-`student-presentation-ppt` 在生产前必须确认 `Presentations` 可用。若缺失，应报告前提并停止，不能用 Markdown 大纲冒充已生成 PPTX。恢复或安装 Codex presentations 插件后，应在新线程重试。
-
-## 工作流
-
-1. `student-presentation` 生成提纲或 Slide Spec。
-2. `student-presentation-ppt` 通过 Codex presentation workflow 创建或改进 deck。
-3. `student-presentation-review` 审查 deck，并可把问题交回 PPT skill 修改。
-4. 不覆盖原始 deck；改进版使用新文件名并生成 `outputs/<topic>-change-summary.md`。
-
-预期输出：
+PPTX 预期输出：
 
 ```text
 outputs/<topic>-presentation.pptx
@@ -39,9 +38,11 @@ outputs/<topic>-preview.png
 outputs/<topic>-change-summary.md
 ```
 
+如果 `Presentations` 不可用，PPT skill 必须停止并报告缺失前提，不能用文本大纲冒充 PPTX。
+
 ## 验证
 
-在本插件目录运行：
+在插件目录运行：
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -50,6 +51,4 @@ python scripts/check_plugin_release.py
 python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" .
 ```
 
-生成文件和依赖目录由 `.gitignore` 忽略。
-
-可直接校验的 Slide Spec 示例位于 `examples/ai-learning-report.yaml`。
+本插件明确不包含 `.claude-plugin`、`document-skills`、Claude production bridge 或第二套 PPTX 引擎。

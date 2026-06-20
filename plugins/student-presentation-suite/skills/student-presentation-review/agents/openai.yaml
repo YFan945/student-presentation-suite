@@ -1,4 +1,4 @@
 interface:
   display_name: "Student Presentation Review"
-  short_description: "仅在明确学生场景并要求审查已有 PPT/PPTX 时触发。"
-  default_prompt: "使用 $student-presentation-review 审阅已有大学生 PPT/PDF/截图或 Slide Spec，给出分级问题、逐页修改建议和必要的静态风险检查。"
+  short_description: "审查已有学生学术 deck；默认只给建议，不直接改文件。"
+  default_prompt: "使用 $student-presentation-review 审阅已有学生学术 PPT/PDF/截图或 Slide Spec，给出分级问题和修改建议；仅在明确授权后交接文件修改。"

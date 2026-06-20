@@ -44,8 +44,15 @@ def main() -> None:
     required = [
         ".agents/plugins/marketplace.json",
         "plugins/student-presentation-suite/.codex-plugin/plugin.json",
+        "plugins/student-presentation-suite/references/suite-contract.md",
         "README.md",
         "README-zh.md",
+        "AGENTS.md",
+        "CHANGELOG.md",
+        "Changelog-2026-06-17.md",
+        "Changelog-2026-06-18.md",
+        "Changelog-2026-06-19.md",
+        "Changelog-2026-06-20.md",
         ".github/workflows/validate.yml",
     ]
     for rel in required:
@@ -118,13 +125,25 @@ def main() -> None:
         for required_text in (
             ".agents/plugins/marketplace.json",
             "--marketplace-path .agents/plugins/marketplace.json",
+            "student-presentation-suite",
         ):
             if required_text not in text:
                 errors.append(f"{rel} missing repository marketplace instruction: {required_text}")
+        if "Decision Gate" not in text:
+            errors.append(f"{rel} missing mandatory Decision Gate documentation")
     for rel in ("README.md", "README-zh.md"):
         text = (ROOT / rel).read_text(encoding="utf-8")
         if "codex plugin marketplace add" not in text:
             errors.append(f"{rel} missing explicit marketplace registration command")
+        if "references/suite-contract.md" not in text:
+            errors.append(f"{rel} missing canonical suite contract reference")
+        if "CHANGELOG.md" not in text or "Changelog-YYYY-MM-DD.md" not in text:
+            errors.append(f"{rel} missing release/daily changelog documentation")
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    if not changelog.startswith("# CHANGELOG"):
+        errors.append("CHANGELOG.md must start with '# CHANGELOG'")
+    if "## 0.1.1 — 2026-06-20" not in changelog:
+        errors.append("CHANGELOG.md missing current 0.1.1 release entry")
     result = {"ok": not errors, "error_count": len(errors), "errors": errors}
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))

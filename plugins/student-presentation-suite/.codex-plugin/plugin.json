@@ -1,7 +1,7 @@
 {
   "name": "student-presentation-suite",
-  "version": "0.1.1+codex.20260619135609",
-  "description": "Student presentation planning, PPTX generation/improvement, and review suite with shared standards, image strategy, Slide Spec handoff, anti-AI wording checks, and static PPTX review.",
+  "version": "0.1.1+codex.20260620123028",
+  "description": "Codex-only suite for student academic PPT outlines, decision-gated editable PPTX production, and evidence-based review.",
   "author": {
     "name": "YFan945",
     "url": "https://github.com/YFan945"
@@ -19,19 +19,19 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Student Presentation Suite",
-    "shortDescription": "\u89c4\u5212\u3001\u751f\u6210\u548c\u5ba1\u9605\u5927\u5b66\u751f\u6f14\u793a\uff0c\u8986\u76d6 Q&A\u3001AI \u5199\u4f5c\u98ce\u9669\u548c\u7248\u672c\u5bf9\u6bd4\u3002",
-    "longDescription": "Three Codex skills for student presentation planning, editable PPTX production or improvement, and evidence-based review. Includes Slide Spec handoff, classroom readability rules, speaker notes, visual presets, change summaries, and static PPTX risk checks.",
+    "shortDescription": "\u4e25\u683c\u9762\u5411\u5b66\u751f\u5b66\u672f PPT\uff1a\u5927\u7eb2\u89c4\u5212\u3001\u9009\u9879\u5f0f\u76ee\u6807\u786e\u8ba4\u3001PPTX \u5236\u4f5c\u4e0e deck \u5ba1\u67e5\u3002",
+    "longDescription": "Three Codex skills limited to student academic presentations: outline and Slide Spec planning, decision-gated editable PPTX creation or improvement, and evidence-based review. Includes speaker notes, visual presets, structured review-to-edit handoff, previews, and delivery QA.",
     "developerName": "YFan945",
     "category": "Productivity",
     "brandColor": "#245C4F",
     "composerIcon": "./assets/composer-icon.svg",
     "logo": "./assets/logo.svg",
     "capabilities": [
-      "Student presentation outlines and Slide Spec handoff",
-      "Editable PPTX creation and existing-deck improvement",
-      "Speaker notes, visual presets, and classroom QA",
+      "Student academic PPT outlines and Slide Spec handoff",
+      "Decision-gated editable PPTX creation and improvement",
+      "Speaker notes, visual presets, previews, and delivery QA",
       "Deck review, scoring, and AI-writing risk checks",
-      "Static PPTX inspection and change summaries"
+      "Static PPTX inspection and review-to-edit change summaries"
     ],
     "defaultPrompt": [
       "\u5e2e\u6211\u89c4\u5212\u4e00\u4e2a\u5927\u5b66\u8bfe\u7a0b\u6c47\u62a5\u7684 PPT \u5927\u7eb2\u548c\u9010\u9875\u8bb2\u7a3f\u3002",

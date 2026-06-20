@@ -2,5 +2,8 @@
 
 - 请求：为大学课程制作 8 页中文 PPTX，5 分钟，主题为生成式 AI 学习反思。
 - 路由：`student-presentation-ppt`
-- 默认：个人汇报、概念型、`Modern Minimal（现代极简）`、diagram-only。
+- 已确认：主题、语言、时长、页数。
+- 需询问：课程/场景、汇报类型、受众、个人/小组、评分标准、资料来源、模板限制、图片策略、视觉风格和交付物。
+- 推荐：个人课程汇报、教师与同学、标准学术结构、用户资料加稳定背景知识、无模板、diagram-only、`Modern Minimal（现代极简）`、PPTX + 讲稿 + 预览。
+- 门槛：用户确认完整 Production Summary 后才检查环境并开始生成。
 - 交付：PPTX、中文讲稿、预览图；QA 通过后状态为 `complete`。

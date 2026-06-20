@@ -1,18 +1,100 @@
 # Repository Guidelines
 
-This directory is the Claude Code-only plugin marketplace.
+## Repository Purpose
 
-GitHub publishing for this marketplace must use the `claude-code` branch of
-`YFan945/student-presentation-suite`. Do not publish Claude Code plugin changes
-to `main`.
+This repository is the Claude Code-only marketplace for
+`student-presentation-suite`. The publishable source of truth is the
+`claude-code` branch of `YFan945/student-presentation-suite`.
 
-- `.claude-plugin/marketplace.json`: Claude Code marketplace manifest.
-- `plugins/student-presentation-suite/`: complete Claude Code plugin package.
-- `scripts/check_marketplace_release.py`: repository-level release check.
+Never publish this marketplace from or to `main`. The `main` branch is a
+separate Codex implementation line with different manifests and runtime
+dependencies.
 
-Do not add Codex `.codex-plugin` manifests, `agents/openai.yaml`, `artifact-tool`, or Codex runtime dependencies here.
+## Repository Layout
 
-Run validation from this directory:
+- `.claude-plugin/marketplace.json`: marketplace manifest and published plugin version.
+- `.github/workflows/validate.yml`: Windows/Linux tests and strict Claude validation.
+- `plugins/student-presentation-suite/`: complete installable Claude Code plugin.
+- `scripts/install_claude_plugin.ps1`: install, migrate, update, and dependency setup.
+- `scripts/check_marketplace_release.py`: repository-level release validation.
+- `README.md` / `README-zh.md`: marketplace installation and contributor documentation.
+- `CHANGELOG.md`: newest-first version release history.
+
+Inside the plugin package:
+
+- `.claude-plugin/plugin.json`: plugin manifest.
+- `skills/`: the three user-facing skill entrypoints and task-specific references.
+- `references/`: shared intake, standards, image policy, and Slide Spec contracts.
+- `scripts/`: environment checks, schema bridge, validation, and PPTX smoke tooling.
+- `shared/`: reusable Python implementation.
+- `tests/`: behavioral, schema, runtime, and delivery contracts.
+- `examples/`: routing and interaction examples.
+
+## Architecture And Ownership
+
+The suite has three skills with non-overlapping outcomes:
+
+- `student-presentation`: outline and speaking-plan work; never creates PPTX files.
+- `student-presentation-review`: read-only diagnosis by default.
+- `student-presentation-ppt`: editable PPTX creation and existing-deck improvement.
+
+Canonical ownership:
+
+- `references/presentation-intake.md`: clarification gate and workflow states.
+- `references/shared-standards.md`: routing and presentation quality standards.
+- `references/slide-spec.md` plus schema: structured planning and review-to-edit handoff.
+- `references/image-strategy.md`: image sourcing and visual policy.
+- PPTX skill references: production mechanics and visual style controls.
+
+Keep each `SKILL.md` compact. Entry files should define trigger, responsibility,
+state transition, core workflow, and output contract. Put detailed rules in
+selectively loaded references and prevent duplicated policy from drifting.
+
+## Required Behavior
+
+PPTX creation and editing use this state sequence:
+
+`intake_pending → intake_confirmed → planned → producing → qa → complete`
+
+While `intake_pending`, the skill may inspect supplied files and gather
+requirements, but must not run generation, rendering, environment, or delivery
+commands. The user must approve a complete Production Summary before production.
+
+Review-only requests must not modify the source artifact. Existing-deck edits
+must preserve the original and use the structured fields `source_deck`,
+`edit_intent`, `review_findings`, `preserve`, and `change_summary_required`.
+
+User deliverables belong in `${CLAUDE_PROJECT_DIR}/outputs` or the active
+project's `outputs/` fallback. Never write generated decks into the installed
+plugin or marketplace repository.
+
+## Claude-Only Boundary
+
+Do not add:
+
+- `.codex-plugin`
+- `agents/openai.yaml`
+- `artifact-tool`
+- Codex presentation runtime dependencies
+- generated `.pptx`, `.png`, cache, or `node_modules` files
+
+PPTX production depends on `document-skills@anthropic-agent-skills`.
+
+## Editing Rules
+
+- Update both English and Chinese README files when behavior, installation,
+  architecture, requirements, or release procedures change.
+- Update `CHANGELOG.md` for every release-worthy change.
+- Keep `.claude-plugin/marketplace.json`,
+  `plugins/student-presentation-suite/.claude-plugin/plugin.json`,
+  `package.json`, and `package-lock.json` on the same release version.
+- Update schema, bridge, documentation, examples, and tests together when
+  changing Slide Spec fields or workflow contracts.
+- Never overwrite unrelated user changes in a dirty worktree.
+
+## Validation
+
+Run from the repository root:
 
 ```powershell
 python -m pip install -r plugins/student-presentation-suite/requirements.txt
@@ -21,9 +103,25 @@ npm --prefix plugins/student-presentation-suite ci
 $env:PYTHONPATH=(Resolve-Path "plugins/student-presentation-suite").Path
 python -m unittest discover -s plugins/student-presentation-suite/tests
 python plugins/student-presentation-suite/scripts/smoke_pptx.py
-python plugins/student-presentation-suite/scripts/check_plugin_release.py
-python scripts/check_marketplace_release.py
+python plugins/student-presentation-suite/scripts/check_plugin_release.py --json
+python scripts/check_marketplace_release.py --json
 python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json --strict
 claude plugin validate --strict .\plugins\student-presentation-suite
 claude plugin validate --strict .
+git diff --check
 ```
+
+All checks must pass before publishing. If an environment dependency is absent,
+report the exact missing tool rather than weakening a strict check.
+
+## Release Procedure
+
+1. Confirm the current branch is `claude-code`.
+2. Review the complete worktree diff and exclude unrelated files.
+3. Update documentation, `CHANGELOG.md`, and all synchronized version fields.
+4. Run the full validation suite.
+5. Commit intentionally on `claude-code`.
+6. Push only to `origin/claude-code`.
+7. Verify the remote branch SHA and GitHub Actions result.
+
+Do not merge or push these Claude Code plugin changes to `main`.

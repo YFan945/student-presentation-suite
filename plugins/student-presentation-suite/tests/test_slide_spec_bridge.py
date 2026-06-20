@@ -24,12 +24,17 @@ class SlideSpecBridgeTests(unittest.TestCase):
         bridge = load_bridge_module()
         data = {
             "meta": {
+                "topic": "Responsible use of generative AI",
                 "presentation_type": "coursework report",
+                "audience": "Teacher and classmates",
                 "language": "Chinese",
                 "duration_min": 3,
                 "slide_count": 1,
                 "format": "individual",
                 "image_source": "diagram-only",
+                "source_material": ["Course brief", "Student reflection"],
+                "visual_style": "Modern Minimal",
+                "deliverables": ["pptx", "speaker-notes", "preview"],
                 "output_prefix": "ai-class-demo",
             },
             "slides": [
@@ -57,6 +62,10 @@ class SlideSpecBridgeTests(unittest.TestCase):
         self.assertIn("pptxgenjs.md", brief)
         self.assertIn("ai-class-demo-presentation.pptx", brief)
         self.assertIn("AI 帮助我们更快形成初稿", brief)
+        self.assertIn("Responsible use of generative AI", brief)
+        self.assertIn("Teacher and classmates", brief)
+        self.assertIn("Modern Minimal", brief)
+        self.assertIn("Student reflection", brief)
         self.assertIn("python -m markitdown output.pptx", brief)
 
     def test_builds_existing_deck_improvement_brief(self) -> None:

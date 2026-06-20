@@ -7,7 +7,7 @@ description: Use only for a clearly student-owned academic context when the user
 
 Create or improve an actual editable student presentation.
 
-## Routing and ownership
+## Responsibility
 
 Load `../../references/shared-standards.md` first.
 
@@ -19,69 +19,36 @@ Load `../../references/shared-standards.md` first.
 
 PPTX production depends on `document-skills@anthropic-agent-skills`. This skill is the upper-level contract. Its classroom readability, Slide Spec, output, notes, change-summary, and QA requirements override conflicting generic advice from the upstream `pptx` skill.
 
-## Decision policy
+## State Gate
 
-Ask only when missing information changes structure, evidence, output format, or required branding. Otherwise state assumptions and continue.
+Load `../../references/presentation-intake.md`. Use the full PPTX intake and the
+canonical state sequence:
 
-Fast defaults:
+`intake_pending → intake_confirmed → planned → producing → qa → complete`
 
-- language follows the user
-- duration: 5 minutes
-- slide count: 7-9
-- individual unless group members are named
-- conceptual classroom explanation unless reliable source material is supplied
-- diagrams or generated abstract visuals; no unapproved web images
-- choose the best classroom-safe style and state why
-
-When asking about style, recommend the three best matches. Show all 14 styles only when the user asks for every option.
+While `intake_pending`, only inspect supplied inputs and ask for confirmation.
+Do not run environment checks or generation commands and do not claim production
+has started. User delegation fills recommendations but still requires approval
+of the complete Production Summary.
 
 ## Workflow
 
-1. Load only the required references:
+1. Complete intake and receive explicit confirmation.
+2. Load only the required references:
    - `references/pptx-production.md`
    - `references/visual-style-menu.md`, then exactly one matching `references/visual-styles/<style>.md`
    - `../../references/slide-spec.md` for Slide Spec input
    - `../../references/image-strategy.md` for source and visual policy
-2. Run:
-
-   ```text
-   python "${CLAUDE_PLUGIN_ROOT}/scripts/check_claude_pptx_env.py" --json --strict
-   ```
-
-   If it fails, production status is `blocked`; report the exact dependency and do not claim the deck is ready.
-3. For Slide Spec input, run:
-
-   ```text
-   python "${CLAUDE_PLUGIN_ROOT}/scripts/slide_spec_to_pptx_brief.py" <spec> --output-dir "${CLAUDE_PROJECT_DIR}/outputs" --output "${CLAUDE_PROJECT_DIR}/outputs/<topic>-claude-pptx-brief.md"
-   ```
-
-   If `CLAUDE_PROJECT_DIR` is unavailable, use the current project directory.
-4. Follow the installed `document-skills` `pptx` skill:
+3. Create the internal slide plan or validated Slide Spec; state becomes `planned`.
+4. Run `python "${CLAUDE_PLUGIN_ROOT}/scripts/check_claude_pptx_env.py" --json --strict`. A failure is `blocked`.
+5. For Slide Spec input, run `slide_spec_to_pptx_brief.py` as specified in `pptx-production.md`; use the current project when `CLAUDE_PROJECT_DIR` is unavailable.
+6. Enter `producing` and follow the installed `document-skills` `pptx` skill:
    - new deck → `pptxgenjs.md`
    - existing deck/template → `editing.md`
-5. Run generated Node deck scripts through:
+7. Run generated Node scripts through `run_with_pptxgenjs.js`.
+8. Enter `qa`; run text extraction, rendering, visual inspection, at least one fix-and-verify loop, and `pptx_delivery_check.py --strict --json`. A failed gate is `incomplete`.
 
-   ```text
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/run_with_pptxgenjs.js" <deck-script.js>
-   ```
-
-6. Apply this suite’s overrides:
-   - Chinese body normally >= 22pt; English body normally >= 20pt
-   - primary titles normally >= 24pt
-   - one core message per content slide
-   - visuals are functional, not mandatory decoration
-   - do not force every slide into a card grid
-   - write notes and preserve source/template constraints
-7. Run text extraction, LibreOffice/Poppler rendering, visual inspection, and at least one fix-and-verify loop.
-8. Run the delivery gate:
-
-   ```text
-   python "${CLAUDE_PLUGIN_ROOT}/skills/student-presentation-ppt/scripts/pptx_delivery_check.py" --pptx <pptx> --notes <notes> --preview <preview> --strict --json
-   ```
-
-   A failed gate is `incomplete`. Do not say ready-to-present until it passes.
-
-## Deliverables
+## Output Contract
 
 Write only to `${CLAUDE_PROJECT_DIR}/outputs` or the current project’s `outputs/` fallback:
 

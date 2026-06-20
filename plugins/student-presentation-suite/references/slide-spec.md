@@ -27,14 +27,24 @@ Optional slide fields:
 Optional deck-level `meta` may carry confirmed constraints across planning, PPTX production, and review:
 
 Meta field rules:
-- Recommended required fields: `presentation_type`, `language`, `duration_min`, and `format`
-- Optional fields: `slide_count`, `members`, `course`, `rubric`, `template`, `logo`, `image_source`, and `output_prefix`
+- Recommended required fields: `topic`, `presentation_type`, `language`,
+  `duration_min`, and `format`
+- Optional fields: `slide_count`, `members`, `course`, `audience`, `rubric`,
+  `source_material`, `template`, `logo`, `image_source`, `visual_style`,
+  `deliverables`, and `output_prefix`
 - `language`: `"Chinese" | "English" | "bilingual"`
 - `format`: `"individual" | "group"`
 - `duration_min`: number of minutes
 - `slide_count`: integer target slide count
 - `image_source`: `"user-assets" | "web-search" | "generated" | "diagram-only" | "text-only" | "ask-before-web-search"`
+- `source_material`: a short evidence-boundary description or a list of supplied sources
+- `visual_style`: confirmed style name from the style menu or a user-defined direction
+- `deliverables`: confirmed output names such as `"pptx"`, `"speaker-notes"`,
+  `"preview"`, `"change-summary"`, `"full-script"`, or `"pdf"`
 - Use short ASCII-safe `output_prefix` when a later PPTX output filename needs a stable slug.
+- For PPTX work, populate meta from the explicitly confirmed Production Summary
+  defined in `presentation-intake.md`; do not turn unconfirmed recommendations
+  into a Slide Spec.
 
 Optional top-level fields for existing deck improvement:
 - `source_deck`: path or label of the original PPTX/PDF/preview being improved
@@ -56,6 +66,7 @@ python "${CLAUDE_PLUGIN_ROOT}/scripts/validate_slide_spec.py" path/to/slide-spec
 
 ```yaml
 meta:
+  topic: "How students use generative AI responsibly"
   presentation_type: "coursework report"
   language: "Chinese"
   duration_min: 8
@@ -63,7 +74,13 @@ meta:
   format: "group"
   members: ["A", "B", "C", "D"]
   course: "Introduction to AI"
+  audience: "Teacher and classmates"
+  source_material:
+    - "Course brief"
+    - "Team development log"
   image_source: "ask-before-web-search"
+  visual_style: "Academic Rigorous"
+  deliverables: ["pptx", "speaker-notes", "preview", "change-summary"]
   output_prefix: "ai-class-demo"
 source_deck: "original-report.pptx"
 edit_intent: "review-fix"

@@ -1,28 +1,145 @@
 # Student Presentation Suite for Claude Code
 
-Claude Code-only plugin providing three skills:
+[中文](README-zh.md) | English
 
-- `student-presentation`: outline and speaking plan
-- `student-presentation-ppt`: editable PPTX creation and improvement
-- `student-presentation-review`: existing-deck diagnosis and edit handoff
+`student-presentation-suite` is a Claude Code plugin for student-owned
+university presentations. It separates content planning, editable PPTX
+production, and existing-deck review while sharing one intake, Slide Spec, and
+quality contract.
 
-Install as `student-presentation-suite@claude-personal`. PPTX production uses
-`document-skills@anthropic-agent-skills`; this package adds the student routing,
-Slide Spec bridge, visual styles, runtime resolver, and delivery checks.
+Install ID: `student-presentation-suite@claude-personal`.
 
-Runtime dependencies are not automatically installed by Claude Code. Use the
-repository-level `scripts/install_claude_plugin.ps1` or install
-`requirements-claude-pptx.txt` and run `npm ci`.
+## Skills
 
-All user deliverables go to the active project `outputs/` directory. Plugin
-resources are addressed through `${CLAUDE_PLUGIN_ROOT}` and must not receive
-generated decks.
+### `student-presentation`
+
+Use for slide outlines, presentation spines, speaking notes, group allocation,
+transitions, Q&A preparation, and optional Slide Spec handoff. It never creates
+or claims to create a PPTX.
+
+### `student-presentation-ppt`
+
+Use for a new editable PPTX or a separate improved copy of an existing deck.
+Low-level generation and editing come from
+`document-skills@anthropic-agent-skills`; this plugin supplies the student
+workflow, confirmed requirements, style controls, outputs, and QA gates.
+
+### `student-presentation-review`
+
+Use for review, scoring, diagnosis, planned-vs-actual comparison, and concrete
+slide fixes. Review is read-only by default. “Fix it directly” first produces a
+diagnosis, then hands structured findings into the PPTX skill.
+
+## Full PPTX Intake
+
+Before production, confirm:
+
+- topic;
+- course/context and presentation type;
+- audience and language;
+- duration and slide count;
+- individual/group format and members;
+- rubric or required sections;
+- source material and evidence boundaries;
+- template, logo, or branding constraints;
+- image-source strategy;
+- visual style;
+- required deliverables.
+
+The plugin reuses confirmed information and asks only for missing fields. Each
+missing field receives a recommendation and impact statement. A user delegation
+such as “you decide” fills recommendations but still requires approval of the
+complete Production Summary.
+
+Production follows:
+
+`intake_pending → intake_confirmed → planned → producing → qa → complete`
+
+No environment, generation, rendering, or delivery command may run while the
+state is `intake_pending`.
+
+## Structured Handoff
+
+Slide Spec YAML carries confirmed planning data into PPTX production. Its `meta`
+supports topic, presentation type, audience, language, timing, ownership,
+course, rubric, source material, template, image policy, visual style,
+deliverables, and output prefix.
+
+Existing-deck improvement additionally uses:
+
+- `source_deck`
+- `edit_intent`
+- `review_findings`
+- `preserve`
+- `change_summary_required`
+
+The original source deck is never overwritten.
+
+## Outputs
+
+Deliverables are written under `${CLAUDE_PROJECT_DIR}/outputs`, or the current
+project's `outputs/` directory when the environment variable is unavailable:
+
+- `<topic>-presentation.pptx`
+- `<topic>-speaker-notes.md`
+- `<topic>-preview.png` or contact sheet
+- `<topic>-change-summary.md` for existing-deck improvements
+
+The plugin installation directory is read-only for user deliverables.
+
+## Visual System
+
+The PPTX skill first reads `visual-style-menu.md`, recommends the strongest
+topic-fit choices, then loads exactly one style specification from
+`visual-styles/`. Each style defines color roles, typography, geometry, layout
+recipes, image treatment, density limits, and acceptance checks.
+
+Styles are directions rather than fixed templates. Layout must follow the
+slide's function, and decorative visuals must not replace evidence or
+readability.
+
+## Quality Gates
+
+PPTX delivery requires:
+
+- environment compatibility check;
+- Slide Spec validation when supplied;
+- editable PPTX generation;
+- speaker notes;
+- text extraction sanity check;
+- LibreOffice rendering and Poppler page images;
+- visual inspection and at least one fix-and-verify loop;
+- strict delivery-check success;
+- separate change summary for an improved existing deck.
+
+Results use `complete`, `incomplete`, or `blocked`. Static XML findings alone are
+not proof of rendered clipping or readability.
+
+## Runtime
+
+Claude Code does not automatically install this package's Python or Node runtime
+dependencies. Use the repository-level installer or install manually:
+
+```powershell
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-claude-pptx.txt
+npm ci
+```
+
+Useful checks:
 
 ```powershell
 python scripts/check_claude_pptx_env.py --json --strict
-python scripts/slide_spec_to_pptx_brief.py <spec.yaml> --output-dir <project>\outputs
+python scripts/validate_slide_spec.py path\to\spec.yaml --json
+python scripts/slide_spec_to_pptx_brief.py path\to\spec.yaml --output-dir <project>\outputs
 node scripts/run_with_pptxgenjs.js --probe
+python scripts/smoke_pptx.py
 ```
 
-This package intentionally contains no `.codex-plugin`, `agents/openai.yaml`,
-`artifact-tool`, or other Codex runtime declarations.
+## Package Boundary
+
+This is a Claude Code package. It intentionally contains no `.codex-plugin`,
+`agents/openai.yaml`, `artifact-tool`, or Codex runtime declaration.
+
+See the repository [README](../../README.md), [AGENTS.md](../../AGENTS.md), and
+[CHANGELOG.md](../../CHANGELOG.md) for installation, maintenance, and releases.

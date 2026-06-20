@@ -27,7 +27,7 @@ class SkillBehaviorContractTests(unittest.TestCase):
         )
         entry = marketplace["plugins"][0]
         self.assertEqual("claude-personal", marketplace["name"])
-        self.assertEqual("0.2.0", manifest["version"])
+        self.assertEqual("0.3.0", manifest["version"])
         self.assertEqual(manifest["version"], entry["version"])
         self.assertEqual(manifest["name"], entry["name"])
         self.assertIn("document-skills@anthropic-agent-skills", manifest["dependencies"])
@@ -66,6 +66,75 @@ class SkillBehaviorContractTests(unittest.TestCase):
         review = self.read("skills/student-presentation-review/SKILL.md")
         self.assertIn("diagnose first, then hand off", review)
         self.assertIn("Never overwrite the original deck", review)
+
+    def test_pptx_intake_is_a_hard_gate(self) -> None:
+        intake = self.read("references/presentation-intake.md")
+        ppt = self.read("skills/student-presentation-ppt/SKILL.md")
+        production = self.read(
+            "skills/student-presentation-ppt/references/pptx-production.md"
+        )
+        for field in (
+            "Topic",
+            "Course/context",
+            "Presentation type",
+            "Audience",
+            "Language",
+            "Duration",
+            "Slide count",
+            "Format",
+            "Rubric/required sections",
+            "Source material",
+            "Template/branding",
+            "Image strategy",
+            "Visual style",
+            "Deliverables",
+        ):
+            self.assertIn(f"| {field} |", intake)
+        self.assertIn("Never ask for a confirmed item again", intake)
+        self.assertIn("Do not run environment checks", intake)
+        self.assertIn("Delegation does not itself move the state", intake)
+        self.assertIn("explicit confirmation", ppt)
+        self.assertIn("Do not run environment checks or generation commands", ppt)
+        self.assertIn("Do not use this reference to bypass intake", production)
+
+    def test_workflow_states_are_consistent(self) -> None:
+        intake = self.read("references/presentation-intake.md")
+        ppt = self.read("skills/student-presentation-ppt/SKILL.md")
+        states = (
+            "intake_pending → intake_confirmed → planned → producing → qa → complete"
+        )
+        self.assertIn(states, intake)
+        self.assertIn(states, ppt)
+        for terminal in ("incomplete", "blocked"):
+            self.assertIn(terminal, intake)
+            self.assertIn(terminal, ppt)
+
+    def test_review_and_outline_use_intake_without_overreaching(self) -> None:
+        planning = self.read("skills/student-presentation/SKILL.md")
+        review = self.read("skills/student-presentation-review/SKILL.md")
+        self.assertIn("outline-only intake mode", planning)
+        self.assertIn("review-only intake mode", review)
+        self.assertIn("must not modify files", review)
+        self.assertIn("full intake and Production Summary confirmation", review)
+
+    def test_skill_files_stay_compact_and_reference_canonical_rules(self) -> None:
+        paths = [
+            ROOT / "skills/student-presentation/SKILL.md",
+            ROOT / "skills/student-presentation-ppt/SKILL.md",
+            ROOT / "skills/student-presentation-review/SKILL.md",
+        ]
+        for path in paths:
+            lines = path.read_text(encoding="utf-8").splitlines()
+            self.assertLessEqual(
+                len(lines), 75, f"{path.name} should stay as a compact entrypoint"
+            )
+            self.assertIn(
+                "references/presentation-intake.md",
+                path.read_text(encoding="utf-8"),
+            )
+        shared = self.read("references/shared-standards.md")
+        self.assertIn("`presentation-intake.md` owns clarification", shared)
+        self.assertNotIn("## Confirmed Constraints", shared)
 
     def test_style_selection_contract(self) -> None:
         menu = self.read("skills/student-presentation-ppt/references/visual-style-menu.md")

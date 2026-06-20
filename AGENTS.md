@@ -120,8 +120,10 @@ report the exact missing tool rather than weakening a strict check.
 2. Review the complete worktree diff and exclude unrelated files.
 3. Update documentation, `CHANGELOG.md`, and all synchronized version fields.
 4. Run the full validation suite.
-5. Commit intentionally on `claude-code`.
-6. Push only to `origin/claude-code`.
-7. Verify the remote branch SHA and GitHub Actions result.
+5. Commit the release changes and push a temporary branch.
+6. Open a pull request targeting `claude-code`; the branch is protected and
+   requires all status checks.
+7. Merge only after the required checks pass.
+8. Verify the remote `claude-code` SHA and release tag.
 
 Do not merge or push these Claude Code plugin changes to `main`.

@@ -38,6 +38,7 @@ jobs:
         shell: pwsh
         env:
           GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
           python plugins/student-presentation-suite/scripts/check_plugin_release.py

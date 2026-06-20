@@ -144,6 +144,7 @@ manifest 验证。
 
 - Claude 专用改动只能提交和推送到 `claude-code`。
 - `main` 保留为独立的 Codex 实现路线。
+- `claude-code` 是受保护分支，必须通过 PR 并等待全部 required checks 通过。
 - Marketplace、插件 manifest、`package.json` 与 lockfile 版本必须一致。
 - 发布级改动必须同步更新中英文 README 和 `CHANGELOG.md`。
 - 完整贡献和发布约束见 [AGENTS.md](AGENTS.md)。

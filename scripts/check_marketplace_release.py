@@ -41,6 +41,25 @@ def load_json(path: Path) -> dict:
     return json.loads(raw.decode("utf-8"))
 
 
+def release_branch_error(
+    local_branch: str,
+    head_ref: str,
+    base_ref: str,
+    ref_name: str,
+) -> str | None:
+    if head_ref:
+        if base_ref != "claude-code":
+            return (
+                "Claude marketplace pull requests must target claude-code, "
+                f"got {base_ref!r}"
+            )
+        return None
+    branch = local_branch or ref_name
+    if branch != "claude-code":
+        return f"Claude marketplace must be released from claude-code, got {branch!r}"
+    return None
+
+
 def main() -> None:
     args = parse_args()
     errors: list[str] = []
@@ -57,14 +76,14 @@ def main() -> None:
             errors.append(f"Missing required file: {rel}")
 
     try:
-        branch = (
-            git_output("branch", "--show-current")
-            or os.environ.get("GITHUB_HEAD_REF")
-            or os.environ.get("GITHUB_REF_NAME")
-            or ""
+        branch_error = release_branch_error(
+            git_output("branch", "--show-current"),
+            os.environ.get("GITHUB_HEAD_REF", ""),
+            os.environ.get("GITHUB_BASE_REF", ""),
+            os.environ.get("GITHUB_REF_NAME", ""),
         )
-        if branch != "claude-code":
-            errors.append(f"Claude marketplace must be released from claude-code, got {branch!r}")
+        if branch_error:
+            errors.append(branch_error)
         tracked = git_output("ls-files").splitlines()
         folded: dict[str, str] = {}
         for rel in tracked:

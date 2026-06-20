@@ -148,6 +148,8 @@ strict Claude manifest validation.
 
 - Claude-specific changes are committed and published only on `claude-code`.
 - `main` remains the independent Codex implementation line.
+- `claude-code` is protected; publish through a pull request with all required
+  checks passing.
 - Marketplace, plugin manifest, `package.json`, and lockfile versions must match.
 - Update both README languages and `CHANGELOG.md` for release-worthy changes.
 - See [AGENTS.md](AGENTS.md) for the complete contributor and release contract.

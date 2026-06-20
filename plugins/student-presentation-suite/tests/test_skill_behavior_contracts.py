@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import unittest
 from pathlib import Path
 
@@ -9,11 +10,23 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = ROOT.parents[1]
+MARKETPLACE_CHECK = REPO_ROOT / "scripts" / "check_marketplace_release.py"
 
 
 def frontmatter(path: Path) -> dict:
     text = path.read_text(encoding="utf-8")
     return yaml.safe_load(text.split("---", 2)[1])
+
+
+def load_marketplace_check():
+    spec = importlib.util.spec_from_file_location(
+        "check_marketplace_release", MARKETPLACE_CHECK
+    )
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
 class SkillBehaviorContractTests(unittest.TestCase):
@@ -36,6 +49,26 @@ class SkillBehaviorContractTests(unittest.TestCase):
             self.assertTrue(entry[field])
         self.assertFalse((ROOT / ".codex-plugin").exists())
         self.assertFalse(any(ROOT.glob("skills/*/agents/openai.yaml")))
+
+    def test_marketplace_release_accepts_prs_targeting_claude_code(self) -> None:
+        check = load_marketplace_check()
+        self.assertIsNone(
+            check.release_branch_error(
+                "codex/claude-plugin-0.3.0",
+                "codex/claude-plugin-0.3.0",
+                "claude-code",
+                "1/merge",
+            )
+        )
+        self.assertIn(
+            "must target claude-code",
+            check.release_branch_error("feature", "feature", "main", "1/merge"),
+        )
+        self.assertIsNone(check.release_branch_error("claude-code", "", "", ""))
+        self.assertIn(
+            "must be released from claude-code",
+            check.release_branch_error("main", "", "", ""),
+        )
 
     def test_skill_frontmatter_has_distinct_intents(self) -> None:
         planning = frontmatter(ROOT / "skills/student-presentation/SKILL.md")

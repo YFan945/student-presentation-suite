@@ -4,22 +4,12 @@ Use these standards across planning, PPTX production, and review.
 
 ## Canonical Ownership
 
-This file is the canonical source for suite-wide routing, typography, density, language-level defaults, anti-AI wording, and group-presentation rules. Skill files should describe task-specific workflow and link here instead of redefining suite-wide thresholds. `slide-spec.md` owns structured handoff rules, `image-strategy.md` owns source/visual policy, and each skill-local reference owns only its task-specific extensions.
-
-## Confirmed Constraints
-
-Before asking startup questions, check whether the user or Slide Spec meta already confirms:
-- presentation type
-- language
-- duration
-- target slide count
-- individual or group format
-- member names/count and speaking order
-- course, teacher, rubric, or required sections
-- source material, data, template, logo, and image-source constraints
-- output needs: outline only, PPTX, review, speaker notes, or full script
-
-Ask only for missing constraints that materially affect the next step. If the user says the agent may decide, state the assumption briefly and continue.
+This file is the canonical source for suite-wide routing, typography, density,
+language-level defaults, anti-AI wording, and group-presentation rules. Skill
+files should describe task-specific workflow and link here instead of redefining
+suite-wide thresholds. `presentation-intake.md` owns clarification and workflow
+states, `slide-spec.md` owns structured handoff rules, and `image-strategy.md`
+owns source/visual policy.
 
 ## Intent Routing
 

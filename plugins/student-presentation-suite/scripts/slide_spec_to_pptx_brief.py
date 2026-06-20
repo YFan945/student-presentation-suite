@@ -150,7 +150,9 @@ def build_brief(
         [
             "",
             "## Deck Constraints",
+            f"- Topic: {meta_value(meta, 'topic')}",
             f"- Presentation type: {meta_value(meta, 'presentation_type')}",
+            f"- Audience: {meta_value(meta, 'audience')}",
             f"- Language: {meta_value(meta, 'language')}",
             f"- Duration minutes: {meta_value(meta, 'duration_min')}",
             f"- Slide count: {meta.get('slide_count') or len(slides)}",
@@ -159,9 +161,18 @@ def build_brief(
             f"- Members: {member_text}",
             f"- Course: {meta_value(meta, 'course')}",
             f"- Rubric: {meta_value(meta, 'rubric')}",
+            "- Source material:",
+            text_block(meta.get("source_material") or ["not specified"], "  "),
             f"- Template: {meta_value(meta, 'template')}",
             f"- Logo: {meta_value(meta, 'logo')}",
             f"- Image source policy: {meta_value(meta, 'image_source')}",
+            f"- Visual style: {meta_value(meta, 'visual_style')}",
+            "- Required deliverables:",
+            text_block(
+                meta.get("deliverables")
+                or ["pptx", "speaker-notes", "preview"],
+                "  ",
+            ),
         ]
     )
     if is_improvement:

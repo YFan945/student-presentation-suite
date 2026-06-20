@@ -7,18 +7,19 @@ description: Use only for a clearly student-owned academic context when the user
 
 Review an existing student presentation. By default, diagnose and recommend; do not edit files.
 
-## Routing
+## Responsibility
 
 Load `../../references/shared-standards.md` first.
 
 - “看看问题”, review, audit, score, or critique → review only.
+- Review-only requests must not modify files.
 - “直接改好”, modify, rebuild, or produce an improved file → diagnose first, then hand off to `student-presentation-ppt` in the same task.
 - New deck without an existing artifact → planning or PPTX skill according to requested output.
 - Never overwrite the original deck.
 
 ## Workflow
 
-1. Ask only for missing constraints that materially change review: duration, presentation type, group format, or rubric. If the artifact is reviewable, state assumptions and proceed.
+1. Load `../../references/presentation-intake.md` and use its review-only intake mode. If the artifact is reviewable, state low-risk assumptions and proceed.
 2. Load only what is needed:
    - `references/review-checklist.md`
    - `references/review-output-format.md`
@@ -36,7 +37,7 @@ Load `../../references/shared-standards.md` first.
    - Major: should be fixed before presenting
    - Minor: polish
 6. For each finding, identify target slide/page, problem, impact, and concrete fix.
-7. For edit requests, produce a concise handoff containing what to preserve, rewrite, redesign, and verify. Require a separate improved deck and change summary.
+7. For edit requests, produce a structured handoff using `source_deck`, `edit_intent`, `review_findings`, `preserve`, and `change_summary_required`, then enter `student-presentation-ppt`. Require a separate improved deck and change summary. Its full intake and Production Summary confirmation remain mandatory before editing.
 
 ## Status rules
 

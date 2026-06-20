@@ -10,7 +10,9 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "topic": { "type": "string", "minLength": 1 },
         "presentation_type": { "type": "string", "minLength": 1 },
+        "audience": { "type": "string", "minLength": 1 },
         "language": { "enum": ["Chinese", "English", "bilingual"] },
         "duration_min": { "type": "number", "exclusiveMinimum": 0 },
         "slide_count": { "type": "integer", "minimum": 1 },
@@ -21,6 +23,16 @@
         },
         "course": { "type": "string" },
         "rubric": { "type": "string" },
+        "source_material": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "minItems": 1
+            }
+          ]
+        },
         "template": { "type": "string" },
         "logo": { "type": "string" },
         "image_source": {
@@ -32,6 +44,13 @@
             "text-only",
             "ask-before-web-search"
           ]
+        },
+        "visual_style": { "type": "string", "minLength": 1 },
+        "deliverables": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
         },
         "output_prefix": {
           "type": "string",

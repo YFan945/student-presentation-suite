@@ -1,41 +1,18 @@
 # PPTX Production
 
-Load `../../../references/shared-standards.md` for shared readability, anti-AI wording, AI-writing pattern risk, English, Chinese, and group standards. Load `../../../references/image-strategy.md` for image/source choices. Load `visual-style-menu.md` for the style menu and selection guide; after choosing a style, load only the matching file from `visual-styles/<style>.md`.
+Load `../../../references/presentation-intake.md` for the complete intake gate and
+workflow states. Load `../../../references/shared-standards.md` for readability,
+language, anti-AI wording, and group rules. Load
+`../../../references/image-strategy.md` for source choices. Load
+`visual-style-menu.md`, then only the selected `visual-styles/<style>.md`.
 
-## Before Building
-
-Check confirmed constraints first, then ask the user to choose or confirm only missing production items that would materially change the deck:
-- topic and course
-- presentation type
-- audience and language
-- duration and slide count
-- individual or group format
-- required sections or rubric
-- source material, data, images, and template constraints
-- image source preference: user assets, web search, generated visuals, diagram-only, or text-only
-
-If duration is known but slide count is not, suggest choices rather than silently deciding:
-- 3 minutes: 5-7 slides
-- 5 minutes: 7-9 slides
-- 8 minutes: 9-12 slides
-- 10 minutes: 10-14 slides
-- 15 minutes: 14-18 slides
-
-If the user explicitly asks the agent to decide, or if the missing items are low-risk preferences for a general classroom deck, proceed with a visible assumption block instead of stopping. For a broad academic topic with no course rubric or source material, default to a conceptual classroom explainer. Stable general knowledge may support basic explanations when identified as general background. Omit, qualify, or research source-sensitive, disputed, statistical, and current claims; avoid web images unless allowed; state that the deck is not rubric-specific.
-
-Fast default deck assumptions for vague PPTX requests:
-- language follows the user's request language
-- duration: 5 minutes
-- slide count: 7-9 slides
-- format: individual unless group members are mentioned
-- evidence: user-provided facts plus clearly identified stable general background; no invented statistics, current claims, or source-sensitive details
-- image policy: diagram-only or generated abstract visuals; no web images
-- style: one conservative classroom-safe direction from `visual-style-menu.md`
+Do not use this reference to bypass intake. Production begins only after the
+complete Production Summary is explicitly confirmed.
 
 ## Build Sequence
 
-1. Confirm production-critical constraints from the conversation or Slide Spec meta: presentation type, language, duration, slide count, format, course/rubric, source material, image-source limits, template/logo, and output prefix.
-2. Choose a creative direction from `visual-style-menu.md`. If the user has not specified one and style choice needs confirmation, show the complete menu with the best topic-fit options first and concise reasons for the top recommendations. If the user delegates the choice, pick the direction that best serves the topic and evidence type.
+1. Read confirmed constraints from the approved Production Summary or Slide Spec meta; never silently replace them.
+2. Use the confirmed creative direction. If the summary delegated style choice, select the strongest topic-fit option recorded there.
 3. Generate or absorb Slide Spec structure. Preserve slide order, ownership, timing, visual purpose, and handoff intent unless changing them prevents crowding or improves clarity. If the Slide Spec includes `source_deck`, `edit_intent`, `review_findings`, `preserve`, or `change_summary_required`, treat those fields as the programmatic handoff from review to PPTX production.
 4. For existing deck improvement, convert review findings into a brief edit plan first. Preserve useful content and required template elements, decide which slides are rewritten vs redesigned, and write the improved deck to a new filename instead of overwriting the source. When `change_summary_required` is true, do not finish without `outputs/<topic>-change-summary.md` or an explicit limitation.
 5. Design the PPTX with variation inside guardrails. Layouts should express a function, not force a repeated template. Use topic-specific examples, visuals, chart forms, section rhythm, and opening/closing treatment. Keep a mismatch ledger while building: record any difference between requested constraints and the working assumptions, any missing source material, and any tool/API behavior discovered during production.

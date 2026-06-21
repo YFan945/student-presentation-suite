@@ -15,6 +15,22 @@ Example:
 - Better angle: "How students use AI for first drafts, not final answers"
 - Why: easy to connect with class experience, surveys, examples, and a clear balanced conclusion
 
+## Automatic Scenario And Structure Choice
+
+Use `../../../references/presentation-brief.md` as the canonical scenario
+classifier. Recommended mappings:
+
+- coursework → `problem-solution`, `case-study`, or `comparison`
+- defense → `research` for research work; `product` for engineering/product work
+- competition → `product`
+- club showcase → `timeline` or `case-study`
+- research → `research`
+
+The scoring context, not topic keywords alone, determines the primary scenario.
+Available structure modes are `problem-solution`, `research`, `timeline`,
+`comparison`, `case-study`, and `product`; their canonical order is defined in
+`../../../references/content-workflow.md`.
+
 ## General University Presentation
 
 Use the duration-specific ranges below for a common classroom presentation:
@@ -100,6 +116,16 @@ Use this for innovation, entrepreneurship, product, or practical project present
 6. Value and difference
 7. Risks or limitations
 8. Next step
+
+## Club Showcase
+
+1. Purpose and audience
+2. Starting point or annual theme
+3. Main activities or timeline
+4. Participation and visible outcomes
+5. One participant/member story
+6. Problems and improvements
+7. Next event or call to action
 
 ## Subject Presets
 

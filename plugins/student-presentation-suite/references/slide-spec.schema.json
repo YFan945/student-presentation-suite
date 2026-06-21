@@ -6,13 +6,21 @@
   "additionalProperties": false,
   "required": ["slides"],
   "properties": {
+    "schema_version": { "enum": ["1.0", "2.0"] },
     "meta": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "topic": { "type": "string", "minLength": 1 },
         "presentation_type": { "type": "string", "minLength": 1 },
+        "scenario": {
+          "enum": ["coursework", "defense", "competition", "club-showcase", "research"]
+        },
         "audience": { "type": "string", "minLength": 1 },
+        "audience_type": {
+          "enum": ["teacher", "classmates", "judges", "non-specialists", "mixed"]
+        },
+        "audience_depth": { "enum": ["introductory", "standard", "expert"] },
         "language": { "enum": ["Chinese", "English", "bilingual"] },
         "duration_min": { "type": "number", "exclusiveMinimum": 0 },
         "slide_count": { "type": "integer", "minimum": 1 },
@@ -23,6 +31,25 @@
         },
         "course": { "type": "string" },
         "rubric": { "type": "string" },
+        "structure_mode": {
+          "enum": ["problem-solution", "research", "timeline", "comparison", "case-study", "product"]
+        },
+        "interaction_mode": { "enum": ["beginner", "expert"] },
+        "quality_level": { "enum": ["basic", "high-score"] },
+        "max_words_per_slide": { "type": "integer", "minimum": 10, "maximum": 120 },
+        "max_chinese_chars_per_slide": { "type": "integer", "minimum": 20, "maximum": 240 },
+        "visual_text_ratio": { "enum": ["text-led", "balanced", "visual-led"] },
+        "include_speaker_notes": { "type": "boolean" },
+        "include_key_lines": { "type": "boolean" },
+        "citation_style": { "enum": ["none", "classroom", "GB-T-7714", "APA"] },
+        "export_formats": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["pptx", "pdf", "speaker-notes", "preview", "teleprompter", "quality-report", "revision-manifest"]
+          }
+        },
+        "versioning": { "type": "boolean" },
         "source_material": {
           "oneOf": [
             { "type": "string", "minLength": 1 },
@@ -90,6 +117,50 @@
       "type": "boolean",
       "description": "Whether the PPTX workflow must write outputs/<topic>-change-summary.md."
     },
+    "evidence_ledger": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "source_type", "locator", "confidence", "used_on_slides"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$" },
+          "title": { "type": "string", "minLength": 1 },
+          "source_type": {
+            "enum": ["user-file", "paper", "book", "website", "dataset", "survey", "experiment", "interview", "case", "other"]
+          },
+          "locator": { "type": "string", "minLength": 1 },
+          "author": { "type": "string" },
+          "date": { "type": "string" },
+          "confidence": { "enum": ["high", "medium", "low", "unverified"] },
+          "used_on_slides": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 1 },
+            "uniqueItems": true
+          },
+          "limitation": { "type": "string" }
+        }
+      }
+    },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revision_id"],
+      "properties": {
+        "revision_id": { "type": "string", "minLength": 1 },
+        "parent_revision": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
+    "revision_operation": {
+      "enum": ["rewrite-slide", "rewrite-section", "change-style", "compress", "expand", "add-evidence"]
+    },
+    "target_slides": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 1 },
+      "uniqueItems": true
+    },
+    "target_section": { "type": "string", "minLength": 1 },
     "slides": {
       "type": "array",
       "minItems": 1,
@@ -108,6 +179,22 @@
           "id": { "type": "integer", "minimum": 1 },
           "title": { "type": "string", "minLength": 1 },
           "layout": { "type": "string", "minLength": 1 },
+          "role": {
+            "enum": [
+              "opening",
+              "background",
+              "problem",
+              "method",
+              "evidence",
+              "result",
+              "solution",
+              "value",
+              "limitation",
+              "conclusion",
+              "qa",
+              "closing"
+            ]
+          },
           "kind": {
             "enum": [
               "cover",
@@ -127,6 +214,30 @@
               { "type": "string", "minLength": 1 }
             ]
           },
+          "claim": { "type": "string", "minLength": 1 },
+          "supporting_points": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "maxItems": 6
+          },
+          "slide_copy": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 }
+              }
+            ]
+          },
+          "speaker_notes": { "type": "string", "minLength": 1 },
+          "key_line": { "type": "string", "minLength": 1 },
+          "evidence_refs": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "locked": { "type": "boolean" },
+          "lock_reason": { "type": "string", "minLength": 1 },
           "visual": {
             "type": "object",
             "required": ["type", "purpose"],

@@ -5,6 +5,11 @@ workflow states. Load `../../../references/shared-standards.md` for readability,
 language, anti-AI wording, and group rules. Load
 `../../../references/image-strategy.md` for source choices. Load
 `visual-style-menu.md`, then only the selected `visual-styles/<style>.md`.
+Load `../../../references/presentation-brief.md`,
+`../../../references/content-workflow.md`,
+`../../../references/evidence-and-citations.md`, and
+`../../../references/revision-training-export.md` only when those capabilities
+are requested.
 
 Do not use this reference to bypass intake. Production begins only after the
 complete Production Summary is explicitly confirmed.
@@ -13,10 +18,10 @@ complete Production Summary is explicitly confirmed.
 
 1. Read confirmed constraints from the approved Production Summary or Slide Spec meta; never silently replace them.
 2. Use the confirmed creative direction. If the summary delegated style choice, select the strongest topic-fit option recorded there.
-3. Generate or absorb Slide Spec structure. Preserve slide order, ownership, timing, visual purpose, and handoff intent unless changing them prevents crowding or improves clarity. If the Slide Spec includes `source_deck`, `edit_intent`, `review_findings`, `preserve`, or `change_summary_required`, treat those fields as the programmatic handoff from review to PPTX production.
+3. Generate or absorb Slide Spec structure. Use the layered order: directory, claim/points, PPT copy, speaker version, then Slide Spec. Preserve slide order, ownership, timing, visual purpose, evidence refs, locks, and handoff intent unless changing an unlocked item prevents crowding or improves clarity. If the Slide Spec includes `source_deck`, `edit_intent`, `review_findings`, `preserve`, or `change_summary_required`, treat those fields as the programmatic handoff from review to PPTX production.
 4. For existing deck improvement, convert review findings into a brief edit plan first. Preserve useful content and required template elements, decide which slides are rewritten vs redesigned, and write the improved deck to a new filename instead of overwriting the source. When `change_summary_required` is true, do not finish without `outputs/<topic>-change-summary.md` or an explicit limitation.
 5. Design the PPTX with variation inside guardrails. Layouts should express a function, not force a repeated template. Use topic-specific examples, visuals, chart forms, section rhythm, and opening/closing treatment. Keep a mismatch ledger while building: record any difference between requested constraints and the working assumptions, any missing source material, and any tool/API behavior discovered during production.
-6. Run delivery checks. Confirm PPTX, notes, preview/contact sheet, slide count, static XML risk summary, and risk breakdown where possible. Static XML risk counts are not enough on their own: distinguish true production blockers from expected small footer, page marker, caption, source, or kicker text.
+6. Run `analyze_presentation_spec.py` and resolve Critical/Major story, density, and evidence findings before production. Run delivery checks for every requested export. Static XML risk counts are not enough on their own: distinguish true production blockers from expected small footer, page marker, caption, source, or kicker text.
 7. Confirm visual QA. Preview/contact sheet review is required before calling a deck ready-to-present; otherwise say the file is generated but visual QA is incomplete. If the first render shows geometry mismatch, blank slides, text collapsed into the corner, overlap, or clipped callouts, fix the slide code and rerender before delivery.
 
 ## Creativity Rules
@@ -34,6 +39,11 @@ Use topic-specific filenames under `outputs/`:
 - `outputs/<topic>-speaker-notes.md`
 - `outputs/<topic>-preview.png` or a generated contact sheet
 - `outputs/<topic>-change-summary.md` when improving an existing deck
+- requested `outputs/<topic>-presentation.pdf`
+- requested `outputs/<topic>-teleprompter.html`
+- requested `outputs/<topic>-quality-report.json`
+- requested `outputs/<topic>-revision-manifest.json`
+- versioned copies under `outputs/versions/<revision-id>/`
 
 If Slide Spec meta includes `output_prefix`, use it as the `<topic>` slug; otherwise derive a short ASCII-safe slug from the topic. Write deliverables under `${CLAUDE_PROJECT_DIR}/outputs` or the current project fallback. Keep final response paths absolute and never write deliverables into `${CLAUDE_PLUGIN_ROOT}`.
 
@@ -51,6 +61,8 @@ Check:
 - no dense paragraph blocks
 - no decorative objects fighting the main message
 - no text overflow, clipping, or text touching the edge of its box
+- use a portable font family or define a tested fallback; flag uncommon explicit
+  fonts for compatibility review across PowerPoint, WPS, Windows, and macOS
 
 ## Content Quality
 
@@ -59,6 +71,8 @@ Every content slide should have one message and a clear visual or structural foc
 Use concrete examples, data, diagrams, process steps, comparisons, or case details. Use shape-based structure such as panels, cards, dividers, process nodes, timeline blocks, callouts, or section bands. Use translucent panels or simulated glassmorphism only when they make text easier to read; fall back to opaque panels if PPTX/WPS rendering is weak.
 
 For data slides: one chart/table only, one conclusion sentence, no unexplained raw data.
+Numeric, causal, survey, experiment, quotation, and case claims must map to the
+Evidence Ledger or be explicitly labeled as assumptions/illustrations.
 For defense decks: include objective, method/work, result, reflection, and Q&A.
 For group decks: include member assignment and handoff lines.
 For general undergraduate English decks: use B1-B2 as the default reference point, 2-4 short sentences per content slide, natural connectors in notes, and pronunciation/glossary help when useful. Adjust language level for advanced courses, disciplinary terminology, audience, and speaker ability.
@@ -91,6 +105,15 @@ Required QA inherited from the `pptx` skill:
 - Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop before calling the deck ready-to-present.
 - Run generated deck JavaScript with `node "${CLAUDE_PLUGIN_ROOT}/scripts/run_with_pptxgenjs.js" <deck-script.js>`.
 - Run `python "${CLAUDE_PLUGIN_ROOT}/skills/student-presentation-ppt/scripts/pptx_delivery_check.py" --pptx <pptx> --notes <notes> --preview <preview> --strict --json`. A failed gate makes delivery `incomplete`.
+- Add `--pdf`, `--teleprompter`, `--quality-report`, and
+  `--revision-manifest` when those exports were confirmed.
+- For revisions, run `create_revision_manifest.py <old-spec> <new-spec> --strict`;
+  any locked-slide change blocks delivery until the user explicitly unlocks it.
+- For teleprompter, training cards, or references, run
+  `build_support_outputs.py <spec> --output-dir <outputs> --json`.
+- When versioning is enabled, snapshot confirmed deliverables with
+  `manage_versions.py snapshot`; use `restore` to create a non-destructive
+  rollback candidate.
 
 Dependencies and limitations:
 - The Claude plugin dependency is `document-skills`, not the standalone `pptx` skill path.

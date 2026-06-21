@@ -8,7 +8,8 @@ This file is the canonical source for suite-wide routing, typography, density,
 language-level defaults, anti-AI wording, and group-presentation rules. Skill
 files should describe task-specific workflow and link here instead of redefining
 suite-wide thresholds. `presentation-intake.md` owns clarification and workflow
-states, `slide-spec.md` owns structured handoff rules, and `image-strategy.md`
+states, `presentation-brief.md` owns global scenario/audience/control semantics,
+`slide-spec.md` owns structured handoff rules, and `image-strategy.md`
 owns source/visual policy.
 
 ## Intent Routing
@@ -62,6 +63,15 @@ When the target remains genuinely ambiguous, ask one routing question: outline, 
 - Keep slide text concise; move explanation to speaker notes.
 - Use one chart/table per data slide and add one conclusion sentence.
 - Split slides instead of shrinking text.
+- When the confirmed Presentation Brief provides stricter per-slide limits,
+  those limits override these defaults.
+
+## Layered Generation
+
+Generate in this order: directory, slide claim/supporting points, concise PPT
+copy, speaker version, then Slide Spec/PPTX. Use `content-workflow.md` for
+structure modes, story checks, and compression rules. Do not present speaker
+notes as slide body text.
 
 ## Anti-AI Wording
 

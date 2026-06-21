@@ -40,7 +40,7 @@ class SkillBehaviorContractTests(unittest.TestCase):
         )
         entry = marketplace["plugins"][0]
         self.assertEqual("claude-personal", marketplace["name"])
-        self.assertEqual("0.3.0", manifest["version"])
+        self.assertEqual("0.4.0", manifest["version"])
         self.assertEqual(manifest["version"], entry["version"])
         self.assertEqual(manifest["name"], entry["name"])
         self.assertIn("document-skills@anthropic-agent-skills", manifest["dependencies"])
@@ -54,8 +54,8 @@ class SkillBehaviorContractTests(unittest.TestCase):
         check = load_marketplace_check()
         self.assertIsNone(
             check.release_branch_error(
-                "codex/claude-plugin-0.3.0",
-                "codex/claude-plugin-0.3.0",
+                "codex/claude-plugin-0.4.0",
+                "codex/claude-plugin-0.4.0",
                 "claude-code",
                 "1/merge",
             )
@@ -128,6 +128,8 @@ class SkillBehaviorContractTests(unittest.TestCase):
         self.assertIn("Delegation does not itself move the state", intake)
         self.assertIn("explicit confirmation", ppt)
         self.assertIn("Do not run environment checks or generation commands", ppt)
+        self.assertIn("PreToolUse", ppt)
+        self.assertIn("workflow_guard.py confirm", ppt)
         self.assertIn("Do not use this reference to bypass intake", production)
 
     def test_workflow_states_are_consistent(self) -> None:
@@ -191,12 +193,22 @@ class SkillBehaviorContractTests(unittest.TestCase):
             "existing-deck-improvement.md",
         }
         self.assertTrue(names.issubset({path.name for path in (ROOT / "examples").glob("*.md")}))
+        self.assertTrue((ROOT / "examples/high-score-research-brief.yaml").is_file())
+        self.assertTrue((ROOT / "examples/high-score-research-slide-spec.yaml").is_file())
 
     def test_readmes_use_new_install_id(self) -> None:
         for path in (REPO_ROOT / "README.md", REPO_ROOT / "README-zh.md", ROOT / "README.md"):
             text = path.read_text(encoding="utf-8")
             self.assertIn("student-presentation-suite@claude-personal", text)
-            self.assertNotIn("student-presentation-suite@personal", text)
+            old_id = "student-presentation-suite@personal"
+            offset = 0
+            while (index := text.find(old_id, offset)) >= 0:
+                context = text[max(0, index - 120):index + len(old_id) + 120].lower()
+                self.assertTrue(
+                    any(marker in context for marker in ("obsolete", "migrate", "旧", "迁移", "remove")),
+                    f"{path}: legacy install id is allowed only in migration/removal documentation",
+                )
+                offset = index + len(old_id)
 
     def test_install_script_has_safe_migration_contract(self) -> None:
         script = (REPO_ROOT / "scripts/install_claude_plugin.ps1").read_text(encoding="utf-8")
@@ -210,8 +222,56 @@ class SkillBehaviorContractTests(unittest.TestCase):
         review = self.read("skills/student-presentation-review/SKILL.md")
         ppt = self.read("skills/student-presentation-ppt/SKILL.md")
         self.assertIn("diagnose first, then hand off", review)
-        self.assertIn("separate improved deck and change summary", review)
+        self.assertIn("separate improved deck, change summary, and revision manifest", review)
         self.assertIn("Do not overwrite an existing source deck", ppt)
+
+    def test_v04_control_quality_and_revision_contracts_exist(self) -> None:
+        brief_schema = json.loads(self.read("references/presentation-brief.schema.json"))
+        slide_schema = json.loads(self.read("references/slide-spec.schema.json"))
+        self.assertEqual("1.0", brief_schema["properties"]["brief_version"]["const"])
+        for scenario in ("coursework", "defense", "competition", "club-showcase", "research"):
+            self.assertIn(scenario, brief_schema["properties"]["scenario"]["enum"])
+        meta = slide_schema["properties"]["meta"]["properties"]
+        for field in (
+            "scenario",
+            "audience_type",
+            "audience_depth",
+            "structure_mode",
+            "interaction_mode",
+            "quality_level",
+            "max_words_per_slide",
+            "visual_text_ratio",
+            "citation_style",
+            "export_formats",
+            "versioning",
+        ):
+            self.assertIn(field, meta)
+        slide = slide_schema["properties"]["slides"]["items"]["properties"]
+        for field in (
+            "role",
+            "claim",
+            "supporting_points",
+            "slide_copy",
+            "speaker_notes",
+            "evidence_refs",
+            "locked",
+            "lock_reason",
+        ):
+            self.assertIn(field, slide)
+        self.assertIn("evidence_ledger", slide_schema["properties"])
+        self.assertIn("revision", slide_schema["properties"])
+        self.assertIn("revision_operation", slide_schema["properties"])
+        self.assertIn("target_slides", slide_schema["properties"])
+
+    def test_skills_route_through_layered_quality_workflow(self) -> None:
+        planning = self.read("skills/student-presentation/SKILL.md")
+        ppt = self.read("skills/student-presentation-ppt/SKILL.md")
+        review = self.read("skills/student-presentation-review/SKILL.md")
+        self.assertIn("directory, per-slide claim/points, PPT copy, speaker version", planning)
+        self.assertIn("analyze_presentation_spec.py", planning)
+        self.assertIn("build_support_outputs.py", ppt)
+        self.assertIn("create_revision_manifest.py --strict", ppt)
+        self.assertIn("likely teacher/judge questions", review)
 
 
 if __name__ == "__main__":

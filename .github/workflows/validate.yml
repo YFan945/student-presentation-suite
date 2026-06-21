@@ -31,6 +31,7 @@ jobs:
         shell: pwsh
         run: |
           python -m json.tool plugins/student-presentation-suite/references/slide-spec.schema.json | Out-Null
+          python -m json.tool plugins/student-presentation-suite/references/presentation-brief.schema.json | Out-Null
           python -m unittest discover -s plugins/student-presentation-suite/tests
           node plugins/student-presentation-suite/scripts/run_with_pptxgenjs.js --probe
           python plugins/student-presentation-suite/scripts/smoke_pptx.py
@@ -43,6 +44,7 @@ jobs:
         run: |
           python plugins/student-presentation-suite/scripts/check_plugin_release.py
           python scripts/check_marketplace_release.py
+          python scripts/check_installed_version.py --source-only
 
   claude-manifest:
     runs-on: ubuntu-latest

@@ -58,6 +58,10 @@ Production follows:
 No environment, generation, rendering, or delivery command may run while the
 state is `intake_pending`.
 
+The plugin ships a `PreToolUse` hook and `workflow_guard.py`. Suite production
+commands are denied until an approved Production Summary hash moves the project
+state to `intake_confirmed`.
+
 ## Structured Handoff
 
 Slide Spec YAML carries confirmed planning data into PPTX production. Its `meta`
@@ -75,6 +79,10 @@ Existing-deck improvement additionally uses:
 
 The original source deck is never overwritten.
 
+Slide Spec v2 additionally carries scenario, audience depth, structure mode,
+quality controls, layered slide copy/notes, Evidence Ledger references, locked
+slides, and revision metadata. Legacy Slide Spec remains accepted.
+
 ## Outputs
 
 Deliverables are written under `${CLAUDE_PROJECT_DIR}/outputs`, or the current
@@ -84,6 +92,8 @@ project's `outputs/` directory when the environment variable is unavailable:
 - `<topic>-speaker-notes.md`
 - `<topic>-preview.png` or contact sheet
 - `<topic>-change-summary.md` for existing-deck improvements
+- requested PDF, HTML teleprompter, training cards, references, quality report,
+  and revision manifest
 
 The plugin installation directory is read-only for user deliverables.
 
@@ -131,6 +141,11 @@ Useful checks:
 ```powershell
 python scripts/check_claude_pptx_env.py --json --strict
 python scripts/validate_slide_spec.py path\to\spec.yaml --json
+python scripts/validate_presentation_brief.py path\to\brief.yaml --json
+python scripts/analyze_presentation_spec.py path\to\spec.yaml --strict --json
+python scripts/build_support_outputs.py path\to\spec.yaml --output-dir <project>\outputs --json
+python scripts/create_revision_manifest.py old.yaml new.yaml --strict
+python scripts/manage_versions.py snapshot --output-root <project>\outputs --revision-id r1 --file <deck>
 python scripts/slide_spec_to_pptx_brief.py path\to\spec.yaml --output-dir <project>\outputs
 node scripts/run_with_pptxgenjs.js --probe
 python scripts/smoke_pptx.py

@@ -70,6 +70,7 @@ def main() -> None:
         "CHANGELOG.md",
         ".github/workflows/validate.yml",
         "scripts/install_claude_plugin.ps1",
+        "scripts/check_installed_version.py",
     ]
     for rel in required:
         if not (ROOT / rel).is_file():
@@ -124,6 +125,17 @@ def main() -> None:
                 errors.append(f"{name}: marketplace and manifest names differ")
             if manifest.get("version") != entry.get("version"):
                 errors.append(f"{name}: marketplace and manifest versions differ")
+            package = load_json(plugin_root / "package.json")
+            lock = load_json(plugin_root / "package-lock.json")
+            versions = {
+                "marketplace": entry.get("version"),
+                "manifest": manifest.get("version"),
+                "package": package.get("version"),
+                "package-lock": lock.get("version"),
+                "package-lock root": (lock.get("packages") or {}).get("", {}).get("version"),
+            }
+            if len(set(versions.values())) != 1:
+                errors.append(f"{name}: synchronized versions differ: {versions}")
             for field in ("homepage", "repository", "license", "keywords"):
                 if not entry.get(field):
                     errors.append(f"{name}: marketplace entry missing metadata {field}")

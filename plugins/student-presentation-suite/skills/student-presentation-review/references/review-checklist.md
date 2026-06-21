@@ -35,6 +35,9 @@ Check:
 - every slide has one main message
 - the conclusion restates the main finding or lesson
 - Q&A or thank-you ending is suitable for the presentation type
+- repeated claims/pages are merged or clearly differentiated
+- method/evidence appears before supported conclusions unless an intentional executive-summary opening is used
+- transitions explain the relationship between sections
 
 Defense decks should include:
 - background
@@ -133,6 +136,22 @@ When useful, rate each dimension as Excellent / Good / Needs Work / Risk:
 - Originality/student feel: concrete details, non-generic wording, personal or group process
 
 Include one sentence explaining the score for each dimension. Do not let scoring replace concrete fixes.
+
+For machine-readable review, use 0-100 scores for logic, evidence, readability,
+speakability, and defense readiness. Run `analyze_presentation_spec.py` when a
+Slide Spec is available; rendered deck evidence still overrides heuristics.
+
+## Evidence Review
+
+Check Evidence Ledger coverage, source date/scope, sample/metric/baseline,
+confidence, limitations, and citation consistency. Numeric, causal, quotation,
+survey, experiment, and case claims must not be invented or left untraceable.
+
+## Rehearsal Review
+
+Check total and per-slide timing, abrupt timing changes, missing transitions,
+notes that are difficult to say naturally, likely teacher/judge questions, and
+whether source/method/limitation/feasibility challenges can be answered.
 
 ## Positive Feedback
 

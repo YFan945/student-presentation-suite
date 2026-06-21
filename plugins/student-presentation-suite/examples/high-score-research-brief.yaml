@@ -1,0 +1,39 @@
+brief_version: "1.0"
+topic: "How retrieval practice changes first-year programming review"
+course: "Introduction to Programming"
+scenario: research
+audience:
+  type: mixed
+  depth: standard
+language: English
+duration_min: 5
+slide_count: 6
+format: group
+members: [A, B]
+structure_mode: research
+interaction_mode: beginner
+quality_level: high-score
+rubric: "Clear method, evidence, limitations, and equal group contribution"
+source_material:
+  - "Course quiz results"
+  - "Anonymous student survey"
+controls:
+  max_words_per_slide: 35
+  max_chinese_chars_per_slide: 80
+  visual_text_ratio: balanced
+  speaker_notes: true
+  key_lines: true
+  citations: classroom
+  versioning: true
+image_source: diagram-only
+visual_style: Data Driven
+deliverables:
+  - slide-spec
+  - pptx
+  - pdf
+  - speaker-notes
+  - preview
+  - teleprompter
+  - quality-report
+  - revision-manifest
+output_prefix: retrieval-practice

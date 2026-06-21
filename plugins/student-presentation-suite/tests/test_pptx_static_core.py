@@ -28,6 +28,20 @@ def slide_xml(text: str, ph_type: str = "title", explicit_sz: str | None = None)
 </p:sld>"""
 
 
+def bounded_slide_xml(text: str, x: int, y: int, cx: int, cy: int, typeface: str) -> str:
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+       xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <p:cSld><p:spTree>
+    <p:sp>
+      <p:nvSpPr><p:cNvPr id="2" name="Body 1"/><p:nvPr><p:ph type="body"/></p:nvPr></p:nvSpPr>
+      <p:spPr><a:xfrm><a:off x="{x}" y="{y}"/><a:ext cx="{cx}" cy="{cy}"/></a:xfrm></p:spPr>
+      <p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:rPr sz="2400"><a:latin typeface="{typeface}"/></a:rPr><a:t>{text}</a:t></a:r></a:p></p:txBody>
+    </p:sp>
+  </p:spTree></p:cSld>
+</p:sld>"""
+
+
 def rels_to_layout() -> str:
     return """<?xml version="1.0" encoding="UTF-8"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -157,6 +171,28 @@ class PptxStaticCoreTests(unittest.TestCase):
 
         risks = result["findings"][0]["risk"] if result["findings"] else []
         self.assertNotIn("heading-font-size-below-24pt", risks)
+
+    def test_flags_outside_geometry_and_uncommon_font(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            pptx = Path(tmp) / "geometry-font.pptx"
+            self.write_pptx(
+                pptx,
+                [
+                    bounded_slide_xml(
+                        "Outside text",
+                        x=12_000_000,
+                        y=100_000,
+                        cx=1_000_000,
+                        cy=500_000,
+                        typeface="Rare Decorative Font",
+                    )
+                ],
+            )
+            result = core.inspect_pptx(pptx)
+        risks = set(result["findings"][0]["risk"])
+        self.assertIn("shape-outside-slide", risks)
+        self.assertIn("font-compatibility-review-required", risks)
+        self.assertIn("Rare Decorative Font", result["font_families"])
 
 
 if __name__ == "__main__":

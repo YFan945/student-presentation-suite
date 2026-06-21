@@ -52,6 +52,9 @@ Summary。
 
 处于 `intake_pending` 时，不得运行环境检查、生成、渲染或交付命令。
 
+插件自带 `PreToolUse` hook 和 `workflow_guard.py`。只有已确认 Production
+Summary 的哈希将项目状态推进到 `intake_confirmed` 后，生产脚本才允许执行。
+
 ## 结构化交接
 
 Slide Spec YAML 将确认后的规划传入 PPTX 生成。`meta` 可记录主题、汇报类型、
@@ -68,6 +71,9 @@ Slide Spec YAML 将确认后的规划传入 PPTX 生成。`meta` 可记录主题
 
 原始 deck 永远不会被覆盖。
 
+Slide Spec v2 还可以携带场景、受众深度、结构模式、质量控制、分层文案和讲稿、
+Evidence Ledger 引用、锁定页面及 revision 元数据；旧版 Slide Spec 仍兼容。
+
 ## 输出文件
 
 交付物写入 `${CLAUDE_PROJECT_DIR}/outputs`；环境变量不可用时，回退到当前
@@ -77,6 +83,7 @@ Slide Spec YAML 将确认后的规划传入 PPTX 生成。`meta` 可记录主题
 - `<topic>-speaker-notes.md`
 - `<topic>-preview.png` 或 contact sheet
 - 已有 deck 改进时的 `<topic>-change-summary.md`
+- 按需输出 PDF、HTML 提词版、训练卡、引用清单、质量报告和 revision manifest
 
 用户文件不得写入插件安装目录。
 
@@ -122,6 +129,11 @@ npm ci
 ```powershell
 python scripts/check_claude_pptx_env.py --json --strict
 python scripts/validate_slide_spec.py path\to\spec.yaml --json
+python scripts/validate_presentation_brief.py path\to\brief.yaml --json
+python scripts/analyze_presentation_spec.py path\to\spec.yaml --strict --json
+python scripts/build_support_outputs.py path\to\spec.yaml --output-dir <project>\outputs --json
+python scripts/create_revision_manifest.py old.yaml new.yaml --strict
+python scripts/manage_versions.py snapshot --output-root <project>\outputs --revision-id r1 --file <deck>
 python scripts/slide_spec_to_pptx_brief.py path\to\spec.yaml --output-dir <project>\outputs
 node scripts/run_with_pptxgenjs.js --probe
 python scripts/smoke_pptx.py

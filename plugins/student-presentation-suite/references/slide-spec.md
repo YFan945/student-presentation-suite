@@ -1,5 +1,9 @@
 # Slide Spec YAML
 
+Slide Spec v2 adds layered content, story roles, evidence references, locking,
+and revision metadata while remaining backward-compatible with v1 specs. Omit
+`schema_version` for legacy input or set it to `"2.0"` for the expanded model.
+
 Use Slide Spec YAML as an optional handoff format when:
 - the user says the outline will later become a PPTX
 - the deck is complex or group-based
@@ -32,6 +36,11 @@ Meta field rules:
 - Optional fields: `slide_count`, `members`, `course`, `audience`, `rubric`,
   `source_material`, `template`, `logo`, `image_source`, `visual_style`,
   `deliverables`, and `output_prefix`
+- v2 control fields: `scenario`, `audience_type`, `audience_depth`,
+  `structure_mode`, `interaction_mode`, `quality_level`,
+  `max_words_per_slide`, `max_chinese_chars_per_slide`, `visual_text_ratio`,
+  `include_speaker_notes`, `include_key_lines`, `citation_style`,
+  `export_formats`, and `versioning`
 - `language`: `"Chinese" | "English" | "bilingual"`
 - `format`: `"individual" | "group"`
 - `duration_min`: number of minutes
@@ -53,15 +62,39 @@ Optional top-level fields for existing deck improvement:
 - `preserve`: required elements to keep, such as template, logo, footer, citations, approved slide order, or strong existing content
 - `change_summary_required`: set to `true` when the PPTX workflow must write `outputs/<topic>-change-summary.md`
 
+Optional v2 slide fields:
+
+- `role`: story function such as `problem`, `method`, `result`, `limitation`, or `conclusion`
+- `claim`: the one message the audience should remember
+- `supporting_points`: concise reasons, examples, or evidence
+- `slide_copy`: final compact PPT wording
+- `speaker_notes`: speakable explanation rather than an essay
+- `key_line`: optional memorable sentence
+- `evidence_refs`: ids from the top-level Evidence Ledger
+- `locked` and `lock_reason`: prevent later optimization from changing approved content
+
+Optional v2 top-level fields:
+
+- `evidence_ledger`: traceable sources with confidence and slide usage
+- `revision`: revision id, parent revision, and reason
+- `revision_operation`, `target_slides`, and `target_section`: constrain local
+  rewrite, compression, expansion, evidence addition, section rewrite, or style changes
+
 Schema and validation:
 - JSON Schema: `references/slide-spec.schema.json`
 - Validator: `scripts/validate_slide_spec.py`
 - The validator requires `jsonschema` and `PyYAML` from `requirements.txt`.
 - Unknown fields are rejected in `meta`, slides, visuals, and review findings to catch spelling mistakes.
-- Semantic validation also checks contiguous slide ids, `slide_count`, total timing vs `duration_min`, group members/owners, and existing-deck field combinations.
+- Semantic validation also checks contiguous slide ids, `slide_count`, total timing vs `duration_min`, group members/owners, existing-deck combinations, high-score controls, evidence references, and lock semantics.
 
 ```powershell
 python "${CLAUDE_PLUGIN_ROOT}/scripts/validate_slide_spec.py" path/to/slide-spec.yaml --json
+```
+
+Run deterministic story, density, wording, and evidence checks with:
+
+```powershell
+python "${CLAUDE_PLUGIN_ROOT}/scripts/analyze_presentation_spec.py" path/to/slide-spec.yaml --strict --json
 ```
 
 ```yaml

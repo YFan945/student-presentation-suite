@@ -113,6 +113,9 @@ def build_brief(
     notes_path = resolved_output_dir / f"{output_prefix}-speaker-notes.md"
     preview_path = resolved_output_dir / f"{output_prefix}-preview.png"
     change_summary_path = resolved_output_dir / f"{output_prefix}-change-summary.md"
+    quality_report_path = resolved_output_dir / f"{output_prefix}-quality-report.json"
+    teleprompter_path = resolved_output_dir / f"{output_prefix}-teleprompter.html"
+    revision_manifest_path = resolved_output_dir / f"{output_prefix}-revision-manifest.json"
     total_timing = sum(int(slide.get("timing_sec", 0)) for slide in slides)
     members = meta.get("members") or []
     member_text = ", ".join(members) if members else "not specified"
@@ -123,6 +126,7 @@ def build_brief(
         or data.get("edit_intent")
         or review_findings
         or data.get("change_summary_required")
+        or data.get("revision_operation")
     )
 
     lines = [
@@ -144,6 +148,15 @@ def build_brief(
         f"- Notes: `{notes_path}`",
         f"- Preview/contact sheet: `{preview_path}` or a contact sheet in the same directory",
     ]
+    export_formats = meta.get("export_formats") or meta.get("deliverables") or []
+    if "pdf" in export_formats:
+        lines.append(f"- PDF: `{resolved_output_dir / f'{output_prefix}-presentation.pdf'}`")
+    if "teleprompter" in export_formats:
+        lines.append(f"- Teleprompter: `{teleprompter_path}`")
+    if "quality-report" in export_formats:
+        lines.append(f"- Quality report: `{quality_report_path}`")
+    if meta.get("versioning") or "revision-manifest" in export_formats:
+        lines.append(f"- Revision manifest: `{revision_manifest_path}`")
     if is_improvement or data.get("change_summary_required"):
         lines.append(f"- Change summary: `{change_summary_path}`")
     lines.extend(
@@ -152,7 +165,9 @@ def build_brief(
             "## Deck Constraints",
             f"- Topic: {meta_value(meta, 'topic')}",
             f"- Presentation type: {meta_value(meta, 'presentation_type')}",
+            f"- Scenario: {meta_value(meta, 'scenario')}",
             f"- Audience: {meta_value(meta, 'audience')}",
+            f"- Audience type/depth: {meta_value(meta, 'audience_type')} / {meta_value(meta, 'audience_depth')}",
             f"- Language: {meta_value(meta, 'language')}",
             f"- Duration minutes: {meta_value(meta, 'duration_min')}",
             f"- Slide count: {meta.get('slide_count') or len(slides)}",
@@ -161,6 +176,13 @@ def build_brief(
             f"- Members: {member_text}",
             f"- Course: {meta_value(meta, 'course')}",
             f"- Rubric: {meta_value(meta, 'rubric')}",
+            f"- Structure mode: {meta_value(meta, 'structure_mode')}",
+            f"- Interaction mode: {meta_value(meta, 'interaction_mode')}",
+            f"- Quality level: {meta_value(meta, 'quality_level')}",
+            f"- Maximum slide words: {meta_value(meta, 'max_words_per_slide')}",
+            f"- Maximum Chinese slide characters: {meta_value(meta, 'max_chinese_chars_per_slide')}",
+            f"- Visual/text ratio: {meta_value(meta, 'visual_text_ratio')}",
+            f"- Citation style: {meta_value(meta, 'citation_style')}",
             "- Source material:",
             text_block(meta.get("source_material") or ["not specified"], "  "),
             f"- Template: {meta_value(meta, 'template')}",
@@ -199,6 +221,17 @@ def build_brief(
             lines.append(
                 "  - No structured findings supplied; infer fixes from the conversation and source deck evidence."
             )
+    if data.get("revision_operation"):
+        lines.extend(
+            [
+                "",
+                "## Scoped Revision Contract",
+                f"- Operation: {data.get('revision_operation')}",
+                f"- Target slides: {', '.join(str(item) for item in data.get('target_slides') or []) or 'not specified'}",
+                f"- Target section: {data.get('target_section') or 'not specified'}",
+                "- Do not change slides outside this scope, and never change a locked slide without explicit unlock approval.",
+            ]
+        )
     lines.extend(
         [
             "",
@@ -223,11 +256,21 @@ def build_brief(
                 f"- Owner: {slide['owner']}",
                 f"- Timing seconds: {slide['timing_sec']}",
                 f"- Slide kind: {slide.get('kind', 'content')}",
+                f"- Story role: {slide.get('role', 'not specified')}",
+                f"- Claim: {slide.get('claim', 'not specified')}",
+                "- Supporting points:",
+                text_block(slide.get("supporting_points") or ["not specified"], "  "),
                 f"- Visual type: {visual.get('type', 'not required')}",
                 f"- Visual purpose: {visual.get('purpose', 'not required')}",
                 "- Content:",
                 text_block(slide["content"], "  "),
+                "- PPT copy:",
+                text_block(slide.get("slide_copy") or ["derive from content within confirmed density limits"], "  "),
                 f"- Speaker note goal: {slide.get('note_goal', 'not required')}",
+                f"- Speaker notes: {slide.get('speaker_notes', 'generate from note goal and evidence')}",
+                f"- Key line: {slide.get('key_line', 'not required')}",
+                f"- Evidence refs: {', '.join(slide.get('evidence_refs') or []) or 'not specified'}",
+                f"- Locked: {bool(slide.get('locked'))}",
                 f"- Transition: {slide.get('transition', 'not required')}",
             ]
         )
@@ -236,11 +279,13 @@ def build_brief(
         [
             "",
             "## Required QA",
+            f"- Run `python \"${{CLAUDE_PLUGIN_ROOT}}/scripts/analyze_presentation_spec.py\" <spec> --output \"{quality_report_path}\" --strict --json` before final production.",
             "- Run `python -m markitdown output.pptx` and inspect extracted text.",
             "- Render with LibreOffice, then convert PDF pages to images with Poppler.",
             "- Inspect rendered images or a contact sheet and complete at least one fix-and-verify loop.",
             "- Run `python \"${CLAUDE_PLUGIN_ROOT}/skills/student-presentation-ppt/scripts/pptx_delivery_check.py\" --pptx <pptx> --notes <notes> --preview <preview> --strict --json`.",
             f"- For existing deck improvements, verify `{change_summary_path}` lists kept content, changed slides, unresolved risks, and QA results.",
+            f"- When versioning is enabled, store the versioned package under `{resolved_output_dir / 'versions'}` and write `{revision_manifest_path}`.",
             "- Final response must report file existence, slide count, static XML risks, visual QA status, and limitations.",
             "",
         ]

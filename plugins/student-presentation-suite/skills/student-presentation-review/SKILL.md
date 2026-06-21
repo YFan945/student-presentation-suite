@@ -23,6 +23,9 @@ Load `../../references/shared-standards.md` first.
 2. Load only what is needed:
    - `references/review-checklist.md`
    - `references/review-output-format.md`
+   - `../../references/content-workflow.md` for story-order checks
+   - `../../references/evidence-and-citations.md` for source gaps
+   - `../../references/revision-training-export.md` for per-slide scoring and rehearsal
    - `../../references/slide-spec.md` for planned-vs-actual comparison
    - `../../references/image-strategy.md` for visual/source review
 3. For PPTX input, run:
@@ -36,8 +39,9 @@ Load `../../references/shared-standards.md` first.
    - Critical: blocks understanding, grading, or delivery
    - Major: should be fixed before presenting
    - Minor: polish
-6. For each finding, identify target slide/page, problem, impact, and concrete fix.
-7. For edit requests, produce a structured handoff using `source_deck`, `edit_intent`, `review_findings`, `preserve`, and `change_summary_required`, then enter `student-presentation-ppt`. Require a separate improved deck and change summary. Its full intake and Production Summary confirmation remain mandatory before editing.
+6. For each finding, identify target slide/page, problem, impact, concrete fix, and—when requested—logic/evidence/readability/speakability/defense score.
+7. Check source gaps, story order, repeated pages, conclusion support, timing, transitions, opening/closing, and likely teacher/judge questions. Use `analyze_presentation_spec.py` when a Slide Spec is available.
+8. For edit requests, produce a structured handoff using `source_deck`, `edit_intent`, `review_findings`, `preserve`, locked slides, and `change_summary_required`, then enter `student-presentation-ppt`. Require a separate improved deck, change summary, and revision manifest. Its full intake and Production Summary confirmation remain mandatory before editing.
 
 ## Status rules
 

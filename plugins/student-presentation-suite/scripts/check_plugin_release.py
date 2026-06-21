@@ -21,6 +21,11 @@ REQUIRED_FILES = [
     "package.json",
     "package-lock.json",
     "references/presentation-intake.md",
+    "references/presentation-brief.md",
+    "references/presentation-brief.schema.json",
+    "references/content-workflow.md",
+    "references/evidence-and-citations.md",
+    "references/revision-training-export.md",
     "skills/student-presentation/SKILL.md",
     "skills/student-presentation-ppt/SKILL.md",
     "skills/student-presentation-review/SKILL.md",
@@ -29,6 +34,13 @@ REQUIRED_FILES = [
     "scripts/smoke_pptx.py",
     "scripts/slide_spec_to_pptx_brief.py",
     "scripts/validate_slide_spec.py",
+    "scripts/validate_presentation_brief.py",
+    "scripts/analyze_presentation_spec.py",
+    "scripts/create_revision_manifest.py",
+    "scripts/build_support_outputs.py",
+    "scripts/workflow_guard.py",
+    "scripts/manage_versions.py",
+    "hooks/hooks.json",
     "tests/test_runtime_paths.py",
 ]
 FORBIDDEN_PATH_PARTS = {".codex-plugin", "agents", "__pycache__", ".pytest_cache", "node_modules"}
@@ -79,8 +91,8 @@ def check_manifest(errors: list[str]) -> None:
         return
     if manifest.get("name") != "student-presentation-suite":
         errors.append("Claude manifest name must be student-presentation-suite")
-    if manifest.get("version") != "0.3.0" or package.get("version") != manifest.get("version"):
-        errors.append("Claude manifest and package.json versions must both be 0.3.0")
+    if manifest.get("version") != "0.4.0" or package.get("version") != manifest.get("version"):
+        errors.append("Claude manifest and package.json versions must both be 0.4.0")
     if manifest.get("author", {}).get("name") in {None, "", "Local developer"}:
         errors.append("Claude manifest author.name must be publishable")
     if "document-skills@anthropic-agent-skills" not in manifest.get("dependencies", []):

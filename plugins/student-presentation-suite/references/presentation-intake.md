@@ -14,6 +14,11 @@ Spec meta. Never ask for a confirmed item again.
   duration, presentation type, group format, or rubric when it materially
   changes the review.
 
+Use `presentation-brief.md` for scenario classification, audience depth,
+interaction mode, quality level, structure mode, and generation controls.
+`beginner` mode explains recommendations; `expert` mode asks only unresolved
+high-impact decisions. Both modes keep the full PPTX confirmation gate.
+
 ## Full PPTX Intake
 
 Confirm every item before production:
@@ -24,6 +29,8 @@ Confirm every item before production:
 | Course/context | General undergraduate classroom report | Controls terminology and academic framing |
 | Presentation type | Coursework report | Determines required sections |
 | Audience | Teacher and classmates | Controls explanation depth |
+| Scenario | Coursework | Selects scoring and story defaults |
+| Audience depth | Standard | Controls terminology and explanation |
 | Language | Follow the user's language | Controls slide and note language |
 | Duration | 5 minutes | Controls scope and timing |
 | Slide count | 7-9 slides for 5 minutes | Controls density |
@@ -34,6 +41,10 @@ Confirm every item before production:
 | Image strategy | Diagram-only or generated abstract visuals; no web images | Controls sourcing and production |
 | Visual style | Recommend three topic-fit styles; choose one only after confirmation | Controls visual direction |
 | Deliverables | PPTX, speaker notes, preview/contact sheet; add change summary for edits | Controls completion criteria |
+| Interaction/quality mode | Beginner + high-score | Controls guidance, evidence, and rehearsal depth |
+| Structure mode | Scenario default | Controls the narrative spine |
+| Content controls | 40 English words / 80 Chinese characters, balanced visual/text, notes on | Controls density and output layers |
+| Citation/export/versioning | Classroom citations; requested local exports; versioning on for edits | Controls traceability and rollback |
 
 If duration is known but slide count is not, recommend:
 
@@ -87,12 +98,22 @@ summary moves the workflow to `intake_confirmed`.
 After confirmation, map supported values into Slide Spec `meta`:
 
 - `topic`, `presentation_type`, `audience`, `language`, `duration_min`, `slide_count`
+- `scenario`, `audience_type`, `audience_depth`, `structure_mode`
+- `interaction_mode`, `quality_level`, `max_words_per_slide`,
+  `max_chinese_chars_per_slide`, `visual_text_ratio`
+- `include_speaker_notes`, `include_key_lines`, `citation_style`,
+  `export_formats`, `versioning`
 - `format`, `members`, `course`, `rubric`
 - `source_material`, `template`, `logo`, `image_source`, `visual_style`
 - `deliverables`, `output_prefix`
 
 Use existing-deck top-level fields for editing: `source_deck`, `edit_intent`,
 `review_findings`, `preserve`, and `change_summary_required`.
+
+For complex or file-producing work, save the confirmed global controls as a
+Presentation Brief and validate it before creating the Slide Spec. Do not ask
+the user to approve both documents separately when the Slide Spec faithfully
+implements the already approved summary.
 
 ## Workflow States
 
@@ -109,3 +130,8 @@ Use existing-deck top-level fields for editing: `source_deck`, `edit_intent`,
 
 Never claim production has started before `intake_confirmed`. `incomplete` and
 `blocked` may be entered from any later state when their conditions are met.
+
+For PPTX work, persist this state under the active project with
+`scripts/workflow_guard.py`. The plugin PreToolUse hook denies suite production
+commands when no confirmed state exists. The summary file hash is retained as
+the auditable confirmation boundary.

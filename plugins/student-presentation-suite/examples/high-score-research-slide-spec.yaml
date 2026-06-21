@@ -1,0 +1,125 @@
+schema_version: "2.0"
+meta:
+  topic: "How retrieval practice changes first-year programming review"
+  presentation_type: research report
+  scenario: research
+  audience: "Teacher, classmates, and non-specialist judges"
+  audience_type: mixed
+  audience_depth: standard
+  language: English
+  duration_min: 5
+  slide_count: 6
+  format: group
+  members: [A, B]
+  course: "Introduction to Programming"
+  rubric: "Clear method, evidence, limitations, and equal group contribution"
+  structure_mode: research
+  interaction_mode: beginner
+  quality_level: high-score
+  max_words_per_slide: 35
+  max_chinese_chars_per_slide: 80
+  visual_text_ratio: balanced
+  include_speaker_notes: true
+  include_key_lines: true
+  citation_style: classroom
+  export_formats: [pptx, pdf, speaker-notes, preview, teleprompter, quality-report, revision-manifest]
+  versioning: true
+  image_source: diagram-only
+  visual_style: Data Driven
+  output_prefix: retrieval-practice
+revision:
+  revision_id: r1
+  reason: initial approved plan
+evidence_ledger:
+  - id: quiz-results
+    title: "Course quiz results before and after retrieval practice"
+    source_type: dataset
+    locator: "data/quiz-results.csv"
+    author: "Course team"
+    date: "2026-05"
+    confidence: high
+    used_on_slides: [4]
+    limitation: "One class and a short observation period"
+slides:
+  - id: 1
+    title: "Reviewing code feels productive even when recall stays weak"
+    layout: opening-question
+    kind: content
+    role: opening
+    claim: "Passive review creates familiarity, not reliable recall"
+    supporting_points: ["Students recognize examples", "Blank-page recall remains difficult"]
+    content: "Recognition is not recall"
+    slide_copy: ["Recognition feels easy", "Recall exposes missing understanding"]
+    speaker_notes: "Open with a blank-editor scenario that students recognize."
+    key_line: "Familiar code is not the same as retrievable knowledge."
+    transition: "We tested whether short retrieval practice changes that gap."
+    timing_sec: 40
+    owner: A
+  - id: 2
+    title: "The study compares passive review with short retrieval practice"
+    layout: comparison
+    kind: content
+    role: method
+    claim: "Both groups used the same material but different review actions"
+    supporting_points: ["Same topic and time", "Different review activity"]
+    content: "Passive review vs retrieval practice"
+    slide_copy: ["Same material", "Same time", "Different action"]
+    speaker_notes: "Explain the comparison without implying random assignment."
+    transition: "The next page defines how we measured change."
+    timing_sec: 50
+    owner: A
+  - id: 3
+    title: "Quiz improvement is the primary outcome"
+    layout: process
+    kind: content
+    role: method
+    claim: "The measure focuses on independently producing code"
+    supporting_points: ["Pre/post quiz", "Same scoring rubric", "Anonymous responses"]
+    content: "Pre-quiz → review activity → post-quiz"
+    slide_copy: ["Pre-quiz", "Review activity", "Post-quiz"]
+    speaker_notes: "State the scoring method and what it cannot measure."
+    transition: "With the method clear, we can interpret the result."
+    timing_sec: 45
+    owner: B
+  - id: 4
+    title: "Retrieval practice produced the larger quiz improvement"
+    layout: data
+    kind: content
+    role: result
+    claim: "The retrieval-practice group improved more in this class"
+    supporting_points: ["Show group change", "Keep scale and sample visible"]
+    content: "One chart with direct labels"
+    slide_copy: ["Larger improvement", "One-class result"]
+    speaker_notes: "Describe the comparison and avoid claiming universal causality."
+    evidence_refs: [quiz-results]
+    transition: "The result is useful, but its scope is limited."
+    timing_sec: 55
+    owner: B
+  - id: 5
+    title: "The result does not yet generalize beyond this class"
+    layout: limitations
+    kind: content
+    role: limitation
+    claim: "Sample and duration limit the conclusion"
+    supporting_points: ["One class", "Short duration", "No long-term retention measure"]
+    content: "Scope and uncertainty"
+    slide_copy: ["One class", "Short period", "No retention follow-up"]
+    speaker_notes: "Use the limitation to frame the next experiment."
+    transition: "Within that boundary, one practical recommendation remains."
+    timing_sec: 50
+    owner: A
+    locked: true
+    lock_reason: "Teacher approved the limitation wording"
+  - id: 6
+    title: "Use retrieval practice as a short check, not a complete replacement"
+    layout: closing
+    kind: closing
+    role: closing
+    claim: "Add a brief recall task before returning to examples"
+    supporting_points: ["Low setup cost", "Immediate feedback", "Needs longer validation"]
+    content: "Recall first, then review"
+    slide_copy: ["Recall first", "Review second", "Questions"]
+    speaker_notes: "Summarize, state the boundary, and invite questions."
+    key_line: "Recall first; review what you could not retrieve."
+    timing_sec: 60
+    owner: B

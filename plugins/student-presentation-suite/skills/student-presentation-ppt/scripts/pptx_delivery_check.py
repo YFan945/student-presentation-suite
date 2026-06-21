@@ -32,6 +32,10 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Preview image, contact sheet, or exported PDF path; repeatable",
     )
+    parser.add_argument("--pdf", type=Path, help="Optional requested PDF export")
+    parser.add_argument("--teleprompter", type=Path, help="Optional requested HTML teleprompter")
+    parser.add_argument("--quality-report", type=Path, help="Optional requested JSON quality report")
+    parser.add_argument("--revision-manifest", type=Path, help="Optional requested revision manifest")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     parser.add_argument(
         "--allow-missing-notes",
@@ -137,6 +141,8 @@ def summarize_static_risks(static_result: dict[str, Any]) -> dict[str, Any]:
         "high-text-density-overflow-risk",
         "paragraph-heavy-slide-text",
         "heading-font-size-below-24pt",
+        "shape-outside-slide",
+        "low-whitespace-risk",
     }
     for item in findings:
         risks = item.get("risk", []) or []
@@ -179,6 +185,7 @@ def inspect_delivery(
     *,
     require_notes: bool = True,
     require_preview: bool = True,
+    extra_files: dict[str, Path | None] | None = None,
 ) -> dict[str, Any]:
     if require_notes and notes is None:
         notes = expected_notes_path(pptx)
@@ -194,6 +201,14 @@ def inspect_delivery(
         missing.append("notes")
     if require_preview and not any(info and info["exists"] for info in preview_infos):
         missing.append("preview")
+    extra_infos = {
+        name: file_info(path)
+        for name, path in (extra_files or {}).items()
+        if path is not None
+    }
+    for name, info in extra_infos.items():
+        if not info or not info["exists"]:
+            missing.append(name)
 
     static_summary: dict[str, Any] = {
         "available": False,
@@ -207,6 +222,7 @@ def inspect_delivery(
             "finding_count": len(static_result.get("findings", [])),
             "error": static_result.get("error"),
             "note": static_result.get("note"),
+            "font_families": static_result.get("font_families", []),
             **summarize_static_risks(static_result),
         }
 
@@ -214,6 +230,7 @@ def inspect_delivery(
         "pptx": pptx_info,
         "notes": file_info(notes),
         "previews": preview_infos,
+        "extra_files": extra_infos,
         "slide_count": slide_count,
         "slide_count_error": slide_error,
         "static_xml_risk_summary": static_summary,
@@ -241,6 +258,8 @@ def print_text(result: dict[str, Any]) -> None:
             f"Preview {idx}: {preview['path']} exists={preview['exists']} "
             f"size={preview['size_bytes']}"
         )
+    for name, info in result.get("extra_files", {}).items():
+        print(f"{name}: {info['path']} exists={info['exists']} size={info['size_bytes']}")
     print(f"Slide count: {result['slide_count']}")
     if result["slide_count_error"]:
         print(f"Slide count error: {result['slide_count_error']}")
@@ -270,6 +289,12 @@ def main() -> None:
         args.preview,
         require_notes=not args.allow_missing_notes,
         require_preview=not args.allow_missing_preview,
+        extra_files={
+            "pdf": args.pdf,
+            "teleprompter": args.teleprompter,
+            "quality-report": args.quality_report,
+            "revision-manifest": args.revision_manifest,
+        },
     )
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))

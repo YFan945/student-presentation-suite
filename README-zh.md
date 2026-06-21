@@ -1,154 +1,284 @@
-# Student Presentation Suite — Claude Code Marketplace
+# Student Presentation Suite for Claude Code
 
 中文 | [English](README.md)
 
-本仓库是 `student-presentation-suite` 的 Claude Code 专用发行版，只从
-[`claude-code`](https://github.com/YFan945/student-presentation-suite/tree/claude-code)
-分支发布。它面向大学课程汇报、答辩和小组展示，提供结构规划、可编辑 PPTX
-生成与已有 deck 审查能力。
+> 本分支是专门适配 **Claude Code** 的插件版本，安装、依赖和运行方式均以
+> Claude Code 为准。若你使用 **OpenAI Codex**，请查看
+> [`main` 分支](https://github.com/YFan945/student-presentation-suite/tree/main)，
+> 不要在 Codex 中安装本分支。
 
-Marketplace 名称是 `claude-personal`，插件安装 ID 是
-`student-presentation-suite@claude-personal`。
+`student-presentation-suite` 用于大学课程汇报、论文答辩、小组展示等学生学术
+场景。它可以在 Claude Code 中生成 PPT 大纲和讲稿、创建可编辑 PPTX、审查
+已有 PPT，并根据审查结果生成独立改进版。
 
-## 核心能力
+插件安装 ID：
 
-- 生成或修改 PPTX 前执行完整需求澄清。
-- 按用户目标路由到大纲、PPTX 生成或审查 skill。
-- 通过 `document-skills@anthropic-agent-skills` 生成可编辑 PPTX。
-- 使用 Slide Spec YAML 进行结构化规划和 review → edit 交接。
-- 提供 14 种按需加载、可执行的视觉风格规范。
-- 统一讲稿、预览图/contact sheet 和修改摘要交付契约。
-- 提供静态检查、渲染 QA、交付门禁和环境诊断。
-- 支持中英文、个人/小组、课程汇报、报告与答辩场景。
-
-## Skill 与工作流
-
-| Skill | 适用场景 | 边界 |
-| --- | --- | --- |
-| `student-presentation` | PPT 大纲、逐页讲稿规划、分工和可选 Slide Spec | 不创建 PPTX |
-| `student-presentation-ppt` | 新建可编辑 PPTX，或生成已有 deck 的独立改进版 | 必须先确认完整需求表 |
-| `student-presentation-review` | 审查、评分、风险诊断和具体修改建议 | 默认只读，除非用户明确要求改文件 |
-
-```mermaid
-flowchart LR
-  P["student-presentation<br/>大纲"] -->|"可选 Slide Spec"| G["student-presentation-ppt<br/>可编辑文件生成"]
-  R["student-presentation-review<br/>诊断"] -->|"结构化编辑交接"| G
-  G --> I["intake_pending"]
-  I --> C["intake_confirmed"]
-  C --> L["planned"]
-  L --> B["producing"]
-  B --> Q["qa"]
-  Q --> D["complete / incomplete / blocked"]
+```text
+student-presentation-suite@claude-personal
 ```
 
-PPTX 工作会先复用用户已经给出的信息，只询问缺失项，并为每项给出推荐值和
-影响。即使用户说“你决定”，插件也必须展示完整 Production Summary 并获得
-确认，之后才能运行环境检查、生成、渲染和交付命令。
+## 功能
+
+| 需求 | 使用的 Skill | 结果 |
+| --- | --- | --- |
+| 写 PPT 大纲、逐页内容、讲稿或小组分工 | `student-presentation` | Markdown 规划文档，不创建 PPTX |
+| 创建、重做或修改可编辑 PPT/PPTX | `student-presentation-ppt` | PPTX、讲稿和预览图 |
+| 审查、评分或诊断已有 PPT | `student-presentation-review` | 默认只读的审查报告 |
+
+PPTX 创建和编辑依赖
+`document-skills@anthropic-agent-skills`。安装脚本会一并安装该依赖。
+
+## 结构化工作流与控制
+
+0.4 版本在 Slide Spec/PPTX 工作前增加统一的 Presentation Brief：
+
+- 自动识别课程汇报、答辩、竞赛、社团展示和研究展示；
+- 建模受众类型与表达深度；
+- 支持问题解决、研究、时间线、对比、案例和产品六种结构；
+- 支持新手/熟手交互模式与基础版/高分版质量模式；
+- 可控制每页字数、图文比例、讲稿、金句、引用、导出格式和版本管理；
+- 按目录→逐页主张→PPT 文案→演讲版→Slide Spec 分层生成；
+- 提供 Evidence Ledger、确定性质量报告、页面锁定、revision manifest、训练卡和演练支持。
+
+本地可导出 PPTX、PDF、预览图、Markdown 讲稿、HTML 提词版、质量报告、
+引用清单和版本清单。网页编辑与云同步需要外部服务，本插件不虚假声明这些能力。
 
 ## 环境要求
 
-- Claude Code CLI
+安装前请确保已安装：
+
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - Git
 - Python 3.10+
 - Node.js 与 npm
-- `document-skills@anthropic-agent-skills`
-- 插件声明的 Python 和 Node 依赖
-- 严格渲染 QA 所需的 LibreOffice 与 Poppler
+- LibreOffice 和 Poppler（用于完整渲染检查）
 
-安装脚本会处理 marketplace 注册、旧插件迁移、Python/Node 依赖和上游
-`document-skills` 插件。
-
-## 安装或迁移
-
-确保当前 checkout 位于 `claude-code` 分支，然后运行：
+可先检查基础命令：
 
 ```powershell
+claude --version
+git --version
+python --version
+node --version
+npm --version
+```
+
+## 下载与安装
+
+### Windows 推荐方式
+
+在 PowerShell 中执行：
+
+```powershell
+git clone --branch claude-code --single-branch `
+  https://github.com/YFan945/student-presentation-suite.git `
+  "$env:USERPROFILE\.agents\claude-plugins"
+
+Set-Location "$env:USERPROFILE\.agents\claude-plugins"
 Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\install_claude_plugin.ps1 -Migrate
 ```
 
-脚本会：
+`-Migrate` 会清理旧的 `student-presentation-suite@personal` 注册和缓存，然后：
 
-- 不触碰 Codex 工作区；
-- 删除旧 Claude `personal` 注册项及插件缓存；
-- 安装 Python 和 Node 依赖；
-- 将当前 checkout 注册为 `claude-personal`；
-- 安装 `document-skills@anthropic-agent-skills`；
-- 安装、启用并验证学生演示插件。
+1. 安装 Python 与 Node.js 依赖；
+2. 注册本地 marketplace `claude-personal`；
+3. 安装 `document-skills@anthropic-agent-skills`；
+4. 安装并启用 `student-presentation-suite@claude-personal`；
+5. 执行严格环境检查并显示插件状态。
 
-安装后需要重启 Claude Code。
+安装完成后重启 Claude Code。
 
-### 常用安装参数
-
-```powershell
-# 已有 checkout，只重新注册，不重装依赖
-.\scripts\install_claude_plugin.ps1 -SkipDependencies -SkipMarketplaceClone
-
-# 安装到其他目录
-.\scripts\install_claude_plugin.ps1 -InstallRoot D:\claude-plugins
-```
-
-## 手动开发安装
+### 已经下载过仓库
 
 ```powershell
-git clone --branch claude-code --single-branch `
-  git@github.com:YFan945/student-presentation-suite.git `
-  "$env:USERPROFILE\.agents\claude-plugins"
 Set-Location "$env:USERPROFILE\.agents\claude-plugins"
-python -m pip install -r plugins/student-presentation-suite/requirements.txt
-python -m pip install -r plugins/student-presentation-suite/requirements-claude-pptx.txt
-npm --prefix plugins/student-presentation-suite ci
-claude plugin marketplace add --scope user "$env:USERPROFILE\.agents\claude-plugins"
-claude plugin install -s user document-skills@anthropic-agent-skills
-claude plugin install -s user student-presentation-suite@claude-personal
+git switch claude-code
+git pull --ff-only origin claude-code
+.\scripts\install_claude_plugin.ps1
 ```
 
-## 仓库结构
+如果只需重新注册插件、不想重复安装依赖：
+
+```powershell
+.\scripts\install_claude_plugin.ps1 -SkipDependencies -SkipMarketplaceClone
+```
+
+## 验证安装
+
+```powershell
+claude plugin marketplace list
+claude plugin list
+claude plugin details student-presentation-suite@claude-personal
+python .\plugins\student-presentation-suite\scripts\check_claude_pptx_env.py --json --strict
+```
+
+应能看到：
+
+- marketplace：`claude-personal`
+- 插件：`student-presentation-suite@claude-personal`
+- 上游依赖：`document-skills@anthropic-agent-skills`
+
+若刚安装或更新后 Claude Code 没有识别插件，请先完全退出并重新启动 Claude
+Code。
+
+## 使用方式
+
+进入你的课程项目目录后启动 Claude Code：
+
+```powershell
+Set-Location D:\my-course-project
+claude
+```
+
+直接用自然语言描述任务即可。插件只处理明确的学生学术展示场景；普通商务
+演示、宣传 deck 或非学生任务不会自动进入这些 skill。
+
+创建或修改 PPTX 前，Claude 会整理完整的 `Production Summary`，包括主题、
+课程、受众、语言、时长、页数、评分要求、资料来源、视觉风格和交付物。你确认
+后才会开始生成。这样可避免在关键信息不完整时直接产出错误文件。
+
+插件通过 `PreToolUse` hook 对生产命令执行确定性门禁，并在项目输出目录保存
+已确认摘要的哈希和工作流状态，因此不再只依赖模型是否遵循文字说明。
+
+生成结果默认写入当前项目的 `outputs/` 目录，不会写进插件安装目录。修改已有
+PPT 时也不会覆盖原文件。
+
+## 使用案例
+
+### 1. 只生成大纲和讲稿
 
 ```text
-.claude-plugin/marketplace.json
-.github/workflows/validate.yml
-plugins/student-presentation-suite/
-  .claude-plugin/plugin.json
-  skills/
-  references/
-  scripts/
-  shared/
-  tests/
-  examples/
-scripts/
-  install_claude_plugin.ps1
-  check_marketplace_release.py
+我是软件工程专业学生，要做一次 6 分钟的中文课程汇报。
+主题是“AI 辅助软件测试”，请设计 8 页 PPT 大纲，并给出每页讲稿和时间分配。
+不要生成 PPTX。
 ```
 
-用户生成的文件统一写入当前项目的 `outputs/`，不得写入已安装插件目录。
+适合先确定内容结构，输出通常包括大纲、逐页讲稿、转场和可选 Q&A。
 
-## 验证
+### 2. 创建可编辑 PPTX
+
+```text
+为我的大学课程创建一个可编辑 PPTX。
+主题是“生成式 AI 学习反思”，中文，个人汇报，5 分钟，8 页。
+受众是老师和同学，风格简洁现代，需要 PPTX、逐页讲稿和预览图。
+```
+
+Claude 会补问缺失要求，展示完整 `Production Summary`；确认后再生成和
+检查 PPTX。
+
+### 3. 小组课程展示
+
+```text
+我们 4 人要做 12 分钟的数据库课程展示，主题是“分布式数据库的一致性”。
+请创建 12 页英文 PPTX，安排每位成员负责的页面和讲述时间，附 speaker notes
+和可能的老师提问。
+```
+
+插件会处理成员分工、交接语句、时间预算和 Q&A 准备。
+
+### 4. 论文答辩 PPT
+
+```text
+根据当前项目中的论文、实验结果和图片，为我的本科毕业答辩制作 15 页中文
+PPTX，控制在 10 分钟。重点突出研究问题、方法、实验结果、贡献和局限。
+引用必须来自我提供的材料，不要编造数据。
+```
+
+建议先把论文、数据、图片和学校模板放入当前项目，再启动 Claude Code。
+
+### 5. 只审查现有 PPT
+
+```text
+请审查 outputs\defense.pptx，检查内容结构、文字密度、字体大小、图表可读性、
+时间分配和答辩风险。只输出问题和具体修改建议，不要改动原文件。
+```
+
+该请求默认只读。报告会按严重程度列出目标页面、问题、影响和修改方法。
+
+### 6. 审查并生成改进版
+
+```text
+检查 outputs\course-report.pptx，然后直接生成一个改进版。
+保留学校模板、logo、已有数据和引用，优化叙事、排版和讲稿，不要覆盖原文件，
+并提供修改摘要。
+```
+
+插件会先诊断，再要求确认编辑目标，最终生成独立 PPTX 和 change summary。
+
+## 输出文件
+
+根据任务不同，`outputs/` 中可能包含：
+
+```text
+<topic>-outline.md
+<topic>-presentation.pptx
+<topic>-speaker-notes.md
+<topic>-preview.png
+<topic>-change-summary.md
+<topic>-presentation.pdf
+<topic>-teleprompter.html
+<topic>-training-cards.md
+<topic>-quality-report.json
+<topic>-revision-manifest.json
+```
+
+最终回复会说明文件绝对路径、页数、渲染检查结果，以及任务状态：
+`complete`、`incomplete` 或 `blocked`。
+
+## 更新与卸载
+
+更新仓库和插件：
 
 ```powershell
-$env:PYTHONPATH=(Resolve-Path "plugins/student-presentation-suite").Path
-python -m unittest discover -s plugins/student-presentation-suite/tests
-python plugins/student-presentation-suite/scripts/smoke_pptx.py
-python plugins/student-presentation-suite/scripts/check_plugin_release.py --json
-python scripts/check_marketplace_release.py --json
-python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json --strict
-claude plugin validate --strict .\plugins\student-presentation-suite
-claude plugin validate --strict .
-git diff --check
+Set-Location "$env:USERPROFILE\.agents\claude-plugins"
+git pull --ff-only origin claude-code
+claude plugin update -s user student-presentation-suite@claude-personal
 ```
 
-CI 会在 Windows 和 Linux 上运行可移植测试、发布检查，并执行严格 Claude
-manifest 验证。
+卸载插件：
 
-## 发布约束
+```powershell
+claude plugin uninstall student-presentation-suite@claude-personal
+claude plugin marketplace remove claude-personal
+```
 
-- Claude 专用改动只能提交和推送到 `claude-code`。
-- `main` 保留为独立的 Codex 实现路线。
-- `claude-code` 是受保护分支，必须通过 PR 并等待全部 required checks 通过。
-- Marketplace、插件 manifest、`package.json` 与 lockfile 版本必须一致。
-- 发布级改动必须同步更新中英文 README 和 `CHANGELOG.md`。
-- 完整贡献和发布约束见 [AGENTS.md](AGENTS.md)。
+## 常见问题
+
+### 插件没有触发
+
+确认请求同时包含“学生/课程/答辩”等学术场景和明确的 PPT 意图。也可以在请求
+中直接写明希望使用 `student-presentation`、`student-presentation-ppt` 或
+`student-presentation-review`。
+
+### 环境检查失败
+
+运行：
+
+```powershell
+python .\plugins\student-presentation-suite\scripts\check_claude_pptx_env.py --json --strict
+python .\scripts\check_installed_version.py --json
+```
+
+根据输出安装缺失的 Python、Node.js、LibreOffice、Poppler 或
+`document-skills` 依赖，不要跳过严格检查。
+
+### 生成文件在哪里
+
+默认在启动 Claude Code 时所在项目的 `outputs/`。如果设置了
+`CLAUDE_PROJECT_DIR`，则位于 `${CLAUDE_PROJECT_DIR}/outputs`。
+
+### Codex 能否使用本分支
+
+不能。本分支只适配 Claude Code。Codex 版本请使用
+[`main` 分支](https://github.com/YFan945/student-presentation-suite/tree/main)。
+
+## 开发与发布
+
+本分支的源码、验证和发布约束见 [AGENTS.md](AGENTS.md) 和
+[CHANGELOG.md](CHANGELOG.md)。Claude Code 版本只发布到 `claude-code`，
+不得发布到 `main`。
 
 ## License
 
-MIT。见 [LICENSE](LICENSE)。
+MIT，见 [LICENSE](LICENSE)。

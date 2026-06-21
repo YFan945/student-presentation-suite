@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/student-presentation-suite/presentation-brief.schema.json",
+  "title": "Student Presentation Brief",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "brief_version",
+    "topic",
+    "scenario",
+    "audience",
+    "language",
+    "duration_min",
+    "structure_mode",
+    "interaction_mode",
+    "quality_level",
+    "controls",
+    "deliverables"
+  ],
+  "properties": {
+    "brief_version": { "const": "1.0" },
+    "topic": { "type": "string", "minLength": 1 },
+    "course": { "type": "string" },
+    "scenario": {
+      "enum": ["coursework", "defense", "competition", "club-showcase", "research"]
+    },
+    "audience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "depth"],
+      "properties": {
+        "type": {
+          "enum": ["teacher", "classmates", "judges", "non-specialists", "mixed"]
+        },
+        "depth": { "enum": ["introductory", "standard", "expert"] },
+        "knowledge_notes": { "type": "string" }
+      }
+    },
+    "language": { "enum": ["Chinese", "English", "bilingual"] },
+    "duration_min": { "type": "number", "exclusiveMinimum": 0 },
+    "slide_count": { "type": "integer", "minimum": 1 },
+    "format": { "enum": ["individual", "group"] },
+    "members": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "structure_mode": {
+      "enum": ["problem-solution", "research", "timeline", "comparison", "case-study", "product"]
+    },
+    "interaction_mode": { "enum": ["beginner", "expert"] },
+    "quality_level": { "enum": ["basic", "high-score"] },
+    "rubric": { "type": "string" },
+    "source_material": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      ]
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_words_per_slide",
+        "max_chinese_chars_per_slide",
+        "visual_text_ratio",
+        "speaker_notes",
+        "key_lines",
+        "citations",
+        "versioning"
+      ],
+      "properties": {
+        "max_words_per_slide": { "type": "integer", "minimum": 10, "maximum": 120 },
+        "max_chinese_chars_per_slide": { "type": "integer", "minimum": 20, "maximum": 240 },
+        "visual_text_ratio": { "enum": ["text-led", "balanced", "visual-led"] },
+        "speaker_notes": { "type": "boolean" },
+        "key_lines": { "type": "boolean" },
+        "citations": { "enum": ["none", "classroom", "GB-T-7714", "APA"] },
+        "versioning": { "type": "boolean" }
+      }
+    },
+    "template": { "type": "string" },
+    "visual_style": { "type": "string", "minLength": 1 },
+    "image_source": {
+      "enum": [
+        "user-assets",
+        "web-search",
+        "generated",
+        "diagram-only",
+        "text-only",
+        "ask-before-web-search"
+      ]
+    },
+    "deliverables": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["outline", "slide-spec", "pptx", "pdf", "speaker-notes", "preview", "teleprompter", "change-summary", "quality-report", "revision-manifest"]
+      }
+    },
+    "output_prefix": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
+    }
+  }
+}

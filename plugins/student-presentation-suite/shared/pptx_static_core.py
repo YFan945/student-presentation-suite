@@ -29,6 +29,21 @@ PRIMARY_TITLE_PLACEHOLDER_TYPES = {"title", "ctrTitle"}
 BODY_PLACEHOLDER_TYPES = {"body", "dt", "ftr", "sldNum"}
 HEADING_NAME_HINTS = ("title", "subtitle", "heading", "header", "标题", "副标题")
 DEFAULT_MAX_PPTX_BYTES = 80 * 1024 * 1024
+DEFAULT_SLIDE_WIDTH_EMU = 12_192_000
+DEFAULT_SLIDE_HEIGHT_EMU = 6_858_000
+EDGE_MARGIN_EMU = 72_000
+PORTABLE_FONT_FAMILIES = {
+    "arial",
+    "calibri",
+    "aptos",
+    "times new roman",
+    "microsoft yahei",
+    "微软雅黑",
+    "simsun",
+    "宋体",
+    "noto sans cjk sc",
+    "noto serif cjk sc",
+}
 
 
 def text_of(el: ET.Element) -> str:
@@ -233,6 +248,16 @@ def fill_colors(el: ET.Element) -> list[str]:
     return colors
 
 
+def font_families(el: ET.Element) -> list[str]:
+    names = []
+    for tag in ("latin", "ea", "cs"):
+        for node in el.findall(f".//a:{tag}", NS):
+            typeface = node.attrib.get("typeface")
+            if typeface and not typeface.startswith("+") and typeface not in names:
+                names.append(typeface)
+    return names
+
+
 def has_cjk(text: str) -> bool:
     for ch in text:
         cp = ord(ch)
@@ -261,8 +286,21 @@ def iter_text_containers(root: ET.Element) -> list[tuple[str, ET.Element]]:
     return containers
 
 
+def slide_size(zf: zipfile.ZipFile) -> tuple[int, int]:
+    root = read_xml(zf, "ppt/presentation.xml")
+    if root is not None:
+        size = root.find("./p:sldSz", NS)
+        if size is not None:
+            try:
+                return int(size.attrib["cx"]), int(size.attrib["cy"])
+            except (KeyError, ValueError):
+                pass
+    return DEFAULT_SLIDE_WIDTH_EMU, DEFAULT_SLIDE_HEIGHT_EMU
+
+
 def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
     findings = []
+    detected_fonts: set[str] = set()
     try:
         size = path.stat().st_size
         if size > max_bytes:
@@ -273,6 +311,7 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
                 "findings": [],
             }
         with zipfile.ZipFile(path) as zf:
+            slide_width, slide_height = slide_size(zf)
             slide_names = sorted(
                 [n for n in zf.namelist() if n.startswith("ppt/slides/slide") and n.endswith(".xml")],
                 key=slide_number,
@@ -286,6 +325,7 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
                 if layout_cache_key not in layout_cache:
                     layout_cache[layout_cache_key] = inherited_font_context_for_layout(zf, layout_name)
                 inherited_context = layout_cache[layout_cache_key]
+                bounded_items: list[tuple[int, dict[str, int]]] = []
                 for idx, (container_type, container) in enumerate(iter_text_containers(root), start=1):
                     txt = text_of(container)
                     if not txt:
@@ -312,17 +352,36 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
                     if primary_title and min_size is not None and min_size < 24:
                         risk.append("heading-font-size-below-24pt")
                     if bounds:
+                        bounded_items.append((idx, bounds))
                         width_cm = max(bounds["cx"] / EMU_PER_CM, 0.1)
                         if chars / width_cm > TEXT_CHARS_PER_CM_LIMIT:
                             risk.append("high-text-density-overflow-risk")
                         if bounds["cx"] < SMALL_TEXT_BOX_WIDTH_EMU or bounds["cy"] < SMALL_TEXT_BOX_HEIGHT_EMU:
                             risk.append("small-text-box-risk")
+                        if (
+                            bounds["x"] < 0
+                            or bounds["y"] < 0
+                            or bounds["x"] + bounds["cx"] > slide_width
+                            or bounds["y"] + bounds["cy"] > slide_height
+                        ):
+                            risk.append("shape-outside-slide")
+                        elif (
+                            bounds["x"] < EDGE_MARGIN_EMU
+                            or bounds["y"] < EDGE_MARGIN_EMU
+                            or slide_width - (bounds["x"] + bounds["cx"]) < EDGE_MARGIN_EMU
+                            or slide_height - (bounds["y"] + bounds["cy"]) < EDGE_MARGIN_EMU
+                        ):
+                            risk.append("edge-margin-risk")
                     paragraph_limit = CHINESE_PARAGRAPH_LIMIT if is_cjk else LATIN_PARAGRAPH_LIMIT
                     if chars > paragraph_limit:
                         risk.append("paragraph-heavy-slide-text")
                     colors = fill_colors(container)
+                    faces = font_families(container)
+                    detected_fonts.update(faces)
                     if len(set(colors)) >= 6:
                         risk.append("many-colors-in-shape")
+                    if any(face.casefold() not in PORTABLE_FONT_FAMILIES for face in faces):
+                        risk.append("font-compatibility-review-required")
                     if risk:
                         findings.append(
                             {
@@ -340,6 +399,43 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
                                 "risk": risk,
                             }
                         )
+                if bounded_items:
+                    total_area = sum(
+                        min(item["cx"], slide_width) * min(item["cy"], slide_height)
+                        for _, item in bounded_items
+                    )
+                    slide_area = slide_width * slide_height
+                    x_axes = {
+                        round(item["x"] / EMU_PER_CM, 1)
+                        for _, item in bounded_items
+                    }
+                    slide_risks = []
+                    if total_area / max(slide_area, 1) > 0.92:
+                        slide_risks.append("low-whitespace-risk")
+                    if len(bounded_items) >= 7 and len(x_axes) >= 6:
+                        slide_risks.append("alignment-axis-complexity")
+                    if slide_risks:
+                        findings.append(
+                            {
+                                "slide": slide_id,
+                                "shape": 0,
+                                "container_type": "slide",
+                                "text_preview": "slide-level geometry",
+                                "min_font_pt": None,
+                                "font_size_source": "n/a",
+                                "char_count": 0,
+                                "detected_cjk": False,
+                                "heading_shape": False,
+                                "primary_title_shape": False,
+                                "bounds": {
+                                    "x": 0,
+                                    "y": 0,
+                                    "cx": slide_width,
+                                    "cy": slide_height,
+                                },
+                                "risk": slide_risks,
+                            }
+                        )
     except (FileNotFoundError, PermissionError, OSError, zipfile.BadZipFile, KeyError, ET.ParseError) as exc:
         return {
             "file": str(path),
@@ -353,5 +449,6 @@ def inspect_pptx(path: Path, max_bytes: int = DEFAULT_MAX_PPTX_BYTES) -> dict:
             "Static XML risk scan only; status remains incomplete until rendered previews are inspected. "
             "Common layout/master inherited font sizes are resolved, but PowerPoint rendering may still differ."
         ),
+        "font_families": sorted(detected_fonts),
         "findings": findings,
     }

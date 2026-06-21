@@ -4,6 +4,35 @@
 `student-presentation-suite` 插件版本。版本按时间倒序排列；`main` 分支的
 Codex 发行记录不在此维护。
 
+## 0.4.0 — 2026-06-21
+
+### 版本概述
+
+本版本将插件从“生成与审查工作流”扩展为可控的学生演示生产系统，并强化
+Claude Code 安装版本一致性。新增 Presentation Brief、Slide Spec v2、
+Evidence Ledger、分层内容、结构与质量分析、页面锁定、revision manifest、
+训练卡、提词版及扩展交付检查。
+
+### 重大功能
+
+- 自动分类课程汇报、答辩、竞赛、社团展示和研究展示，并按受众深度选择表达。
+- 支持问题解决、研究、时间线、对比、案例和产品六种叙事结构。
+- 固定目录→逐页主张→PPT 文案→演讲版→Slide Spec 的分层生成流程。
+- 新增每页字数、图文比、讲稿、金句、引用、导出和版本控制字段。
+- 新增 Evidence Ledger、来源可信度和证据引用完整性检查。
+- 新增重复页、逻辑倒退、开头/结尾、密度、AI 套话和证据缺口分析。
+- 新增局部修改、锁定页面保护、版本差异和 revision manifest。
+- 新增逐页五维评分、训练卡、老师/评委追问和 HTML 提词版。
+- 扩展静态 PPTX 几何风险检查与可选 PDF/提词版/质量报告交付门禁。
+
+### Claude Code 与发布
+
+- 新增源码与 `claude plugin list/details` 版本一致性检查。
+- 新增插件级 `PreToolUse` hook 和持久化工作流状态，确认前确定性阻断生产脚本。
+- 安装脚本在完成 update 后强制验证实际加载版本。
+- 修复 README 中合法旧安装 ID 迁移说明被测试误判的问题。
+- Marketplace、manifest、package 和 lockfile 同步升级到 `0.4.0`。
+
 ## 0.3.0 — 2026-06-20
 
 | 字段 | 内容 |

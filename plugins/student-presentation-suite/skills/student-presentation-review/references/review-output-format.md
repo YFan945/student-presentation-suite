@@ -15,6 +15,12 @@ Use this structure by default. Omit sections that do not apply. Keep the review 
 
 ## Speaking And Notes
 
+## Evidence And Citations
+
+## Rehearsal And Timing
+
+## Per-Slide Scores
+
 ## Group Handoffs
 
 ## Quick Fix Priority
@@ -24,6 +30,18 @@ Use this structure by default. Omit sections that do not apply. Keep the review 
 ## Change Summary Handoff
 
 ## Before/After Diff
+```
+
+When requested, add a Training Card for each slide:
+
+```markdown
+### Slide N Training Card
+- Speaking goal:
+- Keywords:
+- Planned seconds:
+- Likely question:
+- Answer points:
+- Avoid overstating:
 ```
 
 For each issue, include:

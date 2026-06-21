@@ -124,5 +124,6 @@ if ($enableExitCode -ne 0 -and $enableOutput -notmatch "already enabled") {
 Invoke-Checked python @((Join-Path $pluginRoot "scripts\check_claude_pptx_env.py"), "--json", "--strict")
 Invoke-Checked claude @("plugin", "details", $PluginId)
 Invoke-Checked claude @("plugin", "list")
+Invoke-Checked python @((Join-Path $InstallRoot "scripts\check_installed_version.py"), "--json")
 
 Write-Output "Installed $PluginId from $InstallRoot ($Branch). Restart Claude Code to load updates."

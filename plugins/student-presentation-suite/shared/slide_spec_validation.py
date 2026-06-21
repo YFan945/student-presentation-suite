@@ -80,6 +80,77 @@ def semantic_errors(data: Any) -> list[dict[str, str]]:
                         }
                     )
 
+    if meta.get("quality_level") == "high-score":
+        required_controls = (
+            "scenario",
+            "audience_type",
+            "audience_depth",
+            "structure_mode",
+        )
+        for field in required_controls:
+            if not meta.get(field):
+                errors.append(
+                    {
+                        "path": f".meta.{field}",
+                        "message": f"high-score mode requires {field}",
+                    }
+                )
+
+    revision_operation = data.get("revision_operation")
+    if revision_operation in {"rewrite-slide", "compress", "expand", "add-evidence"}:
+        targets = data.get("target_slides")
+        if not isinstance(targets, list) or not targets:
+            errors.append(
+                {
+                    "path": ".target_slides",
+                    "message": f"{revision_operation} requires at least one target slide",
+                }
+            )
+    if revision_operation == "rewrite-section" and not data.get("target_section"):
+        errors.append(
+            {
+                "path": ".target_section",
+                "message": "rewrite-section requires target_section",
+            }
+        )
+
+    evidence = data.get("evidence_ledger")
+    if isinstance(evidence, list):
+        evidence_ids = [
+            item.get("id")
+            for item in evidence
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        ]
+        duplicates = sorted({item for item in evidence_ids if evidence_ids.count(item) > 1})
+        if duplicates:
+            errors.append(
+                {
+                    "path": ".evidence_ledger",
+                    "message": "evidence ids must be unique: " + ", ".join(duplicates),
+                }
+            )
+        known = set(evidence_ids)
+        for index, slide in enumerate(slides):
+            if not isinstance(slide, dict):
+                continue
+            refs = slide.get("evidence_refs")
+            if isinstance(refs, list):
+                unknown = sorted({str(ref) for ref in refs if ref not in known})
+                if unknown:
+                    errors.append(
+                        {
+                            "path": f".slides.{index}.evidence_refs",
+                            "message": "unknown evidence refs: " + ", ".join(unknown),
+                        }
+                    )
+            if slide.get("lock_reason") and not slide.get("locked"):
+                errors.append(
+                    {
+                        "path": f".slides.{index}.lock_reason",
+                        "message": "lock_reason requires locked=true",
+                    }
+                )
+
     improvement_fields = (
         "edit_intent",
         "review_findings",

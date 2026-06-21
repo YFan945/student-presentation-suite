@@ -43,6 +43,10 @@ Canonical ownership:
 - `references/presentation-intake.md`: clarification gate and workflow states.
 - `references/shared-standards.md`: routing and presentation quality standards.
 - `references/slide-spec.md` plus schema: structured planning and review-to-edit handoff.
+- `references/presentation-brief.md` plus schema: scenario, audience, structure, interaction, and generation controls.
+- `references/content-workflow.md`: layered content generation and narrative checks.
+- `references/evidence-and-citations.md`: source ledger and citation policy.
+- `references/revision-training-export.md`: locking, revisions, rehearsal, scoring, and export boundaries.
 - `references/image-strategy.md`: image sourcing and visual policy.
 - PPTX skill references: production mechanics and visual style controls.
 
@@ -106,6 +110,7 @@ python plugins/student-presentation-suite/scripts/smoke_pptx.py
 python plugins/student-presentation-suite/scripts/check_plugin_release.py --json
 python scripts/check_marketplace_release.py --json
 python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json --strict
+python scripts/check_installed_version.py --source-only --json
 claude plugin validate --strict .\plugins\student-presentation-suite
 claude plugin validate --strict .
 git diff --check

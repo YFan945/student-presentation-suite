@@ -1,158 +1,300 @@
-# Student Presentation Suite — Claude Code Marketplace
+# Student Presentation Suite for Claude Code
 
 [中文](README-zh.md) | English
 
-This repository is the Claude Code-only distribution of
-`student-presentation-suite`, published from the
-[`claude-code`](https://github.com/YFan945/student-presentation-suite/tree/claude-code)
-branch. It provides structured university presentation planning, editable PPTX
-production, and existing-deck review.
+> This branch is built specifically for **Claude Code**. Its installation,
+> dependencies, and runtime behavior are not intended for Codex. If you use
+> **OpenAI Codex**, see the
+> [`main` branch](https://github.com/YFan945/student-presentation-suite/tree/main)
+> instead.
 
-The marketplace name is `claude-personal`; the plugin ID is
-`student-presentation-suite@claude-personal`.
+`student-presentation-suite` supports student-owned university presentations,
+including coursework reports, thesis defenses, and group presentations. In
+Claude Code it can plan an outline and speaker notes, create an editable PPTX,
+review an existing deck, or produce a separate improved version.
 
-## What It Provides
+Plugin install ID:
 
-- A complete requirement intake before PPTX creation or editing.
-- Student-context routing across outline, production, and review workflows.
-- Editable PPTX generation through `document-skills@anthropic-agent-skills`.
-- Slide Spec YAML for structured planning and review-to-edit handoff.
-- Fourteen selectively loaded visual style specifications.
-- Speaker notes, preview/contact-sheet, and change-summary contracts.
-- Static checks, rendered visual QA, delivery gates, and environment diagnosis.
-- Chinese, English, individual, group, coursework, report, and defense support.
-
-## Skills And Workflow
-
-| Skill | Use it for | Boundary |
-| --- | --- | --- |
-| `student-presentation` | Slide outline, speaking plan, group allocation, optional Slide Spec | Never creates PPTX files |
-| `student-presentation-ppt` | New editable PPTX or an improved copy of an existing deck | Requires confirmed full intake |
-| `student-presentation-review` | Review, audit, scoring, risks, and concrete fixes | Read-only unless editing is explicitly requested |
-
-```mermaid
-flowchart LR
-  P["student-presentation<br/>outline"] -->|"optional Slide Spec"| G["student-presentation-ppt<br/>editable production"]
-  R["student-presentation-review<br/>diagnosis"] -->|"structured edit handoff"| G
-  G --> I["intake_pending"]
-  I --> C["intake_confirmed"]
-  C --> L["planned"]
-  L --> B["producing"]
-  B --> Q["qa"]
-  Q --> D["complete / incomplete / blocked"]
+```text
+student-presentation-suite@claude-personal
 ```
 
-For PPTX work, the plugin reuses information already supplied, asks only for
-missing requirements, recommends a value for each missing item, and explains
-its impact. Even when the user says “you decide”, the plugin must show a
-complete Production Summary and receive confirmation before running production
-or environment commands.
+## Features
+
+| Request | Skill | Result |
+| --- | --- | --- |
+| Outline, slide content, notes, or group allocation | `student-presentation` | Markdown planning documents; no PPTX |
+| Create, rebuild, or edit an editable PPT/PPTX | `student-presentation-ppt` | PPTX, speaker notes, and preview |
+| Review, score, or diagnose an existing deck | `student-presentation-review` | Read-only review by default |
+
+PPTX creation and editing depend on
+`document-skills@anthropic-agent-skills`, which the installer also installs.
+
+## Structured Workflow And Controls
+
+Version 0.4 adds a confirmed Presentation Brief before Slide Spec/PPTX work:
+
+- automatic classification for coursework, defense, competition, club showcase, and research;
+- audience type and explanation depth;
+- problem-solution, research, timeline, comparison, case-study, and product structures;
+- beginner/expert interaction and basic/high-score quality modes;
+- per-slide text limits, visual/text ratio, notes, key lines, citation style, exports, and versioning;
+- layered generation: directory → slide claims → PPT copy → speaker version → Slide Spec;
+- Evidence Ledger, deterministic quality report, locked slides, revision manifests, training cards, and rehearsal support.
+
+Local exports can include PPTX, PDF, previews, Markdown notes, HTML teleprompter,
+quality report, references, and revision manifest. Web editing and cloud
+synchronization require an external service and are not claimed by this plugin.
 
 ## Requirements
 
-- Claude Code CLI
+Install these tools first:
+
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - Git
 - Python 3.10+
 - Node.js and npm
-- `document-skills@anthropic-agent-skills`
-- Python and Node dependencies declared by the plugin
-- LibreOffice and Poppler for strict rendered QA
+- LibreOffice and Poppler for complete rendered QA
 
-The installation script handles marketplace registration, plugin migration,
-Python/Node dependencies, and the upstream `document-skills` dependency.
-
-## Install Or Migrate
-
-Clone this repository on the `claude-code` branch, then run:
+Check the basic commands:
 
 ```powershell
+claude --version
+git --version
+python --version
+node --version
+npm --version
+```
+
+## Download And Install
+
+### Recommended Windows Installation
+
+Run in PowerShell:
+
+```powershell
+git clone --branch claude-code --single-branch `
+  https://github.com/YFan945/student-presentation-suite.git `
+  "$env:USERPROFILE\.agents\claude-plugins"
+
+Set-Location "$env:USERPROFILE\.agents\claude-plugins"
 Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\install_claude_plugin.ps1 -Migrate
 ```
 
-The script:
+`-Migrate` removes the obsolete `student-presentation-suite@personal`
+registration and cache, then:
 
-- leaves the Codex workspace untouched;
-- removes the obsolete Claude `personal` registration and its plugin cache;
-- installs Python and Node dependencies;
-- registers this checkout as `claude-personal`;
-- installs `document-skills@anthropic-agent-skills`;
-- installs, enables, and validates the student presentation plugin.
+1. installs the Python and Node.js dependencies;
+2. registers the local `claude-personal` marketplace;
+3. installs `document-skills@anthropic-agent-skills`;
+4. installs and enables `student-presentation-suite@claude-personal`;
+5. runs the strict environment check and displays plugin status.
 
 Restart Claude Code after installation.
 
-### Useful Installer Options
+### Existing Checkout
 
 ```powershell
-# Re-register an existing checkout without reinstalling dependencies
-.\scripts\install_claude_plugin.ps1 -SkipDependencies -SkipMarketplaceClone
-
-# Install into another marketplace checkout
-.\scripts\install_claude_plugin.ps1 -InstallRoot D:\claude-plugins
-```
-
-## Manual Development Setup
-
-```powershell
-git clone --branch claude-code --single-branch `
-  git@github.com:YFan945/student-presentation-suite.git `
-  "$env:USERPROFILE\.agents\claude-plugins"
 Set-Location "$env:USERPROFILE\.agents\claude-plugins"
-python -m pip install -r plugins/student-presentation-suite/requirements.txt
-python -m pip install -r plugins/student-presentation-suite/requirements-claude-pptx.txt
-npm --prefix plugins/student-presentation-suite ci
-claude plugin marketplace add --scope user "$env:USERPROFILE\.agents\claude-plugins"
-claude plugin install -s user document-skills@anthropic-agent-skills
-claude plugin install -s user student-presentation-suite@claude-personal
+git switch claude-code
+git pull --ff-only origin claude-code
+.\scripts\install_claude_plugin.ps1
 ```
 
-## Repository Layout
+To re-register the plugin without reinstalling dependencies:
+
+```powershell
+.\scripts\install_claude_plugin.ps1 -SkipDependencies -SkipMarketplaceClone
+```
+
+## Verify The Installation
+
+```powershell
+claude plugin marketplace list
+claude plugin list
+claude plugin details student-presentation-suite@claude-personal
+python .\plugins\student-presentation-suite\scripts\check_claude_pptx_env.py --json --strict
+```
+
+The results should include:
+
+- marketplace: `claude-personal`
+- plugin: `student-presentation-suite@claude-personal`
+- upstream dependency: `document-skills@anthropic-agent-skills`
+
+If Claude Code does not discover the plugin immediately after installation or
+update, exit Claude Code completely and start it again.
+
+## Usage
+
+Open Claude Code from your coursework project:
+
+```powershell
+Set-Location D:\my-course-project
+claude
+```
+
+Describe the task in natural language. The plugin is intentionally limited to
+clear student academic presentation contexts; generic business or marketing
+decks do not route into these skills.
+
+Before creating or editing a PPTX, Claude prepares a complete
+`Production Summary` covering the topic, course, audience, language, duration,
+slide count, rubric, sources, visual style, and deliverables. Production starts
+only after you confirm it.
+
+A plugin `PreToolUse` hook enforces this boundary for suite production
+commands. The approved summary hash and workflow state are stored in the
+project output directory, so the gate does not rely only on model compliance.
+
+Deliverables are written to the active project's `outputs/` directory, never
+to the plugin installation. Existing source decks are never overwritten.
+
+## Examples
+
+### 1. Outline And Speaker Notes Only
 
 ```text
-.claude-plugin/marketplace.json
-.github/workflows/validate.yml
-plugins/student-presentation-suite/
-  .claude-plugin/plugin.json
-  skills/
-  references/
-  scripts/
-  shared/
-  tests/
-  examples/
-scripts/
-  install_claude_plugin.ps1
-  check_marketplace_release.py
+I am a software engineering student preparing a six-minute course report on
+"AI-assisted software testing." Design an eight-slide outline with speaker
+notes and timing for each slide. Do not create a PPTX.
 ```
 
-All generated user artifacts are written to the active project's `outputs/`
-directory. They are never written into the installed plugin.
+This produces an outline, slide-level notes, transitions, and optional Q&A.
 
-## Validation
+### 2. Create An Editable PPTX
+
+```text
+Create an editable PPTX for my university course.
+Topic: "Reflections on Learning Generative AI." Chinese, individual report,
+five minutes, eight slides, for my instructor and classmates. Use a clean,
+modern style and deliver the PPTX, slide-level notes, and a preview.
+```
+
+Claude fills any missing requirements, shows the complete
+`Production Summary`, and waits for confirmation before production.
+
+### 3. Group Course Presentation
+
+```text
+Our four-person team has a 12-minute database course presentation on
+"Consistency in Distributed Databases." Create a 12-slide English PPTX,
+assign slides and speaking time to each member, and include speaker notes and
+likely instructor questions.
+```
+
+The plugin handles ownership, handoffs, timing, and Q&A preparation.
+
+### 4. Thesis Defense
+
+```text
+Use the thesis, experiment results, and images in this project to create a
+15-slide Chinese PPTX for my undergraduate thesis defense. Keep it within ten
+minutes and emphasize the research question, method, results, contributions,
+and limitations. Use only my supplied evidence and do not invent data.
+```
+
+Place the thesis, data, images, and university template in the project before
+starting Claude Code.
+
+### 5. Review An Existing Deck Without Editing
+
+```text
+Review outputs\defense.pptx for structure, text density, font size, chart
+readability, timing, and defense risks. Report concrete fixes only; do not
+modify the source file.
+```
+
+The report identifies the target slide, issue, impact, severity, and fix.
+
+### 6. Review And Produce An Improved Copy
+
+```text
+Review outputs\course-report.pptx and then create an improved copy.
+Preserve the university template, logo, approved data, and citations. Improve
+the narrative, layout, and speaker notes, do not overwrite the original, and
+provide a change summary.
+```
+
+The plugin diagnoses the deck first, confirms the editing requirements, then
+creates a separate PPTX and change summary.
+
+## Output Files
+
+Depending on the request, `outputs/` may contain:
+
+```text
+<topic>-outline.md
+<topic>-presentation.pptx
+<topic>-speaker-notes.md
+<topic>-preview.png
+<topic>-change-summary.md
+<topic>-presentation.pdf
+<topic>-teleprompter.html
+<topic>-training-cards.md
+<topic>-quality-report.json
+<topic>-revision-manifest.json
+```
+
+The final response reports each absolute file path, slide count, rendered QA
+result, and the status: `complete`, `incomplete`, or `blocked`.
+
+## Update And Uninstall
+
+Update the repository and plugin:
 
 ```powershell
-$env:PYTHONPATH=(Resolve-Path "plugins/student-presentation-suite").Path
-python -m unittest discover -s plugins/student-presentation-suite/tests
-python plugins/student-presentation-suite/scripts/smoke_pptx.py
-python plugins/student-presentation-suite/scripts/check_plugin_release.py --json
-python scripts/check_marketplace_release.py --json
-python plugins/student-presentation-suite/scripts/check_claude_pptx_env.py --json --strict
-claude plugin validate --strict .\plugins\student-presentation-suite
-claude plugin validate --strict .
-git diff --check
+Set-Location "$env:USERPROFILE\.agents\claude-plugins"
+git pull --ff-only origin claude-code
+claude plugin update -s user student-presentation-suite@claude-personal
 ```
 
-CI runs the portable test and release checks on Windows and Linux and performs
-strict Claude manifest validation.
+Uninstall:
 
-## Release Policy
+```powershell
+claude plugin uninstall student-presentation-suite@claude-personal
+claude plugin marketplace remove claude-personal
+```
 
-- Claude-specific changes are committed and published only on `claude-code`.
-- `main` remains the independent Codex implementation line.
-- `claude-code` is protected; publish through a pull request with all required
-  checks passing.
-- Marketplace, plugin manifest, `package.json`, and lockfile versions must match.
-- Update both README languages and `CHANGELOG.md` for release-worthy changes.
-- See [AGENTS.md](AGENTS.md) for the complete contributor and release contract.
+## Troubleshooting
+
+### The Plugin Does Not Trigger
+
+Make the student academic context and presentation intent explicit. You can
+also name `student-presentation`, `student-presentation-ppt`, or
+`student-presentation-review` directly in the request.
+
+### The Environment Check Fails
+
+Run:
+
+```powershell
+python .\plugins\student-presentation-suite\scripts\check_claude_pptx_env.py --json --strict
+python .\scripts\check_installed_version.py --json
+```
+
+Install the exact missing Python, Node.js, LibreOffice, Poppler, or
+`document-skills` dependency reported by the check. Do not weaken the strict
+check.
+
+### Where Are Generated Files?
+
+They are under the project directory from which Claude Code was started:
+`outputs/`. If `CLAUDE_PROJECT_DIR` is set, the location is
+`${CLAUDE_PROJECT_DIR}/outputs`.
+
+### Can Codex Use This Branch?
+
+No. This branch supports Claude Code only. Use the
+[`main` branch](https://github.com/YFan945/student-presentation-suite/tree/main)
+for Codex.
+
+## Development And Releases
+
+See [AGENTS.md](AGENTS.md) and [CHANGELOG.md](CHANGELOG.md) for source
+validation and release rules. Claude Code changes are published only from
+`claude-code`, never from `main`.
 
 ## License
 

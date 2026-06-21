@@ -36,9 +36,11 @@ REQUIRED_FILES = [
     "skills/student-presentation-ppt/agents/openai.yaml",
     "skills/student-presentation-review/agents/openai.yaml",
     "scripts/validate_slide_spec.py",
+    "scripts/analyze_slide_spec.py",
     "tests/test_pptx_static_core.py",
     "tests/test_pptx_delivery_check.py",
     "tests/test_slide_spec_validation.py",
+    "tests/test_slide_spec_analysis.py",
     "tests/test_skill_behavior_contracts.py",
     "tests/fixtures/routing-cases.yaml",
     "examples/ai-learning-report.yaml",
@@ -141,9 +143,28 @@ def check_behavior(errors: list[str]) -> None:
         "review_findings",
         "preserve",
         "change_summary_required",
+        "scenario",
+        "audience",
+        "generation_controls",
+        "revision_contract",
+        "locked_fields",
+        "evidence",
     ):
         if expected not in schema or expected not in guide:
             errors.append(f"Slide Spec contract missing field: {expected}")
+
+    content_workflow = read(
+        "skills/student-presentation/references/content-workflow.md"
+    )
+    for expected in (
+        "## Layered Generation",
+        "## Scenario And Audience",
+        "## Argument Strengthening",
+        "## Controlled Revision",
+        "## Training Outputs",
+    ):
+        if expected not in content_workflow:
+            errors.append(f"Controlled content workflow missing section: {expected}")
 
     ppt_skill = read("skills/student-presentation-ppt/SKILL.md")
     for expected in (

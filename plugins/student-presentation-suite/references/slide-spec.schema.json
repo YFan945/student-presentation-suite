@@ -11,6 +11,37 @@
       "additionalProperties": false,
       "properties": {
         "presentation_type": { "type": "string", "minLength": 1 },
+        "scenario": {
+          "enum": [
+            "course-report",
+            "defense",
+            "competition",
+            "club-showcase",
+            "research-presentation"
+          ]
+        },
+        "audience": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["primary", "knowledge_level"],
+          "properties": {
+            "primary": {
+              "enum": ["teacher", "classmates", "judges", "non-specialists", "mixed"]
+            },
+            "knowledge_level": {
+              "enum": ["introductory", "intermediate", "advanced"]
+            },
+            "grading_focus": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "explanation_depth": {
+              "enum": ["plain-language", "balanced", "technical"]
+            }
+          }
+        },
+        "workflow_mode": { "enum": ["guided", "fast"] },
+        "quality_tier": { "enum": ["basic", "high-score"] },
         "language": { "enum": ["Chinese", "English", "bilingual"] },
         "duration_min": { "type": "number", "exclusiveMinimum": 0 },
         "slide_count": { "type": "integer", "minimum": 1 },
@@ -37,6 +68,37 @@
           "type": "string",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$"
         }
+      }
+    },
+    "generation_controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_words_per_slide": { "type": "integer", "minimum": 10, "maximum": 200 },
+        "visual_text_ratio": {
+          "enum": ["text-led", "balanced", "visual-led", "auto"]
+        },
+        "speaker_notes": { "type": "boolean" },
+        "memorable_lines": { "type": "boolean" },
+        "qa_cards": { "type": "boolean" },
+        "citation_style": {
+          "enum": ["none", "GB-T-7714", "APA", "MLA", "IEEE", "course-required"]
+        }
+      }
+    },
+    "revision_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "targets"],
+      "properties": {
+        "mode": { "enum": ["full", "partial"] },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "instruction": { "type": "string", "minLength": 1 },
+        "preserve_untargeted_slides": { "type": "boolean" }
       }
     },
     "source_deck": {
@@ -107,6 +169,43 @@
               { "type": "array" },
               { "type": "string", "minLength": 1 }
             ]
+          },
+          "ppt_text": { "type": "string", "minLength": 1 },
+          "speaker_notes": { "type": "string", "minLength": 1 },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type", "claim", "status"],
+              "properties": {
+                "type": {
+                  "enum": [
+                    "data",
+                    "citation",
+                    "case",
+                    "comparison",
+                    "experiment",
+                    "survey",
+                    "user-feedback",
+                    "project-artifact"
+                  ]
+                },
+                "claim": { "type": "string", "minLength": 1 },
+                "source": { "type": "string", "minLength": 1 },
+                "date": { "type": "string", "minLength": 1 },
+                "status": {
+                  "enum": ["verified", "user-provided", "to-verify", "illustrative"]
+                }
+              }
+            }
+          },
+          "locked_fields": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": ["title", "content", "ppt_text", "layout", "visual", "speaker_notes", "transition"]
+            }
           },
           "visual": {
             "type": "object",

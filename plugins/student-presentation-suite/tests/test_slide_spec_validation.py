@@ -78,6 +78,66 @@ class SlideSpecValidationTests(unittest.TestCase):
         self.assertTrue(any("Additional properties" in message for message in messages))
         self.assertTrue(any("does not match" in message for message in messages))
 
+    def test_accepts_controlled_generation_fields(self) -> None:
+        spec = deepcopy(VALID_GROUP)
+        spec["meta"].update(
+            {
+                "scenario": "course-report",
+                "audience": {
+                    "primary": "teacher",
+                    "knowledge_level": "intermediate",
+                    "grading_focus": ["evidence"],
+                    "explanation_depth": "balanced",
+                },
+                "workflow_mode": "guided",
+                "quality_tier": "high-score",
+            }
+        )
+        spec["generation_controls"] = {
+            "max_words_per_slide": 45,
+            "visual_text_ratio": "balanced",
+            "speaker_notes": True,
+            "memorable_lines": False,
+            "qa_cards": True,
+            "citation_style": "GB-T-7714",
+        }
+        spec["revision_contract"] = {
+            "mode": "partial",
+            "targets": [2],
+            "instruction": "Only strengthen evidence on slide 2.",
+            "preserve_untargeted_slides": True,
+        }
+        spec["slides"][1]["locked_fields"] = ["title", "layout"]
+        spec["slides"][1]["evidence"] = [
+            {
+                "type": "survey",
+                "claim": "Students use AI for early drafts",
+                "source": "Class survey",
+                "status": "user-provided",
+            }
+        ]
+        self.assertEqual([], validation_errors(spec))
+
+    def test_rejects_invalid_partial_revision_and_unverified_source_claim(self) -> None:
+        spec = deepcopy(VALID_GROUP)
+        spec["revision_contract"] = {
+            "mode": "partial",
+            "targets": [99],
+            "instruction": "Rewrite one slide.",
+            "preserve_untargeted_slides": False,
+        }
+        spec["slides"][0]["evidence"] = [
+            {
+                "type": "data",
+                "claim": "Result improved",
+                "status": "verified",
+            }
+        ]
+        messages = validation_errors(spec)
+        self.assertTrue(any("targets do not exist" in message for message in messages))
+        self.assertTrue(any("preserve_untargeted_slides=true" in message for message in messages))
+        self.assertTrue(any("verified evidence requires a source" in message for message in messages))
+
 
 if __name__ == "__main__":
     unittest.main()

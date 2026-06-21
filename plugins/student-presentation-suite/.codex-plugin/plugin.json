@@ -1,7 +1,7 @@
 {
   "name": "student-presentation-suite",
-  "version": "0.1.1+codex.20260620123028",
-  "description": "Codex-only suite for student academic PPT outlines, decision-gated editable PPTX production, and evidence-based review.",
+  "version": "0.1.1+codex.20260620155645",
+  "description": "Codex-only suite for controlled student academic PPT planning, editable PPTX production, evidence review, and rehearsal.",
   "author": {
     "name": "YFan945",
     "url": "https://github.com/YFan945"
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Student Presentation Suite",
     "shortDescription": "\u4e25\u683c\u9762\u5411\u5b66\u751f\u5b66\u672f PPT\uff1a\u5927\u7eb2\u89c4\u5212\u3001\u9009\u9879\u5f0f\u76ee\u6807\u786e\u8ba4\u3001PPTX \u5236\u4f5c\u4e0e deck \u5ba1\u67e5\u3002",
-    "longDescription": "Three Codex skills limited to student academic presentations: outline and Slide Spec planning, decision-gated editable PPTX creation or improvement, and evidence-based review. Includes speaker notes, visual presets, structured review-to-edit handoff, previews, and delivery QA.",
+    "longDescription": "Three Codex skills for student academic presentations: scenario and audience modeling, layered content generation, locked partial revisions, editable PPTX creation, evidence-aware review, page scorecards, rehearsal, previews, and delivery QA.",
     "developerName": "YFan945",
     "category": "Productivity",
     "brandColor": "#245C4F",
@@ -31,7 +31,9 @@
       "Decision-gated editable PPTX creation and improvement",
       "Speaker notes, visual presets, previews, and delivery QA",
       "Deck review, scoring, and AI-writing risk checks",
-      "Static PPTX inspection and review-to-edit change summaries"
+      "Static PPTX inspection and review-to-edit change summaries",
+      "Scenario and audience modeling with layered content generation",
+      "Locked partial revisions, evidence status, page scorecards, and rehearsal"
     ],
     "defaultPrompt": [
       "\u5e2e\u6211\u89c4\u5212\u4e00\u4e2a\u5927\u5b66\u8bfe\u7a0b\u6c47\u62a5\u7684 PPT \u5927\u7eb2\u548c\u9010\u9875\u8bb2\u7a3f\u3002",

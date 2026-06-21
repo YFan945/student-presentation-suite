@@ -25,7 +25,7 @@ Review and advice are the default. If the user explicitly requests file modifica
 4. For `.pptx`, run `python skills/student-presentation-review/scripts/pptx_static_check.py` from the plugin root. Treat XML findings as risk evidence, not rendering proof.
 5. Prefer rendered previews, PDFs, screenshots, or contact sheets for readability, clipping, crowding, and image judgments.
 6. Prioritize findings as Critical, Major, or Minor and provide slide-specific fixes.
-7. Include strengths, scoring, rubric alignment, notes/timing, group balance, and before/after comparison when applicable.
+7. Include strengths, deck scoring, page scorecards, rubric alignment, notes/timing, rehearsal risks, group balance, and before/after comparison when applicable.
 8. For authorized edits, separate diagnosis, preserve list, and edit plan, then hand off to `student-presentation-ppt`.
 
 ## Rules

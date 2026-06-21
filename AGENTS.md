@@ -2,19 +2,19 @@
 
 ## Repository Scope
 
-This repository is a Codex-only, explicitly registered marketplace. It publishes one plugin: `plugins/student-presentation-suite`.
+This repository tracks the `student-presentation-suite` marketplace. The `claude-code` branch carries the Claude Code-adapted plugin package; `main` keeps the repository packaging and documentation aligned. It publishes one plugin: `plugins/student-presentation-suite`.
 
 The plugin is strictly limited to student-owned academic PPT outlines, editable PPTX production/improvement, and review of existing student presentation artifacts.
 
 Do not add or advertise:
 
-- Claude Code `.claude-plugin` manifests;
+- On `main`, Claude Code `.claude-plugin` manifests;
 - `document-skills`, Claude environment checks, or Claude production bridges;
 - `pptxgenjs` or a second PPTX engine;
 - generic business, company, teacher-training, or professional presentation support;
 - standalone script/Q&A behavior as a plugin trigger.
 
-The independent Claude Code marketplace lives at sibling path `..\claude-plugins`.
+The Claude Code-adapted package is maintained on the `claude-code` branch.
 
 ## Source of Truth
 

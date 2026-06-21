@@ -20,9 +20,10 @@ Actual production requires Codex `Presentations`. Verify it before planning or b
 3. Load `../../references/shared-standards.md` plus only the needed references:
    - `references/visual-style-menu.md`; after selection, load only `references/visual-styles/<style>.md`
    - `../../references/slide-spec.md` when Slide Spec is supplied or useful
+   - `../student-presentation/references/content-workflow.md` for layered content, audience, evidence, locks, partial edits, and training outputs
    - `../../references/image-strategy.md` for source and fallback choices
 4. After the gate is resolved, create or absorb a compact slide plan/Slide Spec.
-5. For an existing deck, preserve the source, convert findings into an edit plan, write a separate improved PPTX, and create `outputs/<topic>-change-summary.md`. Treat `source_deck`, `edit_intent`, `review_findings`, `preserve`, and `change_summary_required` as authoritative.
+5. Preserve `locked_fields`; in partial mode, edit only `revision_contract.targets`. For an existing deck, preserve the source, convert findings into an edit plan, write a separate improved PPTX, and create `outputs/<topic>-change-summary.md`.
 6. Build through the standard `Presentations` workflow. Artifact-tool is internal; do not create a second PPTX engine. Use `imagegen` only when useful and permitted.
 7. Render every slide, inspect the preview/contact sheet, fix visible defects, and run `scripts/pptx_delivery_check.py --fail-on-blockers` for release-grade validation.
 

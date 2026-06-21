@@ -9,6 +9,8 @@ Use this structure by default. Omit sections that do not apply. Keep the review 
 
 ## Five-Dimension Score
 
+## Page Scorecard
+
 ## Critical Issues
 
 ## Slide-by-Slide Suggestions
@@ -32,6 +34,8 @@ For each issue, include:
 - problem
 - why it matters
 - concrete fix
+
+For `Page Scorecard`, rate each applicable slide from 1–5 on logic, content clarity, visual readability, speakability, and evidence. Add one main problem and one concrete fix. Use `n/a` for evidence on covers, dividers, Q&A, or other slides where evidence is not expected. Scores support diagnosis; they do not replace it.
 
 Example:
 

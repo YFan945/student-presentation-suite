@@ -1,4 +1,4 @@
-# Student Presentation Suite — Codex Marketplace
+# Student Presentation Suite — Academic PPT Plugin for Codex
 
 [![Validate](https://github.com/YFan945/student-presentation-suite/actions/workflows/validate.yml/badge.svg)](https://github.com/YFan945/student-presentation-suite/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -6,164 +6,168 @@
 
 [中文](README-zh.md) | English
 
-This repository is a Codex-only, explicitly registered local marketplace for `student-presentation-suite`. The plugin is strictly scoped to student-owned academic PPT work:
+> The `main` branch is built for **Codex**. If you use **Claude Code**, see the [`claude-code` branch](https://github.com/YFan945/student-presentation-suite/tree/claude-code) and do not follow the `main` installation steps.
 
-- planning a PPT outline or Slide Spec;
-- creating or improving an editable PPTX;
-- reviewing, scoring, or diagnosing an existing student deck.
+`student-presentation-suite` supports student-owned academic presentation work:
 
-It does not handle generic presentations, company decks, teacher training, standalone speeches/Q&A, or Claude Code production. The independent Claude Code package is maintained in the sibling repository directory `..\claude-plugins`.
+- planning course reports, defenses, competitions, or research presentation outlines;
+- creating, rebuilding, or explicitly editing editable PPTX files;
+- reviewing, scoring, and diagnosing existing student decks.
 
-## Plugin behavior
+It does not support company reports, sales decks, teacher training, generic professional presentations, standalone speeches/Q&A, or unexplained attachments. See the canonical [`references/suite-contract.md`](plugins/student-presentation-suite/references/suite-contract.md) for the full boundary.
 
-| User outcome | Skill | Deliverable |
-| --- | --- | --- |
-| Student PPT outline or Slide Spec | `student-presentation` | Outline plus optional supporting notes, transitions, Q&A, and group handoff |
-| Create, rebuild, or explicitly edit a student PPTX | `student-presentation-ppt` | Editable PPTX, speaker notes, preview/contact sheet, and QA |
-| Review or score an existing student deck/export | `student-presentation-review` | Prioritized findings, slide-level fixes, and optional scoring |
-| Review plus explicit file modification | review → PPT skill | Separate improved deck and change summary |
+## Download and install
 
-Speaker notes, scripts, Q&A, and handoffs are supporting outputs only. They do not independently trigger the plugin.
+### Option 1: clone with Git
 
-### Mandatory PPTX Decision Gate
-
-Before production, `student-presentation-ppt` reads the conversation, attachments, source deck, rubric, and Slide Spec. If a high-impact decision is missing, it must:
-
-1. ask only the 1–3 most important questions in the current round;
-2. provide 2–4 mutually exclusive, topic-specific options for each question;
-3. place the recommended option first and explain each tradeoff;
-4. wait for the user’s choices before creating a slide plan or PPTX.
-
-Defaults cannot bypass unresolved purpose, audience/grading emphasis, content scope, or other material decisions. If the user explicitly delegates the choices, the skill records its production assumptions before building.
-
-## Repository layout
-
-```text
-.
-├── .agents/plugins/marketplace.json
-├── .github/workflows/validate.yml
-├── plugins/
-│   └── student-presentation-suite/
-│       ├── .codex-plugin/plugin.json
-│       ├── assets/
-│       ├── examples/
-│       ├── references/
-│       ├── scripts/
-│       ├── shared/
-│       ├── skills/
-│       └── tests/
-├── scripts/check_marketplace_release.py
-├── AGENTS.md
-├── CHANGELOG.md
-└── Changelog-YYYY-MM-DD.md
-```
-
-Important ownership:
-
-- `.agents/plugins/marketplace.json`: repository marketplace registration.
-- `.codex-plugin/plugin.json`: plugin metadata, version, UI prompts, and capabilities.
-- `references/suite-contract.md`: canonical scope, routing, decision authority, and runtime boundary.
-- `references/shared-standards.md`: readability, density, language, anti-AI wording, and group standards.
-- `skills/*/SKILL.md`: concise skill entrypoints; detailed rules live in selectively loaded references.
-- `scripts/check_plugin_release.py`: package-level release contract.
-- `scripts/check_marketplace_release.py`: repository-level marketplace contract.
-
-## Requirements
-
-- Windows, macOS, or Linux with Python 3.11+.
-- Codex with the `Presentations` capability for actual PPTX production.
-- `imagegen` is optional and used only when generated imagery is useful and permitted.
-- Python dependencies from `plugins/student-presentation-suite/requirements.txt`.
-
-The plugin intentionally contains no `.claude-plugin`, `document-skills`, Claude environment checker, Claude production bridge, `pptxgenjs`, or alternate PPTX engine.
-
-## Installation
-
-This repository is not the default auto-discovered personal marketplace layout. Register the repository root explicitly:
+Run in PowerShell:
 
 ```powershell
-Set-Location "$env:USERPROFILE\.agents\plugins"
+git clone --branch main https://github.com/YFan945/student-presentation-suite.git
+Set-Location .\student-presentation-suite
+```
+
+If the directory already exists, use another empty directory name. Run the following commands from the downloaded repository root.
+
+### Option 2: download ZIP
+
+1. Open the [GitHub repository](https://github.com/YFan945/student-presentation-suite).
+2. Choose **Code → Download ZIP**.
+3. Extract it to a stable directory and open PowerShell in the repository root containing `.agents`, `plugins`, and `README.md`.
+
+### Register the marketplace and install
+
+This is not an auto-discovered Codex marketplace. Register the current repository root explicitly:
+
+```powershell
 codex plugin marketplace add (Get-Location).Path
-codex plugin add student-presentation-suite@personal
-```
 
-Read the marketplace name from the repository manifest when updating:
-
-```powershell
 python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\read_marketplace_name.py" `
   --marketplace-path .agents/plugins/marketplace.json
-```
 
-After changing plugin skills or metadata, update the cachebuster and reinstall:
-
-```powershell
-python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\update_plugin_cachebuster.py" `
-  .\plugins\student-presentation-suite
 codex plugin add student-presentation-suite@personal
+codex plugin list
 ```
 
-Start a new Codex thread after reinstalling so the updated skills are loaded.
+`codex plugin list` should show `student-presentation-suite@personal` as installed and enabled. Open a new Codex thread after installation so the three skills are loaded.
 
-## Development and validation
+Actual PPTX production also requires the Codex `Presentations` capability. `imagegen` is optional.
 
-Run from the repository root:
+## Usage
 
-```powershell
-python -m pip install -r plugins/student-presentation-suite/requirements.txt
-$env:PYTHONPATH=(Resolve-Path "plugins/student-presentation-suite").Path
+Describe the task naturally in a new Codex thread. Codex routes by requested outcome:
 
-python -m unittest discover -s plugins/student-presentation-suite/tests
-python plugins/student-presentation-suite/scripts/check_plugin_release.py
-python scripts/check_marketplace_release.py
+| Goal | Skill | Main result |
+| --- | --- | --- |
+| PPT outline or Slide Spec only | `student-presentation` | Slide-by-slide outline, optional notes, transitions, and Q&A |
+| Create, rebuild, or explicitly edit a PPTX | `student-presentation-ppt` | Editable PPTX, notes, preview, and QA |
+| Review, score, or compare an existing deck | `student-presentation-review` | Prioritized findings, slide-level fixes, and scoring |
+| Review, then explicitly modify the file | review → PPT skill | Separate improved PPTX and change summary |
 
-python "$env:USERPROFILE\.codex\skills\.system\skill-creator\scripts\quick_validate.py" `
-  .\plugins\student-presentation-suite\skills\student-presentation
-python "$env:USERPROFILE\.codex\skills\.system\skill-creator\scripts\quick_validate.py" `
-  .\plugins\student-presentation-suite\skills\student-presentation-ppt
-python "$env:USERPROFILE\.codex\skills\.system\skill-creator\scripts\quick_validate.py" `
-  .\plugins\student-presentation-suite\skills\student-presentation-review
-python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" `
-  .\plugins\student-presentation-suite
+For reliable results, provide the course or competition, topic, audience, rubric, duration or slide count, language, individual/group format, source material, desired style, and content that must be preserved.
 
-git diff --check
-```
+## Examples
 
-The release checker enforces:
-
-- a maximum of 65 lines for each `SKILL.md`;
-- valid Markdown reference paths;
-- consistent student-academic scope across manifest, README, agent metadata, and skills;
-- mandatory Decision Gate wording and behavior;
-- Codex-only runtime boundaries;
-- Slide Spec improvement fields and review-to-edit handoff.
-
-GitHub Actions runs the same core validation on every push and pull request.
-
-## Generated files
-
-PPTX production normally writes:
+### 1. Plan a course presentation
 
 ```text
+Plan a university software engineering presentation about AI-assisted software testing.
+It is for the instructor and classmates, in English, 8 minutes, and no more than 10 slides.
+Include each slide title, key point, suggested visual, and speaker notes.
+```
+
+### 2. Create an editable PPTX
+
+```text
+Create an editable PPTX for a university innovation-project defense.
+Use the attached project material. The defense is 6 minutes, and judges focus on novelty,
+implementation, and result validation. Include speaker notes and a preview.
+```
+
+If purpose, grading emphasis, content scope, style, or another high-impact choice remains unresolved, the PPT skill enforces a mandatory **Decision Gate**. It asks only 1–3 key questions per round, provides mutually exclusive options, and waits for your choice before creating a slide plan or PPTX. You may explicitly delegate with “use the recommended options.”
+
+### 3. Review an existing student deck
+
+```text
+Review my uploaded university course presentation.
+Check story logic, slide density, visual hierarchy, speaking difficulty, and AI-like wording.
+Prioritize findings as Critical, Major, or Minor and provide slide-level fixes and scores.
+```
+
+### 4. Review and edit the file
+
+```text
+Review this thesis-defense PPT and then edit the file based on the findings.
+Preserve the cover, university template, and the experiment data on slide 4.
+Do not overwrite the original. Return an improved PPTX and a change summary.
+```
+
+### Requests that do not trigger this plugin
+
+```text
+Create a quarterly company report deck.
+Write a three-minute speech.
+I uploaded a PPT.
+```
+
+These requests lack an eligible student academic PPT context, a clear outcome, or an explicit review/edit action.
+
+## Output files
+
+Depending on the task, files are normally written as:
+
+```text
+outputs/<topic>-outline.md
 outputs/<topic>-presentation.pptx
 outputs/<topic>-speaker-notes.md
 outputs/<topic>-preview.png
 outputs/<topic>-change-summary.md
 ```
 
-Generated PPTX/PNG files, caches, dependencies, and output contents are ignored. Keep only `outputs/.gitkeep`.
+The original deck is never overwritten.
+
+## Update
+
+From the repository root:
+
+```powershell
+git pull origin main
+
+python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\update_plugin_cachebuster.py" `
+  .\plugins\student-presentation-suite
+
+python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\read_marketplace_name.py" `
+  --marketplace-path .agents/plugins/marketplace.json
+
+codex plugin add student-presentation-suite@personal
+```
+
+Open a new Codex thread after reinstalling. Do not manually edit marketplace configuration.
 
 ## Troubleshooting
 
-- **`Presentations` unavailable:** restore the Codex presentations capability and retry in a new thread. The plugin must not substitute a Markdown outline for a requested PPTX.
-- **Updated skill is not visible:** update the cachebuster, reinstall `student-presentation-suite@personal`, and open a new thread.
-- **Marketplace name mismatch:** read `.agents/plugins/marketplace.json` with the command above; the current name is `personal`.
-- **CLI reports access denied:** close processes that may hold the plugin cache or Codex executable, restart Codex/PowerShell, and retry the install command.
-- **Release check fails:** use its exact file/path error as the source of truth; do not bypass the checker by removing required contracts.
+- **Plugin not found:** confirm PowerShell is at the repository root, then run `codex plugin marketplace add (Get-Location).Path`.
+- **Old behavior after reinstall:** update the cachebuster, reinstall, and open a new thread.
+- **PPTX cannot be generated:** confirm Codex `Presentations` is available. The plugin will not substitute a Markdown outline.
+- **`Access denied` or `os error 5`:** close processes holding the Codex plugin cache, restart Codex and PowerShell, and retry.
+- **Request does not trigger:** state the student academic context and specify outline, PPTX creation/editing, or deck review.
 
-## Release history
+## Development
 
-- Version-level notes: [CHANGELOG.md](CHANGELOG.md)
-- Daily engineering logs: `Changelog-YYYY-MM-DD.md`
+See [AGENTS.md](AGENTS.md). Main validation commands:
+
+```powershell
+python -m pip install -r plugins/student-presentation-suite/requirements.txt
+$env:PYTHONPATH=(Resolve-Path "plugins/student-presentation-suite").Path
+python -m unittest discover -s plugins/student-presentation-suite/tests
+python plugins/student-presentation-suite/scripts/check_plugin_release.py
+python scripts/check_marketplace_release.py
+python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" `
+  .\plugins\student-presentation-suite
+git diff --check
+```
+
+See [CHANGELOG.md](CHANGELOG.md) for version notes. Daily engineering logs use `Changelog-YYYY-MM-DD.md`.
 
 ## License
 

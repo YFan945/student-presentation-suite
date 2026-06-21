@@ -2,53 +2,57 @@
 
 [中文](README-zh.md) | English
 
-Codex-only plugin strictly scoped to student-owned academic PPT work. It does not handle generic, business, teacher-training, or standalone speech/Q&A requests.
+> This plugin package is built for **Codex**. Claude Code users should use the repository's [`claude-code` branch](https://github.com/YFan945/student-presentation-suite/tree/claude-code).
 
-## Routing
+The plugin is strictly scoped to student academic PPT work: planning outlines, creating or editing editable PPTX files, and reviewing existing student decks. Company reports, teacher training, generic professional presentations, and standalone speeches/Q&A are out of scope. See [`references/suite-contract.md`](references/suite-contract.md).
 
-| Request | Skill | Result |
+## Install
+
+Install from the repository root instead of copying this directory alone:
+
+```powershell
+git clone --branch main https://github.com/YFan945/student-presentation-suite.git
+Set-Location .\student-presentation-suite
+codex plugin marketplace add (Get-Location).Path
+codex plugin add student-presentation-suite@personal
+codex plugin list
+```
+
+Open a new Codex thread after installation. The manifest is [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json). PPTX production requires Codex `Presentations`; artifact-tool is an internal implementation detail.
+
+## Usage
+
+| Request | Skill | Output |
 | --- | --- | --- |
-| Student PPT outline or Slide Spec | `student-presentation` | Outline with optional supporting notes, transitions, Q&A, and handoff |
-| Create, rebuild, or explicitly edit a student PPTX | `student-presentation-ppt` | Editable PPTX, notes, preview, and QA |
-| Review or score an existing student deck/export | `student-presentation-review` | Evidence-based findings and concrete fixes |
-| Review plus explicit file modification | review → PPT skill | Separate improved deck and change summary |
+| Student PPT outline or Slide Spec | `student-presentation` | Slide-by-slide outline and optional notes, transitions, and Q&A |
+| Create, rebuild, or explicitly edit a PPTX | `student-presentation-ppt` | Editable PPTX, notes, preview, and QA |
+| Review, score, or compare an existing deck | `student-presentation-review` | Prioritized findings, slide-level fixes, and scoring |
+| Review, then explicitly modify the file | review → PPT skill | Separate improved PPTX and change summary |
 
-Speaker notes, scripts, Q&A, and handoffs are supporting outputs only; they do not independently trigger this plugin. The canonical boundary is `references/suite-contract.md`.
-
-## PPTX Decision Gate
-
-Before production, the PPT skill reads existing context and identifies unresolved high-impact decisions. It asks only 1–3 questions per round, provides 2–4 mutually exclusive topic-specific options with the recommended option first, explains the tradeoff, and waits for the user's choice.
-
-Production does not start while purpose, audience/grading emphasis, content scope, or another material decision remains unresolved. Defaults are allowed only for low-risk details or when the user explicitly delegates the decision.
-
-## Runtime and outputs
-
-- Manifest: `.codex-plugin/plugin.json`
-- PPTX production: Codex `Presentations`; artifact-tool is an internal implementation detail
-- Optional visuals: `imagegen`, only when useful and permitted
-- Structured handoff: Slide Spec
-- Original decks are never overwritten
-
-Expected production outputs:
+Describe the task in a new thread, for example:
 
 ```text
+Create an editable PPTX for a university innovation-project defense.
+Use the attached material. The defense is 6 minutes, and judges focus on novelty,
+implementation, and result validation. Include speaker notes and a preview.
+```
+
+```text
+Review my uploaded university course presentation.
+Prioritize findings as Critical, Major, or Minor and check story, density,
+visual hierarchy, speaking difficulty, and AI-like wording.
+```
+
+If purpose, grading emphasis, content scope, style, or another high-impact choice remains unresolved, the PPT skill enforces a mandatory **Decision Gate** and waits for answers to 1–3 key questions before production.
+
+## Output
+
+```text
+outputs/<topic>-outline.md
 outputs/<topic>-presentation.pptx
 outputs/<topic>-speaker-notes.md
 outputs/<topic>-preview.png
 outputs/<topic>-change-summary.md
 ```
 
-If `Presentations` is unavailable, the PPT skill stops and reports the prerequisite. It must not return a text outline as if a PPTX was generated.
-
-## Validation
-
-From this plugin directory:
-
-```powershell
-python -m pip install -r requirements.txt
-python -m unittest discover -s tests
-python scripts/check_plugin_release.py
-python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" .
-```
-
-This package intentionally contains no `.claude-plugin`, `document-skills`, Claude production bridge, or alternate PPTX engine.
+The original deck is never overwritten. See the repository-level [README.md](../../README.md) for full download, update, troubleshooting, and development instructions.

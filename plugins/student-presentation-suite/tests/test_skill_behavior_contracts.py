@@ -175,6 +175,41 @@ class SkillBehaviorContractTests(unittest.TestCase):
             self.assertIn(expected, schema)
             self.assertIn(expected, guide)
 
+    def test_slide_spec_supports_controlled_generation_and_evidence(self) -> None:
+        schema = self.read("references/slide-spec.schema.json")
+        guide = self.read("references/slide-spec.md")
+        for expected in (
+            "scenario",
+            "audience",
+            "workflow_mode",
+            "quality_tier",
+            "generation_controls",
+            "revision_contract",
+            "locked_fields",
+            "evidence",
+        ):
+            self.assertIn(expected, schema)
+            self.assertIn(expected, guide)
+
+    def test_layered_content_and_review_training_contracts(self) -> None:
+        content = self.read("skills/student-presentation/references/content-workflow.md")
+        review = self.read(
+            "skills/student-presentation-review/references/review-output-format.md"
+        )
+        checklist = self.read(
+            "skills/student-presentation-review/references/review-checklist.md"
+        )
+        for expected in (
+            "## Layered Generation",
+            "## Scenario And Audience",
+            "## Argument Strengthening",
+            "## Controlled Revision",
+            "## Training Outputs",
+        ):
+            self.assertIn(expected, content)
+        self.assertIn("## Page Scorecard", review)
+        self.assertIn("## Rehearsal Review", checklist)
+
     def test_manifest_and_readmes_match_decision_gated_scope(self) -> None:
         manifest = json.loads(self.read(".codex-plugin/plugin.json"))
         prompts = manifest["interface"]["defaultPrompt"]

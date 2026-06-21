@@ -2,53 +2,56 @@
 
 中文 | [English](README.md)
 
-仅适配 Codex、严格限定于学生学术 PPT。通用演示、商业汇报、教师培训、独立演讲稿或独立 Q&A 不属于插件范围。
+> 此插件包适配 **Codex**。Claude Code 用户请查看仓库的 [`claude-code` 分支](https://github.com/YFan945/student-presentation-suite/tree/claude-code)。
 
-## 路由
+该插件严格用于学生学术 PPT：规划大纲、创建或修改可编辑 PPTX，以及审查已有学生 deck。公司汇报、教师培训、通用职业演示和独立演讲稿/Q&A 不在范围内。规范边界见 [`references/suite-contract.md`](references/suite-contract.md)。
 
-| 用户目标 | Skill | 结果 |
+## 安装
+
+建议从仓库根目录安装，而不是单独复制本目录：
+
+```powershell
+git clone --branch main https://github.com/YFan945/student-presentation-suite.git
+Set-Location .\student-presentation-suite
+codex plugin marketplace add (Get-Location).Path
+codex plugin add student-presentation-suite@personal
+codex plugin list
+```
+
+安装后新建 Codex 线程。插件 Manifest 为 [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json)。制作 PPTX 需要 Codex `Presentations`；artifact-tool 仅是内部实现细节。
+
+## 使用方式
+
+| 请求 | Skill | 输出 |
 | --- | --- | --- |
-| 学生 PPT 大纲或 Slide Spec | `student-presentation` | 大纲及可选的配套讲稿、转场、Q&A 和交接 |
-| 创建、重建或明确修改学生 PPTX | `student-presentation-ppt` | 可编辑 PPTX、讲稿、预览和 QA |
-| 审查或评分已有学生 deck/export | `student-presentation-review` | 基于证据的问题与具体修改建议 |
-| 审查并明确要求修改文件 | review → PPT skill | 单独保存的改进版 deck 和变更摘要 |
+| 学生 PPT 大纲或 Slide Spec | `student-presentation` | 逐页大纲及可选讲稿、转场、Q&A |
+| 创建、重建或明确编辑 PPTX | `student-presentation-ppt` | 可编辑 PPTX、讲稿、预览和 QA |
+| 审查、评分或比较已有 PPT | `student-presentation-review` | 分级问题、逐页建议和评分 |
+| 审查后明确修改文件 | review → PPT skill | 独立改进版 PPTX 和变更摘要 |
 
-讲稿、Q&A 和小组衔接只能作为合格 PPT 任务的配套输出，不能单独触发插件。规范边界以 `references/suite-contract.md` 为准。
-
-## PPTX Decision Gate
-
-开始制作前，PPT skill 必须读取已有对话、附件和 Slide Spec，并识别尚未确定的高影响决策。每轮只问 1–3 个问题；每个问题提供 2–4 个结合主题的互斥选项，将推荐项放在最前，并说明选择影响，然后等待用户决定。
-
-当目标、受众或评分重点、内容范围等关键决策仍未解决时，不得开始制作。只有低风险细节或用户明确说“你决定”“按推荐方案”时才能采用默认值，并须先列出最终假设。
-
-## 运行时与输出
-
-- Manifest：`.codex-plugin/plugin.json`
-- PPTX 生产：Codex `Presentations`；artifact-tool 只是内部实现细节
-- 可选视觉：`imagegen`，只在有价值且获得允许时使用
-- 结构化交接：Slide Spec
-- 永不覆盖原始 deck
-
-PPTX 预期输出：
+直接在新线程中描述任务即可，例如：
 
 ```text
+帮我制作一个大学生创新项目答辩 PPTX。
+材料在附件中，答辩 6 分钟，评委重点关注创新性、实现过程和结果验证。
+请生成可编辑文件、逐页讲稿和预览图。
+```
+
+```text
+请审查我上传的大学课程 PPT，按 Critical、Major、Minor 分级，
+检查叙事、信息密度、视觉层级、讲述难度和 AI 套话，并给出逐页建议。
+```
+
+PPTX 制作存在未解决的目标、评分重点、内容范围或风格选择时，Skill 会执行强制 **Decision Gate**，询问 1–3 个关键问题并等待选择后再开始制作。
+
+## 输出
+
+```text
+outputs/<topic>-outline.md
 outputs/<topic>-presentation.pptx
 outputs/<topic>-speaker-notes.md
 outputs/<topic>-preview.png
 outputs/<topic>-change-summary.md
 ```
 
-如果 `Presentations` 不可用，PPT skill 必须停止并报告缺失前提，不能用文本大纲冒充 PPTX。
-
-## 验证
-
-在插件目录运行：
-
-```powershell
-python -m pip install -r requirements.txt
-python -m unittest discover -s tests
-python scripts/check_plugin_release.py
-python "$env:USERPROFILE\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py" .
-```
-
-本插件明确不包含 `.claude-plugin`、`document-skills`、Claude production bridge 或第二套 PPTX 引擎。
+原始 deck 永不覆盖。完整下载、更新、故障排查和开发说明见仓库根目录 [README-zh.md](../../README-zh.md)。

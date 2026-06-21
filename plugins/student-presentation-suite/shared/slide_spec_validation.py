@@ -80,6 +80,48 @@ def semantic_errors(data: Any) -> list[dict[str, str]]:
                         }
                     )
 
+    revision = data.get("revision_contract")
+    if isinstance(revision, dict):
+        targets = revision.get("targets")
+        slide_ids = {
+            slide.get("id")
+            for slide in slides
+            if isinstance(slide, dict) and isinstance(slide.get("id"), int)
+        }
+        if isinstance(targets, list):
+            missing = sorted(target for target in targets if target not in slide_ids)
+            if missing:
+                errors.append(
+                    {
+                        "path": ".revision_contract.targets",
+                        "message": f"revision targets do not exist in slides: {missing}",
+                    }
+                )
+        if (
+            revision.get("mode") == "partial"
+            and revision.get("preserve_untargeted_slides") is not True
+        ):
+            errors.append(
+                {
+                    "path": ".revision_contract.preserve_untargeted_slides",
+                    "message": "partial revision requires preserve_untargeted_slides=true",
+                }
+            )
+
+    for index, slide in enumerate(slides):
+        if not isinstance(slide, dict):
+            continue
+        for evidence_index, evidence in enumerate(slide.get("evidence", [])):
+            if not isinstance(evidence, dict):
+                continue
+            if evidence.get("status") == "verified" and not evidence.get("source"):
+                errors.append(
+                    {
+                        "path": f".slides.{index}.evidence.{evidence_index}.source",
+                        "message": "verified evidence requires a source",
+                    }
+                )
+
     improvement_fields = (
         "edit_intent",
         "review_findings",

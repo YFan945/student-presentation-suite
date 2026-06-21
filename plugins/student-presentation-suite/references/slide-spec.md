@@ -23,18 +23,38 @@ Optional slide fields:
 - `visual`: visual type and purpose; omit when a visual would be forced or decorative
 - `note_goal`: what the speaker note should accomplish
 - `transition`: transition or handoff sentence; omit on the final slide or when no meaningful transition exists
+- `ppt_text`: final concise on-slide wording after the outline and key points are confirmed
+- `speaker_notes`: speakable explanation corresponding to the concise PPT text
+- `evidence`: claim-linked evidence with type, source/date when available, and status
+- `locked_fields`: fields confirmed by the user that later optimization must preserve
 
 Optional deck-level `meta` may carry confirmed constraints across planning, PPTX production, and review:
 
 Meta field rules:
 - Recommended required fields: `presentation_type`, `language`, `duration_min`, and `format`
-- Optional fields: `slide_count`, `members`, `course`, `rubric`, `template`, `logo`, `image_source`, and `output_prefix`
+- Optional fields: `scenario`, `audience`, `workflow_mode`, `quality_tier`, `slide_count`, `members`, `course`, `rubric`, `template`, `logo`, `image_source`, and `output_prefix`
+- `scenario`: `"course-report" | "defense" | "competition" | "club-showcase" | "research-presentation"`
+- `audience.primary`: `"teacher" | "classmates" | "judges" | "non-specialists" | "mixed"`
+- `audience.knowledge_level`: `"introductory" | "intermediate" | "advanced"`
+- `workflow_mode`: `"guided"` explains decisions and confirms stages; `"fast"` uses confirmed constraints with minimal interruption
+- `quality_tier`: `"basic"` delivers a clear complete deck; `"high-score"` additionally requires stronger evidence, comparison, limitations, rubric alignment, and Q&A preparation
 - `language`: `"Chinese" | "English" | "bilingual"`
 - `format`: `"individual" | "group"`
 - `duration_min`: number of minutes
 - `slide_count`: integer target slide count
 - `image_source`: `"user-assets" | "web-search" | "generated" | "diagram-only" | "text-only" | "ask-before-web-search"`
 - Use short ASCII-safe `output_prefix` when a later PPTX output filename needs a stable slug.
+
+Optional top-level generation and revision controls:
+- `generation_controls`: maximum words per slide, visual/text balance, speaker notes, memorable lines, Q&A cards, and citation style
+- `revision_contract`: full or partial edit mode, targeted slide ids, edit instruction, and whether untargeted slides must remain unchanged
+- Partial mode must set `preserve_untargeted_slides: true`; later optimization must not silently rewrite other slides
+
+Evidence status rules:
+- `verified`: source has been checked
+- `user-provided`: supplied by the user but not independently verified
+- `to-verify`: required evidence or citation is still missing
+- `illustrative`: hypothetical example; never present it as factual evidence
 
 Optional top-level fields for existing deck improvement:
 - `source_deck`: path or label of the original PPTX/PDF/preview being improved
@@ -48,7 +68,7 @@ Schema and validation:
 - Validator: `scripts/validate_slide_spec.py`
 - The validator requires `jsonschema` and `PyYAML` from `requirements.txt`.
 - Unknown fields are rejected in `meta`, slides, visuals, and review findings to catch spelling mistakes.
-- Semantic validation also checks contiguous slide ids, `slide_count`, total timing vs `duration_min`, group members/owners, and existing-deck field combinations.
+- Semantic validation also checks contiguous slide ids, `slide_count`, total timing vs `duration_min`, group members/owners, revision targets, evidence/source consistency, and existing-deck field combinations.
 
 ```powershell
 # Run from the plugin package root.
@@ -58,6 +78,14 @@ python scripts/validate_slide_spec.py path/to/slide-spec.yaml --json
 ```yaml
 meta:
   presentation_type: "coursework report"
+  scenario: "course-report"
+  audience:
+    primary: "teacher"
+    knowledge_level: "intermediate"
+    grading_focus: ["clear logic", "project evidence"]
+    explanation_depth: "balanced"
+  workflow_mode: "guided"
+  quality_tier: "high-score"
   language: "Chinese"
   duration_min: 8
   slide_count: 10
@@ -66,6 +94,13 @@ meta:
   course: "Introduction to AI"
   image_source: "ask-before-web-search"
   output_prefix: "ai-class-demo"
+generation_controls:
+  max_words_per_slide: 45
+  visual_text_ratio: "balanced"
+  speaker_notes: true
+  memorable_lines: false
+  qa_cards: true
+  citation_style: "GB-T-7714"
 source_deck: "original-report.pptx"
 edit_intent: "review-fix"
 preserve:
@@ -104,6 +139,8 @@ slides:
 
 When `student-presentation-ppt` receives Slide Spec YAML:
 - preserve slide order and ownership
+- preserve every field listed in `locked_fields`
+- in partial revision mode, edit only `revision_contract.targets` and keep untargeted slides unchanged
 - treat `visual.purpose` as required design intent when `visual` is present
 - use integer `timing_sec` values to balance speaker notes
 - keep `layout` unless a better layout is needed to prevent crowding

@@ -134,6 +134,16 @@ When useful, rate each dimension as Excellent / Good / Needs Work / Risk:
 
 Include one sentence explaining the score for each dimension. Do not let scoring replace concrete fixes.
 
+## Rehearsal Review
+
+When the user requests final rehearsal or speaking readiness:
+- inspect slides in playback order
+- compare cumulative `timing_sec` with the target duration
+- flag abrupt transitions, difficult sentences, unexplained terms, and likely overrun slides
+- identify missing evidence likely to trigger teacher/judge questions
+- produce keyword cards and concise answer points rather than a second full script
+- end with the three highest-risk rehearsal actions
+
 ## Positive Feedback
 
 Include strong parts worth keeping when the deck has them; omit this section when no defensible positive evidence is available:

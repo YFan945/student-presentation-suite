@@ -18,13 +18,14 @@ Load `../../references/suite-contract.md` first. Do not use this skill for stand
 3. Ask only for missing constraints that materially change the outline. If the user delegates low-risk choices, state assumptions and continue.
 4. Load `../../references/shared-standards.md` and only the references needed:
    - `references/slide-structures.md` for structures, topic narrowing, and subject patterns
+   - `references/content-workflow.md` for scenario/audience modeling, layered generation, evidence, controlled revision, and training
    - `references/transition-phrases.md` for transitions and defense phrases
    - `references/group-handoff.md` for group work
    - `references/qa-prediction.md` for Q&A attached to the eligible PPT
    - `../../references/slide-spec.md` for structured handoff
    - `../../references/image-strategy.md` for visual source planning
 5. If the topic is broad, offer 2–3 concrete angles or choose one when authorized.
-6. Build the main claim, story arc, timing, slide purposes, and ownership.
+6. Build the main claim, story arc, timing, slide purposes, evidence needs, and ownership. Use layered generation before final PPT text or notes.
 7. Match detail to the request: concise outline by default; include notes, visuals, transitions, Q&A, and Slide Spec only when useful or requested.
 8. If PPTX production follows, list unresolved production constraints and hand off to `student-presentation-ppt`.
 
